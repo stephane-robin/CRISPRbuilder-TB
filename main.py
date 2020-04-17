@@ -1060,15 +1060,15 @@ def entrez_to_dico(dico, loc='', Strain=''):
 mp = argparse.ArgumentParser(prog='CRISPRbuilder-TB', description="Collect and "
                                                           "annotate "
                                               "Mycobacterium tuberculosis WGS data for CRISPR investigations.")
-mp.add_argument("item", type=str, help="requires the reference of a SRA "
+mp.add_argument("sra", type=str, help="requires the reference of a SRA "
                                            "in the "
                                      "format ...")
 mp.add_argument("--collect", action='store_true', help="collects the reference of a SRA to ...")
 args = mp.parse_args()
-if args.collect:
-    print(args.item)
-else:
-    print("plouf")
+item = args.sra
+
+
+
 
 # We create a string called h37Rv containing the genome sequence of the strain
 # H37Rv.
@@ -1147,11 +1147,16 @@ print("step 1 achieved")
 
 """
 
-REP = 'REP/'
+REP = 'REP/' # TODO careful change made
+rep = REP + 'sequences/' + item + '/'
 # we browse the list of directories and files in 'REP/sequences' called item
 # and define a path called 'rep' for each of them. Each 'item' represents a SRA.
-for item in listdir(REP + 'sequences/'):
-    rep = REP + 'sequences/' + item + '/'
+#for item in listdir(REP + 'sequences/'):
+    #rep = REP + 'sequences/' + item + '/'
+
+if args.collect:
+    print(item)
+
 
     # TODO what to do if the SRA's name is in a fasta format
     # if the chosen SRA's reference is not in a fasta format, then proceed.
@@ -1177,7 +1182,7 @@ for item in listdir(REP + 'sequences/'):
     # if the coverage is too low, we don't update dico_afr
     if 'low_cover.txt' in listdir(rep):
         print("       => trop faible couverture!")
-        continue
+        # continue TODO warning change made
 
     # if 'dico.txt' is in the directory for item, then TODO
     # in listdir(REP+'sequences/'+item) => in the directory called item
@@ -1214,7 +1219,7 @@ for item in listdir(REP + 'sequences/'):
             del dico_afr[item]
             print("Erreur de téléchargement")
             save_dico()
-            continue
+            #continue TODO warning change made
 
     # if item_1.fasta or item_2.fasta is not in the SRA directory,
     # then delete the SRA from dico_afr
@@ -1225,7 +1230,7 @@ for item in listdir(REP + 'sequences/'):
         shutil.rmtree(rep)
         print("   - Les fichiers fasta n'ont pas la bonne forme")
         save_dico()
-        continue
+        #continue TODO warninig change made
 
     # if item_shuffled.fasta is not in listdir(rep), then TODO
     if item + '_shuffled.fasta' not in listdir(rep):
