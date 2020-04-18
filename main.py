@@ -15,6 +15,8 @@ import argparse
 # TODO check the relevance of importing the whole modules and not only part
 #  of them
 
+# attention, désinstallation de subprocess.run 0.0.8 qui empêche le
+# fonctionnement
 """
 fastq : from INSDC archive NCBI
 fastq-dump --fasta --split-files SRR8368696
@@ -916,6 +918,24 @@ def save_dico(fic = 'data/dico_africanum.pkl'):
     print("save_dico() achieved")
 
 
+def compare_dico_archives():
+    """
+    This function compares the names of the different files dico_africanum.pkl
+    which are present in the archive 'data/archives/' and returns the name of
+    the most recent one.
+
+    Returns:
+        last_dico(str): the name of the most recent dico_africanum.pkl in
+        'data/archives'
+    """
+    last_dico = listdir('data/archives/')[0]
+    for u in listdir('data/archives/'):
+        if u > last_dico:
+            last_dico = u
+
+    return last_dico
+
+
 # TODO check the relevance of this function. It's not being used
 def entrez_to_dico(dico, loc='', Strain=''):
     """
@@ -1053,10 +1073,11 @@ def entrez_to_dico(dico, loc='', Strain=''):
     return dico_afr
 
 
-# ==============
-# MAIN PROCEDURE
-# ==============
+# ================
+# DEFINING THE CLI
+# ================
 
+"""
 mp = argparse.ArgumentParser(prog='CRISPRbuilder-TB', description="Collect and "
                                                           "annotate "
                                               "Mycobacterium tuberculosis WGS data for CRISPR investigations.")
@@ -1066,118 +1087,115 @@ mp.add_argument("sra", type=str, help="requires the reference of a SRA "
 mp.add_argument("--collect", action='store_true', help="collects the reference of a SRA to ...")
 args = mp.parse_args()
 item = args.sra
+"""
 
-
-
+# ==============================================
+# INITILIZING THE SEQUENCE OF H37RV AND DICO_AFR
+# ==============================================
 
 # We create a string called h37Rv containing the genome sequence of the strain
 # H37Rv.
 h37Rv = fasta_to_seq()
 taille_gen = len(h37Rv)
+print('step 0') # TODO only for dev
 
-# We transform data from 1_3882_SORTED.xls into a dictionary called
-# spol_sit containing spoligotypes with their corresponding SITs.
-spol_sit = to_spol_sit()
+# We check if there is any dico_africanum.pkl file in '/data/archives' and
+# assign the most recent one to the dictionary dico_afr. If the repertory is
+# empty, then we parse the original dico_africanum.pkl to dico_afr, which
+# structure is :
+#   {
+#       a_SRA:
+#           {
+#               'nb_reads':
+#               'len_reads':
+#               'couverture':
+#               'Source':
+#               'Author':
+#               'study accession number':
+#               'location':
+#               'date':
+#               'SRA':
+#               'center':
+#               'strain':
+#               'taxid':
+#               'name':
+#               'bioproject':
+#               'study':
+#               'spoligo':
+#               'spoligo_new':
+#               'spoligo_nb':
+#               'spoligo_new_nb':
+#               'spoligo_vitro':
+#               'spoligo_vitro_new':
+#               'spoligo_vitro_nb':
+#               'spoligo_vitro_new_nb':
+#               'SIT':
+#               'SIT_silico':
+#               'lineage_Coll':
+#               'lineage_L6+animal':
+#               'lineage_PGG_cp':
+#               'lineage_PGG':
+#               'lineage_Pali':
+#               'lineage_Shitikov':
+#               'lignee_Stucki':
+#               'REP':
+#           },
+#           ...
+#   }
 
-# We transform data from Palittapon_SNPs.xlsx, Shitikov_L2_SNPs.xlsx,
-# Stucki_L4-SNPs.xlsx into dictionaries containing positions, reads and
-# lineage numbers
-longueur_reads = 20
-Lignee_Pali = to_reads('data/Palittapon_SNPs.xlsx', longueur_reads)
-Lignee_Shitikov = to_reads('data/Shitikov_L2_SNPs.xlsx', longueur_reads)
-Lignee_Stucki = to_reads('data/Stucki_L4-SNPs.xlsx', longueur_reads)
+if len(listdir('data/archives/')) > 0:
+    nom_dico = compare_dico_archives()
+    with open(nom_dico, 'rb') as f:
+        dico_afr = load(f)
 
-#
-#Brynildsrud = to_Brynildsrud()
+else:
+    with open('data/dico_africanum.pkl', 'rb') as f:
+        dico_afr = load(f)
 
-# we parse dico_africanum.pkl to the dictionary dico_afr
-""" The structure of dico_afr is the following :
-    {
-        a_SRA (ERR, DRR or SRR):
-            {
-                'nb_reads':
-                'len_reads':
-                'couverture':
-                'Source':
-                'Author':
-                'study accession number':
-                'location':
-                'date':
-                'SRA':
-                'center':
-                'strain':
-                'taxid':
-                'name':
-                'bioproject':
-                'study':
-                'spoligo':
-                'spoligo_new':
-                'spoligo_nb':
-                'spoligo_new_nb':
-                'spoligo_vitro':
-                'spoligo_vitro_new':
-                'spoligo_vitro_nb':
-                'spoligo_vitro_new_nb':
-                'SIT':
-                'SIT_silico':
-                'lineage_Coll':
-                'lineage_L6+animal':
-                'lineage_PGG_cp':
-                'lineage_PGG':
-                'lineage_Pali':
-                'lineage_Shitikov':
-                'lignee_Stucki':
-                'REP':
-            },
-            ...
-    }
-"""
-with open('data/dico_africanum.pkl', 'rb') as f:
-    dico_afr = load(f)
 taille_dico_afr = len(dico_afr)
-# TODO test dev mode
-print("step 1 achieved")
-
-# TODO NOT USEFUL FOR THE MOMENT
-# avant_IS = []
+print('step 1')# TODO only for dev
 
 """
 - if there is no directory with the name of the specific SRA in 
 'REP/sequences', then we create the directory 'REP/sequences/a_SRA
-
 """
-
-REP = 'REP/' # TODO careful change made
-rep = REP + 'sequences/' + item + '/'
+# TODO only for dev
+item = 'SRR8368689'
+# TODO to change for production
+rep = '../REP/sequences/' + item + '/'
 # we browse the list of directories and files in 'REP/sequences' called item
 # and define a path called 'rep' for each of them. Each 'item' represents a SRA.
 #for item in listdir(REP + 'sequences/'):
     #rep = REP + 'sequences/' + item + '/'
 
-if args.collect:
-    print(item)
-
-
-    # TODO what to do if the SRA's name is in a fasta format
-    # if the chosen SRA's reference is not in a fasta format, then proceed.
-    # 'not in item' => not in a string
-    #if '.fasta' not in item: # tp get rod of
-    # TODO test dev mode
+#if args.collect:
+    #print(item)
+if True:
 
     #if item not in dico_afr: # and item[0] == 'S': #E pour ERR (pour
     # Christophe), à remplacer par S (SRR, pour Guislaine) TODO ???
     print('\n\n' + item + ' ' + str(taille_dico_afr + 1) + "/" + str(len(
-        listdir(REP + 'sequences/'))))
+        listdir('../REP/sequences/')))) # TODO change for prod
 
-    #system('cp data/dico_africanum.pkl data/dico_africanum_old.pkl')
-    # TODO ???
+    # ===========================================
+    # CHECKING IF ITEM IS ALREADY IN THE DATABASE
+    # ===========================================
+
+    #system('cp data/dico_africanum.pkl data/dico_africanum_old.pkl') # TODO ???
     # if the SRA is not in dico_afr, then we add it to dico_afr
     if item not in dico_afr:
         dico_afr[item] = {}
 
-    # TODO ???
-    if item not in listdir(REP+'sequences/'):
+    # if the SRA is not in REP, then we create a repository called item in REP
+    if item not in listdir('../REP/sequences/'):
+        print(f"{item} is not in REP") # TODO only for dev
         mkdir(rep)
+
+    wd = getcwd()
+    chdir('../REP/sequences/' + item + '/')
+    subprocess.run(['fastq-dump', '--fasta', '--split-files',
+                    item])
+    chdir(wd)
 
     # if the coverage is too low, we don't update dico_afr
     if 'low_cover.txt' in listdir(rep):
@@ -1206,25 +1224,28 @@ if args.collect:
     if len([u for u in listdir(rep) if 'fasta' in u]) == 0:
 
         print("   - Téléchargement des fasta")
-        completed = subprocess.run(['parallel-fastq-dump', '-t', '8','--split-files', '--fasta', '-O',REP, '-s',  item])
+        """
+        completed = subprocess.run(['parallel-fastq-dump', '-t', '8',
+                                    '--split-files', '--fasta', '-O', '../REP',
+                                    '-s', item]) # TODO change for prod
 
         # if the download worked
         if completed.returncode == 0:
             for k in listdir(rep):
                 if k.endswith('.fasta'):
-                    shutil.move(REP + k, rep + k)
-
+                    shutil.move('../REP' + k, rep + k) # TODO change for prod 
+        
         # if the download didn't work, we delete the SRA from dico_afr
         else:
             del dico_afr[item]
             print("Erreur de téléchargement")
             save_dico()
             #continue TODO warning change made
-
+        """
     # if item_1.fasta or item_2.fasta is not in the SRA directory,
     # then delete the SRA from dico_afr
     if (item + '_1.fasta' not in listdir(rep) or item + '_2.fasta' not in
-        listdir(rep)): # or (item+'_1.fasta' not in listdir(rep) and
+            listdir(rep)): # or (item+'_1.fasta' not in listdir(rep) and
         # item+'_3.fasta' not in listdir(rep):
         del dico_afr[item]
         shutil.rmtree(rep)
@@ -1319,12 +1340,14 @@ if args.collect:
                 dico_afr[item][uu] = dicobis[uu]
                 print("   - " + uu + ' : '+dico_afr[item][uu])
 
-        """
+        #
+        Brynildsrud = to_Brynildsrud()
+
         if item in Brynildsrud:
             for uu in Brynildsrud[item]:
                 dico_afr[item][uu] = Brynildsrud[item][uu]
                 print("   - "+uu+' : '+dico_afr[item][uu])
-        """
+
         # if an item from dico_afr doesn't have data regarding spoligo,
         # then TODO
         if 'spoligo' not in dico_afr[item] or dico_afr[item]['spoligo'] == '':
@@ -1377,6 +1400,10 @@ if args.collect:
                                              'spoligo_vitro_new_nb']))
             save_dico()
 
+        # We transform data from 1_3882_SORTED.xls into a dictionary called
+        # spol_sit containing spoligotypes with their corresponding SITs.
+        spol_sit = to_spol_sit()
+
         # if an item from dico_afr doesn't have any data regarding SIT,
         # then TODO
         if 'SIT' not in dico_afr[item] or dico_afr[item]['SIT'] == '':
@@ -1386,6 +1413,8 @@ if args.collect:
         # SIT_silico, then TODO
         if 'SIT_silico' not in dico_afr[item]:
             add_spoligo_dico('SIT_silico', dico_afr, item, spol_sit)
+
+        longueur_reads = 20
 
         # if an item from dico_afr doesn't have a Coll lineage, then TODO
         if 'lineage_Coll' not in dico_afr[item] or dico_afr[item]['lineage_Coll'] == '':
@@ -1488,22 +1517,34 @@ if args.collect:
             save_dico()
 
         # if an item from dico_afr doesn't have a Pali lineage, then TODO
+        # We extract data from Palittapon_SNPs.xlsx into the dictionary
+        # Lignee_Pali containing positions, reads and lineage numbers.
         if 'lineage_Pali' not in dico_afr[item]:
+            Lignee_Pali = to_reads('data/Palittapon_SNPs.xlsx', longueur_reads)
             add_lineagePSS_dico('lineage_Pali', Lignee_Pali, dico_afr,
                                 item, rep)
 
         # if an item from dico_afr doesn't have a Shitikov lineage,
         # then TODO
+        # We extract data from Shitikov_L2_SNPs.xlsx into the dictionary
+        # Lineage_Shitikov containing positions, reads and lineage numbers.
         if 'lineage_Shitikov' not in dico_afr[item]:
+            Lignee_Shitikov = to_reads('data/Shitikov_L2_SNPs.xlsx',
+                                       longueur_reads)
             add_lineagePSS_dico('lineage_Shitikov', Lignee_Shitikov,
                                         dico_afr, item, rep)
 
         # if an item from dico_afr doesn't have a Stucki lineage, then TODO
+        # We extract data from Stucki_L4-SNPs.xlsx into the dictionary
+        # Lignee_Stucki containing positions, reads and lineage numbers.
         if 'Lignee_Stucki' not in dico_afr[item]:
+            Lignee_Stucki = to_reads('data/Stucki_L4-SNPs.xlsx', longueur_reads)
             add_lineagePSS_dico('Lignee_Stucki', Lignee_Stucki, dico_afr,
                                     item, rep)
 
-        '''if dico_afr[item]['IS_mapper'] == '':
+        '''
+        avant_IS = []
+        if dico_afr[item]['IS_mapper'] == '':
         if 'ISmapper' not in listdir(REP) or item not in listdir(REP+'ISmapper/'):
             print("   - On exécute ISmapper")    
             rename(rep+item+'_1.fasta', rep+item+'_1.fastq')
