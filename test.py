@@ -27,22 +27,7 @@ if item not in listdir('../REP/sequences/'):
     print(item)
     mkdir('../REP/sequences/' + item)
 """
-
-def compare_dico_archives():
-    """
-    This function compares the names of the different files dico_africanum.pkl
-    which are present in the archive 'data/archives/' and returns the name of
-    the most recent one.
-
-    Returns:
-        last_dico(str): the name of the most recent dico_africanum.pkl in
-        'data/archives'
-    """
-    last_dico = listdir('data/archives/')[0]
-    for u in listdir('data/archives/'):
-        if u > last_dico:
-            last_dico = u
-
-    return last_dico
-
-print(compare_dico_archives())
+dico  = {'bobo': 'henri'}
+print(dico)
+dico.setdefault('name', '')
+print(dico)
