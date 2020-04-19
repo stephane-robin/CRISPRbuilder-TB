@@ -14,6 +14,8 @@ from datetime import datetime
 import argparse
 # TODO check the relevance of importing the whole modules and not only part
 #  of them
+# TODO change the address '../REP/sequences/' into 'REP/sequences/' in the
+#  whole code. Same with the address '../REP'
 
 
 # =======
@@ -180,7 +182,7 @@ def to_spol_sit():
     for row in range(1, ws.nrows):
         spol, sit = ws.cell_value(row, 2).replace('n', '\u25A0').replace('o',
                             '\u25A1'), ws.cell_value(row, 8)
-        spol_sit.setdefault(spol, sit)
+        spol_sit[spol] = sit
 
     return spol_sit
 
@@ -192,18 +194,7 @@ def to_Brynildsrud():
     Brynildsrud.
 
     Returns:
-        Brynildsrud (dict): with the following structure
-        {
-            a_SRR:
-                {
-                    'Source': a_value,
-                    'Author': a_value,
-                    'study accession number': a_value,
-                    'location': a_value,
-                    'date': a_value
-                },
-            etc.
-        }
+        Brynildsrud (dict):
 
     Note:
 
@@ -213,6 +204,7 @@ def to_Brynildsrud():
     wws = wwb.sheet_by_index(0)
 
     Brynildsrud = {}
+    source, author, study, location, date = '', '', '', '', ''
 
     for row in range(1, wws.nrows):
         srr = wws.cell_value(row, 4)
@@ -220,45 +212,37 @@ def to_Brynildsrud():
         if len(srr) > 1:
             Brynildsrud[srr] = {}
 
-            Brynildsrud[srr]['Source'] = wws.cell_value(row, 5).replace(',', '')
+            source = wws.cell_value(row, 5).replace(',', '')
 
-            if Brynildsrud[srr]['Source'] == 'This study':
-                Brynildsrud[srr]['Author'] = 'Brynildsrud et al.'
-            else:
-                Brynildsrud[srr]['Author'] = ''
+            if source == 'This study':
+                author = 'Brynildsrud et al.'
 
-            Brynildsrud[srr]['Source'] = Brynildsrud[srr]['Source'].replace(
-                'This study', 'Global expansion of Mycobacterium tuberculosis '
-                          'lineage 4 shaped by colonial migration and local '
-                          'adaptation')
-
-            Brynildsrud[srr]['study accession number'] = ''
+            source = source.replace('This study', 'Global expansion of '
+                                'Mycobacterium tuberculosis lineage 4 shaped by '
+                                'colonial migration and local adaptation')
 
             if len(wws.cell_value(row, 3)) > 1:
-                Brynildsrud[srr]['study accession number'] = wws.cell_value(
-                    row, 3)
-
-            # Brynildsrud[srr]['location']
-            Brynildsrud[srr]['location'] = ''
+                study = wws.cell_value(row, 3)
 
             if len(wws.cell_value(row, 6)) > 1:
-                Brynildsrud[srr]['location'] = wws.cell_value(row, 6)
-
-            # Brynildsrud[srr]['date']
-            Brynildsrud[srr]['date'] = ''
+                location = wws.cell_value(row, 6)
 
             if wws.cell_value(row, 0).count('_') == 2:
-
                 dat = wws.cell_value(row, 0).split('_')[-1]
                 une_date = True
-
                 for w in dat:
                     if w not in '0123456789':
                         une_date = False
-
                 if une_date:
-                    Brynildsrud[srr]['date'] = dat
+                    date = dat
 
+    Brynildsrud[srr] = {
+        'Source': source,
+        'Author': author,
+        'study accession number': study,
+        'location': location,
+        'date': date
+    }
     return Brynildsrud
 
 
@@ -278,7 +262,7 @@ def fasta_to_seq():
     return h
 
 
-def to_reads(xlsx_lignee, longueur_reads):
+def to_reads(xlsx_lignee, demi_longueur):
     """
     This function takes data from xlsx_lignee and extracts 2 reads per
     lineage and their specific position to put them in a dictionary called
@@ -287,6 +271,7 @@ def to_reads(xlsx_lignee, longueur_reads):
     Args:
         xlsx_lignee (str): dataset in xlsx format representing a specific
         lineage
+        demi_longueur (int): half the length of the reads
 
     Returns:
         Lignee_renvoyee (dict): with the following structure
@@ -326,8 +311,8 @@ def to_reads(xlsx_lignee, longueur_reads):
             source = row[3].value[0]
             cible = row[3].value[2]
             assert h37Rv[pos] == source
-            seq1 = h37Rv[pos-longueur_reads:pos+longueur_reads+1]
-            seq2 = seq1[:longueur_reads]+cible+seq1[longueur_reads+1:]
+            seq1 = h37Rv[pos - demi_longueur:pos + demi_longueur + 1]
+            seq2 = seq1[:demi_longueur] + cible + seq1[demi_longueur + 1:]
             Lignee_renvoyee[pos] = (seq1, seq2, lignee)
 
     # TODO test dev mode
@@ -345,18 +330,7 @@ def get_info(srr):
         srr (str): reference of a specific SRR
 
     Returns:
-        dico0 (dict): with the following structure
-        {
-            'location': a_value,
-            'date': a_value,
-            'SRA': a_value,
-            'center': a_value,
-            'strain': a_value,
-            'taxid': a_value,
-            'name': a_value,
-            'study': a_value,
-            'bioproject': a_value
-        }
+        dico0 (dict):
 
     Note:
         - if the dico 'platform' is 'ILLUMINA' and the dico 'LIBRAIRY_LAYOUT' is
@@ -380,45 +354,45 @@ def get_info(srr):
     location, date, SRA, center, strain = '', '', '', '', ''
 
     if 'ILLUMINA' in dico['EXPERIMENT_PACKAGE_SET']['EXPERIMENT_PACKAGE'][
-        'EXPERIMENT']['PLATFORM'] and 'PAIRED' in dico[
+        'EXPERIMENT'].get('PLATFORM') and 'PAIRED' in dico[
         'EXPERIMENT_PACKAGE_SET']['EXPERIMENT_PACKAGE']['EXPERIMENT'][
-        'DESIGN']['LIBRARY_DESCRIPTOR']['LIBRARY_LAYOUT']:
+        'DESIGN']['LIBRARY_DESCRIPTOR'].get('LIBRARY_LAYOUT'):
 
         try:
             attributes = dico['EXPERIMENT_PACKAGE_SET'][
-                'EXPERIMENT_PACKAGE'][ 'SAMPLE']['SAMPLE_ATTRIBUTES'][
-                'SAMPLE_ATTRIBUTE']
+                'EXPERIMENT_PACKAGE']['SAMPLE']['SAMPLE_ATTRIBUTES'].get(
+                'SAMPLE_ATTRIBUTE')
         except:
             return {}
 
         for k in attributes:
-            if k['TAG'] == 'geographic location (country and/or sea)':
-                location = k['VALUE']
-            elif k['TAG'] == 'collection date':
-                date = k['VALUE']
-            elif k['TAG'] == 'SRA accession':
-                SRA = k['VALUE']
-            elif k['TAG'] == 'INSDC center name':
-                center = k['VALUE']
-            elif k['TAG'] == 'Strain':
-                strain = k['VALUE']
+            if k.get('TAG') == 'geographic location (country and/or sea)':
+                location = k.get('VALUE')
+            elif k.get('TAG') == 'collection date':
+                date = k.get('VALUE')
+            elif k.get('TAG') == 'SRA accession':
+                SRA = k.get('VALUE')
+            elif k.get('TAG') == 'INSDC center name':
+                center = k.get('VALUE')
+            elif k.get('TAG') == 'Strain':
+                strain = k.get('VALUE')
 
         try:
             center = dico['EXPERIMENT_PACKAGE_SET']['EXPERIMENT_PACKAGE'][
-                'EXPERIMENT']['@center_name']
-        except: # TODO be more specific with the except
+                'EXPERIMENT'].get('@center_name')
+        except:  # TODO be more specific with the except
             pass
 
         if isinstance(
                 dico['EXPERIMENT_PACKAGE_SET']['EXPERIMENT_PACKAGE']['STUDY'][
-                    'IDENTIFIERS']['EXTERNAL_ID'], list):
+                    'IDENTIFIERS'].get('EXTERNAL_ID'), list):
             bioproject = dico['EXPERIMENT_PACKAGE_SET'][
                 'EXPERIMENT_PACKAGE']['STUDY']['IDENTIFIERS']['EXTERNAL_ID'][
-                0].setdefault('#text', '')
+                0].get('#text', '')
         else:
             bioproject = dico['EXPERIMENT_PACKAGE_SET'][
                 'EXPERIMENT_PACKAGE']['STUDY']['IDENTIFIERS'][
-                'EXTERNAL_ID'].setdefault('#text', '')
+                'EXTERNAL_ID'].get('#text', '')
 
         dico0 = {
             'location': location,
@@ -427,15 +401,16 @@ def get_info(srr):
             'center': center,
             'strain': strain,
             'taxid': dico['EXPERIMENT_PACKAGE_SET']['EXPERIMENT_PACKAGE'][
-                'SAMPLE']['SAMPLE_NAME'].setdefault('TAXON_ID', ''),
+                'SAMPLE']['SAMPLE_NAME'].get('TAXON_ID', ''),
             'name': dico['EXPERIMENT_PACKAGE_SET']['EXPERIMENT_PACKAGE'][
-                'SAMPLE']['SAMPLE_NAME'].setdefault('SCIENTIFIC_NAME', ''),
+                'SAMPLE']['SAMPLE_NAME'].get('SCIENTIFIC_NAME', ''),
             'study': dico['EXPERIMENT_PACKAGE_SET']['EXPERIMENT_PACKAGE'][
-                'STUDY'].setdefault('@alias', ''),
+                'STUDY'].get('@alias', ''),
             'bioproject': bioproject
         }
+
         print(dico['EXPERIMENT_PACKAGE_SET']['EXPERIMENT_PACKAGE']['STUDY'][
-                  'IDENTIFIERS']['EXTERNAL_ID'])
+                  'IDENTIFIERS']['EXTERNAL_ID'])  # TODO only for dev
 
     # TODO test dev mode
     print("get_info() achieved")
@@ -509,7 +484,7 @@ def similaire(x, y):
     # TODO test dev mode
     print("similaire() achieved")
 
-    return alignments[0][2]/alignments[0][4]
+    return alignments[0][2] / alignments[0][4]
 
 
 def add_spoligo_dico(type_sit, dico_afr, item, spol_sit):
@@ -541,15 +516,15 @@ def add_spoligo_dico(type_sit, dico_afr, item, spol_sit):
     elif type_sit == 'SIT_silico':
         type_spoligo = 'spoligo_vitro'
 
-    spol = dico_afr[item][type_spoligo]
+    spol = dico_afr[item].setdefault(type_spoligo, '')
     # spol = ''.join(list(map(change, spol))) TODO ???
 
     if spol in spol_sit:
-        dico_afr[item][type_sit] = spol_sit[spol]
+        dico_afr[item][type_sit] = spol_sit.get(spol, '')
     else:
         dico_afr[item][type_sit] = 'X'
 
-    print("   - On ajoute le ", type_sit, " :", dico_afr[item][type_sit])
+    print(f"We're adding the {type_sit}: {dico_afr[item][type_sit]}")
     save_dico()
 
     # TODO test dev mode
@@ -595,15 +570,16 @@ def add_lineagePSS_dico(cle_lignee, dico_reads, dico_afr, item, rep):
     if cle_lignee == 'Lignee_Stucki':
         nom_lignee = "Stucki"
 
-    print("   - On ajoute la lignée selon les SNPs ", nom_lignee)
+    print(f"We're adding the lineage according to the SNPs {nom_lignee}")
 
     for item2, pos0 in enumerate(dico_reads):
         seq1, seq2 = dico_reads[pos0][:2]
 
         with open('/tmp/snp.fasta', 'w') as f:
             f.write('>\n' + seq2)
+        # TODO warning change of address
         cmd = "blastn -query /tmp/snp.fasta -num_threads 12 -evalue 1e-5 " \
-              "-task blastn -db " + rep + item + " -outfmt '10 sseq' -out " \
+              "-task blastn -db " + rep + " -outfmt '10 sseq' -out " \
               "/tmp/snp_" + nom_lignee + ".blast"
         system(cmd)
 
@@ -660,17 +636,18 @@ def add_l6_dico(dico_afr, item, rep, i1_debut, i1_fin, i2_debut, i2_fin):
 
 
     """
-    print("   - On ajoute la lignée selon les SNPs L6+animal")
+    print("We're adding the lineage according to the SNPs L6+animal")
     seq1 = 'ACGTCGATGGTCGCGACCTCCGCGGCATAGTCGAA'
     seq2 = "ACGTCGATGGTCGCGACTTCCGCGGCATAGTCGAA"
 
     with open('/tmp/snp.fasta', 'w') as f:
         f.write('>\n'+seq2)
 
+    # TODO warning address changed
     result = subprocess.run(["blastn", "-num_threads", "12", "-query",
                              "/tmp/snp.fasta", "-evalue", "1e-5", "-task",
-                             "blastn", "-db", rep + item, "-outfmt",
-                             "10 sseq"], stdout=subprocess.PIPE)
+                             "blastn", "-db", rep, "-outfmt", "10 sseq"],
+                            stdout=subprocess.PIPE)
     formatted_results = result.stdout.decode('utf8').splitlines()
     nb_seq1 = len([u for u in formatted_results if seq1[i1_debut:i1_fin] in
                    u]) + len([u for u in formatted_results if  seq1[
@@ -686,7 +663,7 @@ def add_l6_dico(dico_afr, item, rep, i1_debut, i1_fin, i2_debut, i2_fin):
     else:
         dico_afr[item]['lineage_L6+animal'] = 'X'
 
-    print("     Lignée (L6+animal) : " + dico_afr[item]['lineage_L6+animal'])
+    print(f"Lineage (L6+animal): {dico_afr[item]['lineage_L6+animal']}")
     save_dico()
 
     # TODO test dev mode
@@ -751,10 +728,11 @@ def pgg_ni_dico(item, rep, h37Rv, pos, demi_longueur, i1_debut, i1_fin,
     with open('/tmp/snp.fasta', 'w') as f:
         f.write('>\n' + seq2)
 
+    # TODO warning address changed
     result = subprocess.run(["blastn", "-num_threads", "12", "-query",
                              "/tmp/snp.fasta", "-evalue", "1e-5", "-task",
-                             "blastn", "-db", rep + item, "-outfmt",
-                             "10 sseq"], stdout=subprocess.PIPE)
+                             "blastn", "-db", rep, "-outfmt", "10 sseq"],
+                            stdout=subprocess.PIPE)
     formatted_results = result.stdout.decode('utf8').splitlines()
     # 19  24  15  20
     nb_seq1 = len([u for u in formatted_results if seq1[i1_debut:i1_fin] in
@@ -796,16 +774,16 @@ def compt_spol_vitro(dico_afr, item, type_blast, nom_espaceur, nomB_espaceur):
         for k in range(1, nb + 1):
             # if 'espaceur'+spol.capitalize()+str(k) in matches:
 
-            if min([matches.count('espaceur_'+nom_espaceur+str(k)+','),
-                    matches.count('espaceur_'+nomB_espaceur+str(k)+',')]) / \
-                    dico_afr[item]['couverture'] > 0.05:
+            if min([matches.count('espaceur_' + nom_espaceur + str(k) + ','),
+                    matches.count('espaceur_' + nomB_espaceur + str(k) + ',')]) \
+                    / dico_afr[item].get('couverture') > 0.05:
                 dico_afr[item]['spoligo_'+type_blast] += '\u25A0'
             else:
                 dico_afr[item]['spoligo_'+type_blast] += '\u25A1'
 
-    dico_afr[item]['spoligo_'+type_blast+'_nb'] = [(matches.count(
-        'espaceur_'+nom_espaceur+ + str(k) + ','), matches.count(
-        'espaceur_'+nomB_espaceur + str(k) + ',')) for k in range(1, nb + 1)]
+    dico_afr[item]['spoligo_' + type_blast + '_nb'] = [(matches.count(
+        'espaceur_' + nom_espaceur + str(k) + ','), matches.count(
+        'espaceur_' + nomB_espaceur + str(k) + ',')) for k in range(1, nb + 1)]
 
     # TODO test dev mode
     print("compt_spol_vitro() achieved")
@@ -829,25 +807,27 @@ def intro_spoligo(item, rep, type_spoligo):
     if type_spoligo == 'spoligo_vitro':
         nb, mess1, mess2, mess3 = 8, "", "_vitro", "_vitro"
 
-    print("   - On blaste les "+type_spoligo)
+    print(f"The {type_spoligo} are being blasted")
     dico_afr[item][type_spoligo] = ''
-    dico_afr[item][type_spoligo+'_new'] = ''
+    dico_afr[item][type_spoligo + '_new'] = ''
 
+    # TODO warning address changed
     completed = subprocess.run("blastn -num_threads " + nb + " -query data/"
                                + type_spoligo + mess1 + ".fasta -evalue 1e-6 "
-                                "-task blastn -db " + rep + item + " -outfmt "
+                                "-task blastn -db " + rep + " -outfmt "
                                 "'10 qseqid sseqid sstart send qlen length "
                                 "score evalue' -out /tmp/" + item + mess3 +
                                ".blast", shell=True)
     assert completed.returncode == 0
+    # TODO warning address changed
     completed = subprocess.run("blastn -num_threads " + nb + " -query data/"
                                + type_spoligo + "_new.fasta -evalue 1e-6 "
-                                "-task blastn -db " + rep + item + " -outfmt "
+                                "-task blastn -db " + rep + " -outfmt "
                                 "'10 qseqid sseqid sstart send qlen length "
                                 "score evalue' -out /tmp/" + item + mess3 +
                                "_new.blast", shell=True)
     assert completed.returncode == 0
-    print("   - On écrit les " + type_spoligo + " obtenus dans le fichier csv")
+    print(f"We write the {type_spoligo} obtained in the csv file")
 
     # TODO test dev mode
     print("intro_spoligo() achieved")
@@ -937,7 +917,7 @@ def compare_dico_archives():
 # ==== DEFINING THE CLI ===================================================
 
 # We ask the user for the action to take
-"""
+
 mp = argparse.ArgumentParser(prog='CRISPRbuilder-TB', description="Collect and "
                                                           "annotate "
                                               "Mycobacterium tuberculosis WGS data for CRISPR investigations.")
@@ -947,10 +927,10 @@ mp.add_argument("sra", type=str, help="requires the reference of a SRA "
 mp.add_argument("--collect", action='store_true', help="collects the reference of a SRA to ...")
 args = mp.parse_args()
 item = args.sra # item represent the RSA reference
-"""
+
 # We define the path for the file named as the SRA
-item = 'SRR8368689' # TODO only for dev
-rep = '../REP/sequences/' + item + '/' # TODO change the address for production
+# item = 'SRR8368689' # TODO only for dev
+rep = '../REP/sequences/' + item + '/'
 
 # ==== INITILIZING THE SEQUENCE OF H37RV AND DICO_AFR =========================
 
@@ -974,25 +954,26 @@ else:
 taille_dico_afr = len(dico_afr) # TODO make sure it's useful
 
 # If the option chose by the user is --collect, then we proceed
-#if args.collect:
-    #print(item)
-if True:
-    print("We're collecting the data regarding " + item + ".")
+if args.collect:
+# if True:
+    print(f"We're collecting the data regarding {item}")
 
     #if item not in dico_afr: # and item[0] == 'S': #E pour ERR (pour
     # Christophe), à remplacer par S (SRR, pour Guislaine) TODO ???
+    # TODO for prod only
     print('\n\n' + item + ' ' + str(taille_dico_afr + 1) + "/" + str(len(
-        listdir('../REP/sequences/')))) # TODO change for prod
+        listdir('../REP/sequences/'))))
 
     # ==== CHECKING IF ITEM IS ALREADY IN THE DATABASE  =======================
 
     #system('cp data/dico_africanum.pkl data/dico_africanum_old.pkl') # TODO ???
     # if the SRA is not in dico_afr, then we add it to dico_afr
     if item not in dico_afr:
-        print("We're adding " + item + " to the database.")
+        print(f"We're adding {item} to the database.")
         dico_afr[item] = {}
 
-    # if the SRA is not in REP, then we create a repository called item in REP
+    # if the SRA is not in REP, then we create a repository named as the SRA
+    # in REP
     if item not in listdir('../REP/sequences/'):
         print(f"We're adding {item} to the repository.")
         mkdir(rep)
@@ -1017,15 +998,15 @@ if True:
 
         # if the download worked
         if completed.returncode == 0:
-            print("Download of fasta files successful.")
+            print("fasta files successfully downloaded.")
             for k in listdir(rep):
                 if k.endswith('.fasta'):
-                    shutil.move('../REP' + k, rep + k)  # TODO change for prod
+                    shutil.move('../REP' + k, rep + k)
 
         # if the download didn't work, we delete the SRA from dico_afr
         else:
             del dico_afr[item]
-            print("Download of fasta files failed")
+            print("Failed to download fasta files.")
             save_dico()
             # continue TODO warning change made
 
@@ -1041,33 +1022,33 @@ if True:
         save_dico()
         # continue TODO warninig change made
 
-    # if item_shuffled.fasta is not in listdir(rep), then TODO
+    # if SRA_shuffled.fasta is not in listdir(rep), then we mix both fasta
+    # files, which correspond to the two splits ends.
     if item + '_shuffled.fasta' not in listdir(rep):
 
-        print("   - On mélange les deux fichiers fasta ainsi téléchargés, "
-              "correspondant aux deux extrémités des fragments")
+        print("We mix both fasta files, which correspond to the two splits "
+              "ends.")
 
+        # TODO warning changed rep+item into rep
         for fic in ['_1', '_2']:
             system("sed -i 's/" + item + './' + item + fic + "./g' " +
-                   rep + item + fic + '.fasta')
+                   rep + fic + '.fasta')
 
-        system("cat " + rep + item + '_1.fasta ' + rep + item + '_2.fasta '
-                                        '> ' + rep + item + '_shuffled.fasta')
-        print("step 6")  # TODO only for dev
+        system("cat " + rep + '_1.fasta ' + rep + '_2.fasta '
+                                        '> ' + rep + '_shuffled.fasta')
 
-    # if 'dico.txt' is in the SRA directory, then TODO
-
+    # if 'dico.txt' is in the SRA directory, then we assign the SRA
+    # reference to dico_afr[item]['SRA']
     if 'dico.txt' in listdir(rep):
         dico_afr[item] = eval(open(rep + 'dico.txt').read())
-
+        """ TO WORK ON
         for cle in dico_afr[item]:
             if ('spoligo' not in cle) or ('spoligo' in cle and 'new' not
                             in cle) or ('spoligo' in cle and 'new' in cle):
-                print('   -', cle, ':\n    ', dico_afr[item][cle])
-
-        dico_afr[item]['SRA'] = item
+                print(f"{cle}: {dico_afr[item][cle]}")
+        """
+        dico_afr[item].setdefault('SRA', item)
         to_save = False # TODO not used
-        print("step 7")  # TODO only for dev
 
     '''
     for fic in ['_1', '_2']:
@@ -1123,16 +1104,16 @@ if True:
     # dico_afr
     if dico_afr[item]['couverture'] < 50 or 'low_cover.txt' in listdir(rep):
         del dico_afr[item]
-        print("       => trop faible couverture!")
+        print(f"The coverage is too low. {item} is being removed from the "
+              "database")
         save_dico()
-        system('touch '+rep+'low_cover.txt')
-        print("step 11")  # TODO only for dev
+        system('touch ' + rep + 'low_cover.txt')
 
     # ==== GOOD COVERAGE : POPULATING THE DATABASE ========================
 
-    # if a SRA in dico_afr has a high coverage
+    # If the SRA in dico_afr has a good coverage, then we proceed.
     else:
-        """ TEMPORARY FOR DEV SHUFFLE DOESN'T WORD
+        """ TEMPORARY FOR DEV SHUFFLE DOESN'T WORK
         if item+'.nal' not in listdir(rep) and item+'.nin' not in listdir(rep):
             print("   - On fait une BDD pour blast")
             # TODO warning change made in subprocess below
@@ -1143,14 +1124,18 @@ if True:
             print("step 12")  # TODO only for dev
         """
 
-        if True:#'Source' not in dico_afr[item]:
+        if 'Source' not in dico_afr[item]:
+            # We browse the list 'Origines', if the SRA is in the
+            # 'run accessions' section, then we assign the values for 'Source',
+            # 'Author', 'study accession number' and 'location' to
+            # dico_afr[item]
             for u in Origines:
                 if item in u['run accessions']:
-                    for uu in ['Source', 'Author', 'study accession number',
+                    for elt in ['Source', 'Author', 'study accession number',
                                'location']:
                         try:
-                            dico_afr[item][uu] = u[uu]
-                            print("   - "+uu+' : ' + dico_afr[item][uu])
+                            dico_afr[item][elt] = u[elt]
+                            print(f"   - {elt}: {dico_afr[item][elt]}")
                         except: # TODO specify except
                             pass
 
@@ -1158,18 +1143,19 @@ if True:
         # data from NCBI to update dico_afr
         if 'taxid' not in dico_afr[item]:
             dicobis = get_info(item)
-            for uu in dicobis:
-                dico_afr[item][uu] = dicobis[uu]
-                print("   - " + uu + ' : '+dico_afr[item][uu])
-            print("step 13")  # TODO only for dev
-        #
-        Brynildsrud = to_Brynildsrud()
+            for elt in dicobis:
+                dico_afr[item][elt] = dicobis[elt]
+                print(f"   - {elt}: {dico_afr[item][elt]}")
 
+        # We check if the SRA is in the dictionary created from
+        # 'data/Brynildsrud_Dataset_S1.xls'
+        Brynildsrud = to_Brynildsrud()
         if item in Brynildsrud:
-            for uu in Brynildsrud[item]:
-                dico_afr[item][uu] = Brynildsrud[item][uu]
-                print("   - "+uu+' : '+dico_afr[item][uu])
-            print("step 14")  # TODO only for dev
+            for elt in Brynildsrud[item]:
+                dico_afr[item][elt] = Brynildsrud[item][elt]
+                print(f"   - {elt}: {dico_afr[item][elt]}")
+        else:
+            print(f"{item} is not in the database Brynildsrud_Dataset_S1.xls")
 
         # if an item from dico_afr doesn't have data regarding spoligo,
         # then TODO
@@ -1306,7 +1292,7 @@ if True:
 
             lignee = sorted(set(lignee))
             dico_afr[item]['lineage_Coll'] = lignee
-            print("     Lignée (Coll) : "+", ".join(dico_afr[item][
+            print("     Lignée (Coll) : " + ", ".join(dico_afr[item][
                                                         'lineage_Coll']))
             save_dico()
             print("step 18")  # TODO only for dev
@@ -1488,10 +1474,16 @@ if True:
             save_dico()
     """
 
+    booleen_origines = False
     for k in Origines:
         if item in k['run accessions']:
+            booleen_origines = True
             if 'location' in k:
                 dico_afr[item]['location'] = k['location']
+    if booleen_origines:
+        print(f"{item} is in the database Origines")
+    else:
+        print(f"{item} is not in the database Origines")
 
     if item in dico_afr:
 
@@ -1516,12 +1508,19 @@ if True:
             with open('data/spoligos_me.csv', 'r') as f2:
                 f1.write(f2.read().replace('\u25A0', 'n').replace('\u25A1', 'o'))'''
 
-        if 'metagenome' in dico_afr[item]['name'] and item in listdir(REP+'sequences'):
-            print("    => Il s'agit d'un métagénome, on le supprime")
+        # If SRA is a metagenome, we delete it from dico_afr and delete the
+        # repository in 'REP/sequences'.
+        if 'metagenome' in dico_afr[item]['name'] and item in listdir('../REP/sequences'):
+            print(f"The item {item} is a metagenome. We delete it from the "
+                  "database.")
             del dico_afr[item]
             try:
-                system('rm -fr '+rep)
-            except:
-                print("     -> Pas trouvé")
+                system('rm -fr ' + rep)
+            except: # TODO precise exception
+                print("The file couldn't be found in the repository.")
 
     save_dico()
+
+    # We display information regarding the SRA
+    for cle in dico_afr[item]:
+        print(f"{cle}: {dico_afr[item][cle]}")
