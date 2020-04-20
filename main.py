@@ -926,7 +926,8 @@ mp.add_argument("sra", type=str, help="requires the reference of a SRA "
                                      "format ...")
 mp.add_argument("--collect", action='store_true', help="collects the reference of a SRA to ...")
 args = mp.parse_args()
-item = args.sra # item represent the RSA reference
+# item represents the RSA reference
+item = args.sra
 
 # We define the path for the file named as the SRA
 # item = 'SRR8368689' # TODO only for dev
@@ -946,7 +947,6 @@ if len(listdir('data/archives/')) > 0:
     nom_dico = compare_dico_archives()
     with open('data/archives/' + nom_dico, 'rb') as f:
         dico_afr = load(f)
-
 else:
     with open('data/dico_africanum.pkl', 'rb') as f:
         dico_afr = load(f)
@@ -961,10 +961,10 @@ if args.collect:
     #if item not in dico_afr: # and item[0] == 'S': #E pour ERR (pour
     # Christophe), à remplacer par S (SRR, pour Guislaine) TODO ???
     # TODO for prod only
-    print('\n\n' + item + ' ' + str(taille_dico_afr + 1) + "/" + str(len(
-        listdir('../REP/sequences/'))))
+    print('\n' + item + ' ' + str(taille_dico_afr + 1) + "/" + str(len(
+        listdir('../REP/sequences/'))) + '\n')
 
-    # ==== CHECKING IF ITEM IS ALREADY IN THE DATABASE  =======================
+    # ==== CHECKING IF THE SRA IS ALREADY IN THE DATABASE ===================
 
     #system('cp data/dico_africanum.pkl data/dico_africanum_old.pkl') # TODO ???
     # if the SRA is not in dico_afr, then we add it to dico_afr
@@ -1010,8 +1010,8 @@ if args.collect:
             save_dico()
             # continue TODO warning change made
 
-    # if item_1.fasta or item_2.fasta is not in the SRA directory, then delete
-    # the SRA from dico_afr
+    # if item_1.fasta or item_2.fasta is not in the SRA directory, then we
+    # delete the SRA from dico_afr
     if (item + '_1.fasta' not in listdir(rep) or item + '_2.fasta' not in
             listdir(rep)):  # or (item+'_1.fasta' not in listdir(rep) and
         # item+'_3.fasta' not in listdir(rep):
@@ -1065,7 +1065,7 @@ if args.collect:
     # ==== CHECKING THE PRESENCE OF KEYS IN dico_afr[item] =================
 
     # if the number of reads for the SRA is not in dico_afr or undefined,
-    # then we open 'nb.txt' and TODO
+    # then we open 'nb.txt' and TODO what is nb.txt
     if 'nb_reads' not in dico_afr[item] or dico_afr[item]['nb_reads'] == '':
         # TODO warning change made below
         system('cat ' + rep + "_shuffled.fasta | grep '>' | wc -l > "
@@ -1113,16 +1113,15 @@ if args.collect:
 
     # If the SRA in dico_afr has a good coverage, then we proceed.
     else:
-        """ TEMPORARY FOR DEV SHUFFLE DOESN'T WORK
+        # TODO TEMPORARY FOR DEV SHUFFLE DOESN'T WORK
         if item+'.nal' not in listdir(rep) and item+'.nin' not in listdir(rep):
             print("   - On fait une BDD pour blast")
             # TODO warning change made in subprocess below
-            completed = subprocess.run(['makeblastdb', '-in', rep
+            completed = subprocess.run(['makeblastdb', '-in', rep+item,
                                         '_shuffled.fasta', '-dbtype', 'nucl',
-                                        '-title', item, '-out', rep])
+                                        '-title', item, '-out', rep+item])
             assert completed.returncode == 0
             print("step 12")  # TODO only for dev
-        """
 
         if 'Source' not in dico_afr[item]:
             # We browse the list 'Origines', if the SRA is in the
@@ -1473,13 +1472,14 @@ if args.collect:
                 f.write('\n'.join(avant2))
             save_dico()
     """
-
+    # We check if the SRA is in the database Origines, and update the location
+    # of the SRA in dico_afr[item]
     booleen_origines = False
     for k in Origines:
         if item in k['run accessions']:
             booleen_origines = True
             if 'location' in k:
-                dico_afr[item]['location'] = k['location']
+                dico_afr[item]['location'] = k.get('location')
     if booleen_origines:
         print(f"{item} is in the database Origines")
     else:
