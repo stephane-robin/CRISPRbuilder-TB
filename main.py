@@ -489,14 +489,14 @@ def similaire(x, y):
 
 def add_spoligo_dico(type_sit, dico_afr, item, spol_sit):
     """
-    This function takes a spoligotype from dico_afr[item]['spoligo'],
-    where item is a SRR, and adds it to dico.africanum.pkl if the spoligotype
-    belongs to spol_sit.
+    When there's no 'SIT' reference for a SRA (represented by parameter item)
+    in dico_afr, or if this reference is undefined, we check in spol_sit a
+    corresponding spoligotype and update dico_afr with this spoligotype.
 
     Args:
         type_sit (str): either 'SIT' or 'SIT_silico'
         dico_afr (dict): dictionary used to update dico_africanum.pkl
-        item (str): a specific SRR from listdir(REP+'sequences/')
+        item (str): a specific SRA
         spol_sit (dict): dictionary containing spoligotypes and their
         corresponding sits
 
@@ -504,12 +504,10 @@ def add_spoligo_dico(type_sit, dico_afr, item, spol_sit):
         (void)
 
     Note:
-         We take a spoligotype from dico_afr[item]['spoligo'],where item is a
-         SRR, and if this spoligotype belongs to spol_sit, then we assign
-         its value in spol_sit to dico_afr[item]['spoligo']. If it doesn't
-         belong to spol_sit, then we assign 'X' to dico_afr[item]['spoligo'].
-         The treatment is the same with 'spoligo_vitro' instead of 'spoligo'.
-
+         We take a spoligotype from dico_afr[item]['spoligo'] and if this
+         spoligotype is in spol_sit, then we update dico_afr with the 'SIT'
+         reference. If this spoligotype is not in spol_sit, then we update
+         dico_afr with 'X' as a 'SIT' reference.
     """
     if type_sit == 'SIT':
         type_spoligo = 'spoligo'
@@ -524,7 +522,8 @@ def add_spoligo_dico(type_sit, dico_afr, item, spol_sit):
     else:
         dico_afr[item][type_sit] = 'X'
 
-    print(f"We're adding the {type_sit}: {dico_afr[item][type_sit]}")
+    print(f"We're adding the {type_sit}: {dico_afr[item][type_sit]} to the "
+          f"database")
     save_dico()
 
     # TODO test dev mode
@@ -643,10 +642,9 @@ def add_l6_dico(dico_afr, item, rep, i1_debut, i1_fin, i2_debut, i2_fin):
     with open('/tmp/snp.fasta', 'w') as f:
         f.write('>\n'+seq2)
 
-    # TODO warning address changed
     result = subprocess.run(["blastn", "-num_threads", "12", "-query",
                              "/tmp/snp.fasta", "-evalue", "1e-5", "-task",
-                             "blastn", "-db", rep, "-outfmt", "10 sseq"],
+                             "blastn", "-db", rep + item, "-outfmt", "10 sseq"],
                             stdout=subprocess.PIPE)
     formatted_results = result.stdout.decode('utf8').splitlines()
     nb_seq1 = len([u for u in formatted_results if seq1[i1_debut:i1_fin] in
@@ -728,10 +726,9 @@ def pgg_ni_dico(item, rep, h37Rv, pos, demi_longueur, i1_debut, i1_fin,
     with open('/tmp/snp.fasta', 'w') as f:
         f.write('>\n' + seq2)
 
-    # TODO warning address changed
     result = subprocess.run(["blastn", "-num_threads", "12", "-query",
                              "/tmp/snp.fasta", "-evalue", "1e-5", "-task",
-                             "blastn", "-db", rep, "-outfmt", "10 sseq"],
+                             "blastn", "-db", rep + item, "-outfmt", "10 sseq"],
                             stdout=subprocess.PIPE)
     formatted_results = result.stdout.decode('utf8').splitlines()
     # 19  24  15  20
@@ -811,18 +808,16 @@ def intro_spoligo(item, rep, type_spoligo):
     dico_afr[item][type_spoligo] = ''
     dico_afr[item][type_spoligo + '_new'] = ''
 
-    # TODO warning address changed
     completed = subprocess.run("blastn -num_threads " + nb + " -query data/"
                                + type_spoligo + mess1 + ".fasta -evalue 1e-6 "
-                                "-task blastn -db " + rep + " -outfmt "
+                                "-task blastn -db " + rep + item + " -outfmt "
                                 "'10 qseqid sseqid sstart send qlen length "
                                 "score evalue' -out /tmp/" + item + mess3 +
                                ".blast", shell=True)
     assert completed.returncode == 0
-    # TODO warning address changed
     completed = subprocess.run("blastn -num_threads " + nb + " -query data/"
                                + type_spoligo + "_new.fasta -evalue 1e-6 "
-                                "-task blastn -db " + rep + " -outfmt "
+                                "-task blastn -db " + rep + item + " -outfmt "
                                 "'10 qseqid sseqid sstart send qlen length "
                                 "score evalue' -out /tmp/" + item + mess3 +
                                "_new.blast", shell=True)
@@ -955,14 +950,13 @@ taille_dico_afr = len(dico_afr) # TODO make sure it's useful
 
 # If the option chose by the user is --collect, then we proceed
 if args.collect:
-# if True:
     print(f"We're collecting the data regarding {item}")
 
     #if item not in dico_afr: # and item[0] == 'S': #E pour ERR (pour
     # Christophe), à remplacer par S (SRR, pour Guislaine) TODO ???
     # TODO for prod only
-    print('\n' + item + ' ' + str(taille_dico_afr + 1) + "/" + str(len(
-        listdir('../REP/sequences/'))) + '\n')
+    #print('\n' + item + ' ' + str(taille_dico_afr + 1) + "/" + str(len(
+        #listdir('../REP/sequences/'))) + '\n')
 
     # ==== CHECKING IF THE SRA IS ALREADY IN THE DATABASE ===================
 
@@ -1022,32 +1016,31 @@ if args.collect:
         save_dico()
         # continue TODO warninig change made
 
-    # if SRA_shuffled.fasta is not in listdir(rep), then we mix both fasta
+    # if SRA_shuffled.fasta is not in the SRA directory, then we mix both fasta
     # files, which correspond to the two splits ends.
     if item + '_shuffled.fasta' not in listdir(rep):
 
         print("We mix both fasta files, which correspond to the two splits "
               "ends.")
 
-        # TODO warning changed rep+item into rep
         for fic in ['_1', '_2']:
             system("sed -i 's/" + item + './' + item + fic + "./g' " +
-                   rep + fic + '.fasta')
+                   rep + item + fic + '.fasta')
 
-        system("cat " + rep + '_1.fasta ' + rep + '_2.fasta '
-                                        '> ' + rep + '_shuffled.fasta')
+        system("cat " + rep + item + '_1.fasta ' + rep + item + '_2.fasta '
+                                        '> ' + rep + item + '_shuffled.fasta')
 
-    # if 'dico.txt' is in the SRA directory, then we assign the SRA
-    # reference to dico_afr[item]['SRA']
+    # if 'dico.txt' is in the SRA directory, then we assign the SRA reference
+    # to dico_afr
     if 'dico.txt' in listdir(rep):
         dico_afr[item] = eval(open(rep + 'dico.txt').read())
-        """ TO WORK ON
+        """ TO WORK ON IT IS PRINTING dico_afr MAYBE TOO EARLY
         for cle in dico_afr[item]:
             if ('spoligo' not in cle) or ('spoligo' in cle and 'new' not
                             in cle) or ('spoligo' in cle and 'new' in cle):
                 print(f"{cle}: {dico_afr[item][cle]}")
         """
-        dico_afr[item].setdefault('SRA', item)
+        dico_afr[item]['SRA'] = item
         to_save = False # TODO not used
 
     '''
@@ -1065,31 +1058,32 @@ if args.collect:
     # ==== CHECKING THE PRESENCE OF KEYS IN dico_afr[item] =================
 
     # if the number of reads for the SRA is not in dico_afr or undefined,
-    # then we open 'nb.txt' and TODO what is nb.txt
+    # then we open 'nb.txt' to evaluate this number
     if 'nb_reads' not in dico_afr[item] or dico_afr[item]['nb_reads'] == '':
-        # TODO warning change made below
-        system('cat ' + rep + "_shuffled.fasta | grep '>' | wc -l > "
+        system('cat ' + rep + item + "_shuffled.fasta | grep '>' | wc -l > "
                                 "/tmp/nb.txt")
         nb = eval(open('/tmp/nb.txt').read().split('\n')[0])
         #nb = open(rep+item+'_shuffled.fasta').read().count('>')
         print("The number of reads is: ", nb)
         dico_afr[item]['nb_reads'] = nb
 
-    # if the length of the reads for the SRA is not in dico_afr, then TODO
+    # if the length of the reads for the SRA is not in dico_afr, then we
+    # evaluate it from the SRA_shuffled.fasta file
     if 'len_reads' not in dico_afr[item]:
-        # TODO warning change made below
-        nb = len(''.join(open(rep + '_shuffled.fasta').read(
+        nb = len(''.join(open(rep + item + '_shuffled.fasta').read(
             10000).split('>')[1].split('\n')[1:]))
         print("The length of the reads is: ", nb)
         dico_afr[item]['len_reads'] = nb
 
-    # if the coverage of the reads for the SRA is not in dico_afr, then TODO
-    if 'couverture' not in dico_afr[item] or dico_afr[item]['couverture']\
-                == '':
-        dico_afr[item]['couverture'] = round(dico_afr[item]['nb_reads'] *
-                                    dico_afr[item]['len_reads'] / taille_gen, 2)
-        print("   - Couverture :", dico_afr[item]['couverture'])
-        print("step 10")  # TODO only for dev
+    # if the coverage of the reads for the SRA is not in dico_afr, then we
+    # evaluate it before assigning the result to dico_afr
+    if 'couverture' not in dico_afr[item] or dico_afr[item].get('couverture') \
+            == '':
+        dico_afr[item]['couverture'] = round(dico_afr[item].get('nb_reads') *
+                                    dico_afr[item].get('len_reads') /
+                                             taille_gen, 2)
+        print(f"We evaluate the coverage to be: "
+              f" {dico_afr[item].get('couverture')}")
 
     """
     # if the coverage is too low, we don't update dico_afr
@@ -1102,7 +1096,8 @@ if args.collect:
 
     # if a SRA in dico_afr has a low coverage, then delete this SRA from
     # dico_afr
-    if dico_afr[item]['couverture'] < 50 or 'low_cover.txt' in listdir(rep):
+    if dico_afr[item].get('couverture') < 50 or 'low_cover.txt' in listdir(
+            rep):
         del dico_afr[item]
         print(f"The coverage is too low. {item} is being removed from the "
               "database")
@@ -1113,15 +1108,12 @@ if args.collect:
 
     # If the SRA in dico_afr has a good coverage, then we proceed.
     else:
-        # TODO TEMPORARY FOR DEV SHUFFLE DOESN'T WORK
         if item+'.nal' not in listdir(rep) and item+'.nin' not in listdir(rep):
-            print("   - On fait une BDD pour blast")
-            # TODO warning change made in subprocess below
-            completed = subprocess.run(['makeblastdb', '-in', rep+item,
-                                        '_shuffled.fasta', '-dbtype', 'nucl',
-                                        '-title', item, '-out', rep+item])
+            print("We're creating a database for Blast")
+            completed = subprocess.run(
+                ['makeblastdb', '-in', rep + item + '_shuffled.fasta',
+                 '-dbtype', 'nucl', '-title', item, '-out', rep + item])
             assert completed.returncode == 0
-            print("step 12")  # TODO only for dev
 
         if 'Source' not in dico_afr[item]:
             # We browse the list 'Origines', if the SRA is in the
@@ -1156,7 +1148,7 @@ if args.collect:
         else:
             print(f"{item} is not in the database Brynildsrud_Dataset_S1.xls")
 
-        # if an item from dico_afr doesn't have data regarding spoligo,
+        # if 'spoligo' for the SRA is not in dico_afr or is undefined,
         # then TODO
         if 'spoligo' not in dico_afr[item] or dico_afr[item]['spoligo'] == '':
 
@@ -1184,21 +1176,18 @@ if args.collect:
 
                 system('mv /tmp/' + item + '_' + spol + '.blast ' + rep)
 
-            print("     Lignée : " + ", ".join(dico_afr[item][
+            print("Lineage Coll: " + ", ".join(dico_afr[item][
                                                         'lineage_Coll']))
             save_dico()
             print("     " + dico_afr[item]['spoligo'])
             print("     " + str(dico_afr[item]['spoligo_nb']))
             print("     " + dico_afr[item]['spoligo_new'])
             print("     " + str(dico_afr[item]['spoligo_new_nb']))
-            print("step 14")  # TODO only for dev
 
-        # if an item from dico_afr doesn't have data regarding
-        # spoligo_vitro, then TODO
+        # if 'spoligio_vitro' for the SRA is not in dico_afr, then TODO
         if 'spoligo_vitro' not in dico_afr[item]:
             intro_spoligo(item, rep, 'spoligo_vitro')
-            compt_spol_vitro(dico_afr, item, 'vitro', 'vitroOld',
-                                 'vitroBOld')
+            compt_spol_vitro(dico_afr, item, 'vitro', 'vitroOld', 'vitroBOld')
             compt_spol_vitro(dico_afr, item, 'vitro_new', 'vitro_new',
                                  'vitro_newB')
             print("     " + dico_afr[item]['spoligo_vitro'])
@@ -1208,24 +1197,25 @@ if args.collect:
             print("     " + str(dico_afr[item][
                                              'spoligo_vitro_new_nb']))
             save_dico()
-            print("step 15")  # TODO only for dev
+
+        # ==== UPDATING THE SPOLIGOTYPES IN DICO_AFR ========================
 
         # We transform data from 1_3882_SORTED.xls into a dictionary called
         # spol_sit containing spoligotypes with their corresponding SITs.
         spol_sit = to_spol_sit()
 
-        # if an item from dico_afr doesn't have any data regarding SIT,
-        # then TODO
+        # When there's no 'SIT' reference for a SRA in dico_afr, or if this
+        # reference is undefined, we check in spol_sit a corresponding
+        # spoligotype and update dico_afr with this spoligotype.
         if 'SIT' not in dico_afr[item] or dico_afr[item]['SIT'] == '':
             add_spoligo_dico('SIT', dico_afr, item, spol_sit)
-            print("step 16")  # TODO only for dev
 
-        # if an item from dico_afr doesn't have any data regarding
-        # SIT_silico, then TODO
+        # We proceed the same with the 'SIT_silico' reference as previously
+        # with the 'SIT' reference.
         if 'SIT_silico' not in dico_afr[item]:
             add_spoligo_dico('SIT_silico', dico_afr, item, spol_sit)
-            print("step 17")  # TODO only for dev
-        longueur_reads = 20
+
+        demi_longueur = 20
 
         # if an item from dico_afr doesn't have a Coll lineage, then TODO
         if 'lineage_Coll' not in dico_afr[item] or dico_afr[item]['lineage_Coll'] == '':
@@ -1240,8 +1230,8 @@ if args.collect:
                     pos = row[1].value-1
                     assert h37Rv[pos] == row[3].value.split('/')[0]
                 # print(row[0].value, row[1].value-1, row[3].value.split('/'))
-                    seq1 = h37Rv[pos - longueur_reads:pos +
-                                                          longueur_reads + 1]
+                    seq1 = h37Rv[pos - demi_longueur:pos +
+                                                          demi_longueur + 1]
 
                     if '*' not in row[0].value:
                         seq2 = seq1[:20] + row[3].value.split('/')[
@@ -1279,7 +1269,7 @@ if args.collect:
                 b=formated_results.count(seq1[:20]+row[3].value.split('/')[1]+seq1[21:])
                 c=formated_results.count(seq1)
                 d=formated_results.count(h37Rv[
-                pos-longueur_reads:pos+longueur_reads+1])
+                pos-demi_longueur:pos+demi_longueur+1])
                 if row[0].value.replace('lineage', '').replace('*','') not in ['4', '4.9']:
                     if nb_seq2*0.1>nb_seq1 or (nb_seq2>0 and nb_seq1==0):
                         lignee.append(row[0].value.replace('lineage', '').replace('*',''))
@@ -1307,11 +1297,11 @@ if args.collect:
             print("   - On ajoute la lignée selon les SNPs PGG")
             pos = 2154724 # TODO why this position ???
             cpt_lineage = 1
-            pgg_ni_dico(item, rep, h37Rv, pos, longueur_reads, 19, 24, 15,
+            pgg_ni_dico(item, rep, h37Rv, pos, demi_longueur, 19, 24, 15,
                             20, cpt_lineage, lineage)
 
             pos = 7585-1 # TODO why this position ???
-            pgg_ni_dico(item, rep, h37Rv, pos, longueur_reads, 20, 25, 16,
+            pgg_ni_dico(item, rep, h37Rv, pos, demi_longueur, 20, 25, 16,
                             21, cpt_lineage, lineage)
             dico_afr[item]['lineage_PGG_cp'] = lineage
 
@@ -1334,7 +1324,7 @@ if args.collect:
         # We extract data from Palittapon_SNPs.xlsx into the dictionary
         # Lignee_Pali containing positions, reads and lineage numbers.
         if 'lineage_Pali' not in dico_afr[item]:
-            Lignee_Pali = to_reads('data/Palittapon_SNPs.xlsx', longueur_reads)
+            Lignee_Pali = to_reads('data/Palittapon_SNPs.xlsx', demi_longueur)
             add_lineagePSS_dico('lineage_Pali', Lignee_Pali, dico_afr,
                                 item, rep)
             print("step 21")  # TODO only for dev
@@ -1345,7 +1335,7 @@ if args.collect:
         # Lineage_Shitikov containing positions, reads and lineage numbers.
         if 'lineage_Shitikov' not in dico_afr[item]:
             Lignee_Shitikov = to_reads('data/Shitikov_L2_SNPs.xlsx',
-                                       longueur_reads)
+                                       demi_longueur)
             add_lineagePSS_dico('lineage_Shitikov', Lignee_Shitikov,
                                         dico_afr, item, rep)
             print("step 22")  # TODO only for dev
@@ -1354,7 +1344,7 @@ if args.collect:
         # We extract data from Stucki_L4-SNPs.xlsx into the dictionary
         # Lignee_Stucki containing positions, reads and lineage numbers.
         if 'Lignee_Stucki' not in dico_afr[item]:
-            Lignee_Stucki = to_reads('data/Stucki_L4-SNPs.xlsx', longueur_reads)
+            Lignee_Stucki = to_reads('data/Stucki_L4-SNPs.xlsx', demi_longueur)
             add_lineagePSS_dico('Lignee_Stucki', Lignee_Stucki, dico_afr,
                                     item, rep)
             print("step 23")  # TODO only for dev
