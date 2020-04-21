@@ -526,9 +526,6 @@ def add_spoligo_dico(type_sit, dico_afr, item, spol_sit):
           f"database")
     save_dico()
 
-    # TODO test dev mode
-    print("add_spoligo_dico() achieved")
-
 
 def add_lineagePSS_dico(cle_lignee, dico_reads, dico_afr, item, rep):
     """
@@ -576,9 +573,9 @@ def add_lineagePSS_dico(cle_lignee, dico_reads, dico_afr, item, rep):
 
         with open('/tmp/snp.fasta', 'w') as f:
             f.write('>\n' + seq2)
-        # TODO warning change of address
+        # TODO warning change of address IMPORTANT
         cmd = "blastn -query /tmp/snp.fasta -num_threads 12 -evalue 1e-5 " \
-              "-task blastn -db " + rep + " -outfmt '10 sseq' -out " \
+              "-task blastn -db " + rep + item + " -outfmt '10 sseq' -out " \
               "/tmp/snp_" + nom_lignee + ".blast"
         system(cmd)
 
@@ -600,7 +597,6 @@ def add_lineagePSS_dico(cle_lignee, dico_reads, dico_afr, item, rep):
 
     lignee = [u for u in sorted(set(lignee))]
 
-    # TODO why would we add 4.10 that we also want to add ???
     if cle_lignee == 'Lignee_Stucki':
         if '4.10' in lignee:
             lignee.remove('4.10')
@@ -611,9 +607,6 @@ def add_lineagePSS_dico(cle_lignee, dico_reads, dico_afr, item, rep):
     print("     Lignée (" + nom_lignee + ") : " + ", ".join(dico_afr[item][
                                                                 cle_lignee]))
     save_dico()
-
-    # TODO test dev mode
-    print("add_lineagePSS_dico() achieved")
 
 
 def add_l6_dico(dico_afr, item, rep, i1_debut, i1_fin, i2_debut, i2_fin):
@@ -640,7 +633,7 @@ def add_l6_dico(dico_afr, item, rep, i1_debut, i1_fin, i2_debut, i2_fin):
     seq2 = "ACGTCGATGGTCGCGACTTCCGCGGCATAGTCGAA"
 
     with open('/tmp/snp.fasta', 'w') as f:
-        f.write('>\n'+seq2)
+        f.write('>\n' + seq2)
 
     result = subprocess.run(["blastn", "-num_threads", "12", "-query",
                              "/tmp/snp.fasta", "-evalue", "1e-5", "-task",
@@ -668,9 +661,12 @@ def add_l6_dico(dico_afr, item, rep, i1_debut, i1_fin, i2_debut, i2_fin):
     print("add_l6_dico() achieved")
 
 
-def pgg_ni_dico(item, rep, h37Rv, pos, demi_longueur, i1_debut, i1_fin,
-                i2_debut, i2_fin, cpt_lineage, lineage):
+def pgg_ni_dico(item, rep, h37Rv, pos, demi_longueur, fin_prefixe, fin_suffixe,
+                debut_prefixe, debut_suffixe, cpt_lineage, lineage):
     """
+    This function selects a read around the position pos (using demi_longueur),
+    transforms the read before blasting it. The result is analysed to update
+    the lineage.
 
     Args:
         item (str): a specific SRR from listdir('REP/sequences/')
@@ -678,12 +674,11 @@ def pgg_ni_dico(item, rep, h37Rv, pos, demi_longueur, i1_debut, i1_fin,
         h37Rv (str): genome sequence of the strain H37Rv
         pos (int): starting position to read the genome
         demi_longueur (int): represents half the length of the reads
-        i1_debut (int): selected beginning index of read 1
-        i1_fin (int): selectted end index of read 1
-        i2_debut (int): selected beginning index of read 2
-        i2_fin (int): selected end index of read 2
-        nb (int): temporary number to add to lineage
-        lineage ():
+        debut_prefixe (int): beginning index of the 1st part of each read
+        fin_prefixe (int): final index of the 1st part of each read
+        debut_suffixe (int): beginning index of the 2nd part of each read
+        fin_suffixe (int): final index of the 2nd part of each read
+        lineage (list): possible lineage to update
 
     Returns:
         (void)
@@ -692,10 +687,10 @@ def pgg_ni_dico(item, rep, h37Rv, pos, demi_longueur, i1_debut, i1_fin,
         - we select a read 'seq1' around a specific position 'pos' and define
           its length by twice 'demi_longueur',
         - from the read 'seq1', we define a read 'seq2' which is 'seq1' with
-          a nitrogenous base replaced by 'A' at the 'i1_debut' position,
+          a nitrogenous base replaced by 'A' at the 'debut_suffixe-1' position,
         - we serialize the read 'seq2' into 'snp.fasta' and blast the file
           obtained,
-        - the formatted result
+        - the formatted result is analysed to update the lineage.
 
     Examples:
         In this example, we decide to change in position 323 the nitrogenous
@@ -708,20 +703,24 @@ def pgg_ni_dico(item, rep, h37Rv, pos, demi_longueur, i1_debut, i1_fin,
 
         Both if conditions revolve around A or h[323].
 
-        The 1st condition checks if the following strings are in the
+        nb_seq1 represents the 2 following strings which should be in the
         formatted results
-                            h[323] ... h[327] and
-                 h[319] ... h[323]
+                                    h[323] ... h[327]
+                         h[319] ... h[323]
 
-        The 2nd condition checks if the following strings are in the
+        nb_seq2 represents the 2 following strings which should be in the
         formatted results
-                            A ... h[327] and
-                 h[319] ... A
+                                       A ... h[327]
+                            h[319] ... A
+
+        which is formally interpreted by
+                                       A  debut_suffixe ... fin_suffixe
+        debut_prefixe ... fin_suffixe  A
 
     """
     cpt_lineage += 1
     seq1 = h37Rv[pos - demi_longueur:pos + demi_longueur + 1]
-    seq2 = seq1[:i1_debut] + 'A' + seq1[i2_fin:]
+    seq2 = seq1[:fin_prefixe] + 'A' + seq1[debut_suffixe:]
 
     with open('/tmp/snp.fasta', 'w') as f:
         f.write('>\n' + seq2)
@@ -731,13 +730,12 @@ def pgg_ni_dico(item, rep, h37Rv, pos, demi_longueur, i1_debut, i1_fin,
                              "blastn", "-db", rep + item, "-outfmt", "10 sseq"],
                             stdout=subprocess.PIPE)
     formatted_results = result.stdout.decode('utf8').splitlines()
-    # 19  24  15  20
-    nb_seq1 = len([u for u in formatted_results if seq1[i1_debut:i1_fin] in
-                   u]) + len([u for u in formatted_results if seq1[
-                                                        i2_debut:i2_fin] in u])
-    nb_seq2 = len([u for u in formatted_results if seq2[i1_debut:i1_fin] in
-                   u]) + len([u for u in formatted_results if seq2[
-                                                        i2_debut:i2_fin] in u])
+    nb_seq1 = len([u for u in formatted_results if seq1[fin_prefixe:fin_suffixe]
+                in u]) + len([u for u in formatted_results if seq1[
+                                            debut_prefixe:debut_suffixe] in u])
+    nb_seq2 = len([u for u in formatted_results if seq2[fin_prefixe:fin_suffixe]
+                in u]) + len([u for u in formatted_results if seq2[
+                                            debut_prefixe:debut_suffixe] in u])
 
     if nb_seq1 > nb_seq2:
         lineage.append(cpt_lineage)
@@ -745,9 +743,7 @@ def pgg_ni_dico(item, rep, h37Rv, pos, demi_longueur, i1_debut, i1_fin,
         lineage.append('1')
     else:
         lineage.append('X')
-
-    # TODO test dev mode
-    print("pgg_ni_dico() achieved")
+    print("The lineage is being updated.")
 
 
 def compt_spol_vitro(dico_afr, item, type_blast, nom_espaceur, nomB_espaceur):
@@ -1291,20 +1287,22 @@ if args.collect:
             add_l6_dico(dico_afr, item, rep, 13, 18, 17, 22)
             print("step 19")  # TODO only for dev
 
-        # if an item in dico_afr doesn't have a PGG lineage, then TODO
+        # If dico_afr has no information about 'lineage_PGG' regarding the
+        # SRA, then we select a read around position 2154724 before blasting
+        # it, another one around position 7585-1 before blasting it and update
+        # the lineage in dico_afr[SRA].
         if 'lineage_PGG' not in dico_afr[item]:
             lineage = []
-            print("   - On ajoute la lignée selon les SNPs PGG")
-            pos = 2154724 # TODO why this position ???
+            print("We're adding the lineage according to the SNPs PGG")
+            pos = 2154724
             cpt_lineage = 1
             pgg_ni_dico(item, rep, h37Rv, pos, demi_longueur, 19, 24, 15,
                             20, cpt_lineage, lineage)
-
-            pos = 7585-1 # TODO why this position ???
+            pos = 7585-1
             pgg_ni_dico(item, rep, h37Rv, pos, demi_longueur, 20, 25, 16,
                             21, cpt_lineage, lineage)
             dico_afr[item]['lineage_PGG_cp'] = lineage
-
+            # TODO IMPORTANT work on the initialization of lineage
             if lineage == ['1', '1']:
                 dico_afr[item]['lineage_PGG'] = '1'
             elif lineage in [['1', '2'], ['2', '1']]:
@@ -1314,11 +1312,9 @@ if args.collect:
             else:
                 dico_afr[item]['lineage_PGG'] = 'X'
 
-            print("     Lignée (PGG) : " + dico_afr[item][
-                    'lineage_PGG'] + ' (' +", ".join(dico_afr[item][
-                    'lineage_PGG_cp']) + ')')
+            print("Lineage (PGG): " + dico_afr[item]['lineage_PGG'] + ' (' +
+                  ", ".join(dico_afr[item]['lineage_PGG_cp']) + ')')
             save_dico()
-            print("step 20")  # TODO only for dev
 
         # if an item from dico_afr doesn't have a Pali lineage, then TODO
         # We extract data from Palittapon_SNPs.xlsx into the dictionary
