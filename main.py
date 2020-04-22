@@ -152,53 +152,24 @@ Origines = [
 # =========
 
 
-def to_spol_sit():
-    """
-    This function extracts data from 'data/1_3882_SORTED.xls' containing
-    spoligotype information, to put them into a dictionary called spol_sit
-    associating spoligotypes with their corresponding SIT (Spoligo
-    International Type).
-
-    Returns:
-        spol_sit (dict): with the following structure
-        {
-            a_spoligotype: a_SIT,
-            ...
-        }
-
-    Note:
-        - we put data from 'data/1_3882_SORTED.xls' into a sheet called ws,
-          where we set column 1 with index 0,
-        - we assign the successive elements of the 'Spoligotype Binary'
-          column from ws as keys and the successive elements of the 'SIT'
-          column from ws as values to the dictionary spol_sit (after
-          replacing 'n' into a black square and 'o' into a white square).
-
-    """
-    wb = open_workbook('data/1_3882_SORTED.xls')
-    ws = wb.sheet_by_index(0)
-    spol_sit = {}
-
-    for row in range(1, ws.nrows):
-        spol, sit = ws.cell_value(row, 2).replace('n', '\u25A0').replace('o',
-                            '\u25A1'), ws.cell_value(row, 8)
-        spol_sit[spol] = sit
-
-    return spol_sit
-
-
 def to_Brynildsrud():
     """
-    This function extracts data from 'data/Brynildsrud_Dataset_S1.xls'
-    representing the Brynidsrud lineage and put them in a dictionary called
-    Brynildsrud.
+    This function parses information from 'data/Brynildsrud_Dataset_S1.xls'
+    into a dictionary called Brynildsrud.
 
     Returns:
-        Brynildsrud (dict):
-
-    Note:
-
-
+        Brynildsrud (dict): which structure is
+        {
+            a_SRA:
+                {
+                    'Source': ...,
+                    'Author': ...,
+                    'study accession number': ...,
+                    'location': ...,
+                    'date': ...
+                },
+            ...
+        }
     """
     wwb = open_workbook('data/Brynildsrud_Dataset_S1.xls')
     wws = wwb.sheet_by_index(0)
@@ -305,7 +276,10 @@ def to_reads(xlsx_lignee, demi_longueur):
 
     for row in fiche.iter_rows(min_row=2):
         if row[1].value != None:
-            lignee = row[0].value.lstrip('lineage').replace('*', '')
+            if xlsx_lignee == 'data/Palittapon_SNPs.xlsx':
+                lignee = row[0].value.lstrip('lineage')
+            else:
+                lignee = row[0].value.lstrip('lineage').replace('*', '')
             pos0 = row[1].value
             pos = pos0 - 1
             source = row[3].value[0]
@@ -315,9 +289,7 @@ def to_reads(xlsx_lignee, demi_longueur):
             seq2 = seq1[:demi_longueur] + cible + seq1[demi_longueur + 1:]
             Lignee_renvoyee[pos] = (seq1, seq2, lignee)
 
-    # TODO test dev mode
-    print("to_reads() achieved")
-
+    print("We have selected specific reads to compare with different lineages")
     return Lignee_renvoyee
 
 
@@ -487,6 +459,40 @@ def similaire(x, y):
     return alignments[0][2] / alignments[0][4]
 
 
+def to_spol_sit():
+    """
+    This function creates a dictionary called spol_sit associating spoligotypes
+    with their corresponding SIT (Spoligo International Type) in accordance with
+     the file 'data/1_3882_SORTED.xls'.
+
+    Returns:
+        spol_sit (dict): with the following structure
+        {
+            a_spoligotype: a_SIT,
+            ...
+        }
+
+    Note:
+        - we extract data from 'data/1_3882_SORTED.xls' into a sheet called ws,
+          where we set column 1 with index 0,
+        - we assign the successive elements of the 'Spoligotype Binary'
+          column from ws as keys and the successive elements of the 'SIT'
+          column from ws as values to the dictionary spol_sit (after
+          replacing 'n' into a black square and 'o' into a white square).
+
+    """
+    wb = open_workbook('data/1_3882_SORTED.xls')
+    ws = wb.sheet_by_index(0)
+    spol_sit = {}
+
+    for row in range(1, ws.nrows):
+        spol, sit = ws.cell_value(row, 2).replace('n', '\u25A0').replace('o',
+                            '\u25A1'), ws.cell_value(row, 8)
+        spol_sit[spol] = sit
+
+    return spol_sit
+
+
 def add_spoligo_dico(type_sit, dico_afr, item, spol_sit):
     """
     When there's no 'SIT' reference for a SRA (represented by parameter item)
@@ -529,11 +535,12 @@ def add_spoligo_dico(type_sit, dico_afr, item, spol_sit):
 
 def add_lineagePSS_dico(cle_lignee, dico_reads, dico_afr, item, rep):
     """
-    For lineages Pali, Shitikov and Stucki, this function
+    This function updates 'lineage_Pali', 'lineage-Shitikov' or 'Lignee_Stucki'
+    in dico_afr for the SRA.
 
     Args:
         cle_lignee (str): 'Lineage_Pali' or 'Lineage_Shitikov' or
-        'Lineage_Stucki'
+        'Lignee_Stucki'
         dico_reads (dict): dictionary of reads resulting from to_reads()
         dico_afr (dict): dictionary used to update dico_africanum.pkl
         item (str): a specific SRR from listdir(REP+'sequences/')
@@ -573,7 +580,7 @@ def add_lineagePSS_dico(cle_lignee, dico_reads, dico_afr, item, rep):
 
         with open('/tmp/snp.fasta', 'w') as f:
             f.write('>\n' + seq2)
-        # TODO warning change of address IMPORTANT
+
         cmd = "blastn -query /tmp/snp.fasta -num_threads 12 -evalue 1e-5 " \
               "-task blastn -db " + rep + item + " -outfmt '10 sseq' -out " \
               "/tmp/snp_" + nom_lignee + ".blast"
@@ -604,61 +611,32 @@ def add_lineagePSS_dico(cle_lignee, dico_reads, dico_afr, item, rep):
             lignee.append('4.10')
 
     dico_afr[item][cle_lignee] = lignee
-    print("     Lignée (" + nom_lignee + ") : " + ", ".join(dico_afr[item][
+    print("Lineage (" + nom_lignee + ") : " + ", ".join(dico_afr[item][
                                                                 cle_lignee]))
     save_dico()
 
 
-def add_l6_dico(dico_afr, item, rep, i1_debut, i1_fin, i2_debut, i2_fin):
+def to_formatted_results(seq, rep, item):
     """
 
     Args:
-        dico_afr (dict): dictionary used to update dico_africanum.pkl
-        item (str): a specific SRR from listdir(REP+'sequences/')
-        rep (str): path to a folder representing a specific SRR
-        i1_debut (int): selected beginning index of read 1
-        i1_fin (int): selectted end index of read 1
-        i2_debut (int): selected beginning index of read 2
-        i2_fin (int): selected end index of read 2
+        seq (str):
+        rep (str):
+        item (str):
 
     Returns:
-        (void)
-
-    Note:
-
+        (str): formatted result
 
     """
-    print("We're adding the lineage according to the SNPs L6+animal")
-    seq1 = 'ACGTCGATGGTCGCGACCTCCGCGGCATAGTCGAA'
-    seq2 = "ACGTCGATGGTCGCGACTTCCGCGGCATAGTCGAA"
-
     with open('/tmp/snp.fasta', 'w') as f:
-        f.write('>\n' + seq2)
+        f.write('>\n' + seq)
 
     result = subprocess.run(["blastn", "-num_threads", "12", "-query",
                              "/tmp/snp.fasta", "-evalue", "1e-5", "-task",
                              "blastn", "-db", rep + item, "-outfmt", "10 sseq"],
                             stdout=subprocess.PIPE)
-    formatted_results = result.stdout.decode('utf8').splitlines()
-    nb_seq1 = len([u for u in formatted_results if seq1[i1_debut:i1_fin] in
-                   u]) + len([u for u in formatted_results if  seq1[
-                                            i2_debut:i2_fin] in u])
-    nb_seq2 = len([u for u in formatted_results if seq2[i1_debut:i1_fin] in
-                   u]) + len([u for u in formatted_results if  seq2[
-                                            i2_debut:i2_fin] in u])
+    return result.stdout.decode('utf8').splitlines()
 
-    if nb_seq1 > nb_seq2:
-        dico_afr[item]['lineage_L6+animal'] = '1'
-    elif nb_seq2 > nb_seq1:
-        dico_afr[item]['lineage_L6+animal'] = '2'
-    else:
-        dico_afr[item]['lineage_L6+animal'] = 'X'
-
-    print(f"Lineage (L6+animal): {dico_afr[item]['lineage_L6+animal']}")
-    save_dico()
-
-    # TODO test dev mode
-    print("add_l6_dico() achieved")
 
 
 def pgg_ni_dico(item, rep, h37Rv, pos, demi_longueur, fin_prefixe, fin_suffixe,
@@ -722,20 +700,13 @@ def pgg_ni_dico(item, rep, h37Rv, pos, demi_longueur, fin_prefixe, fin_suffixe,
     seq1 = h37Rv[pos - demi_longueur:pos + demi_longueur + 1]
     seq2 = seq1[:fin_prefixe] + 'A' + seq1[debut_suffixe:]
 
-    with open('/tmp/snp.fasta', 'w') as f:
-        f.write('>\n' + seq2)
+    formatted_results = to_formatted_results(seq2, rep, item)
 
-    result = subprocess.run(["blastn", "-num_threads", "12", "-query",
-                             "/tmp/snp.fasta", "-evalue", "1e-5", "-task",
-                             "blastn", "-db", rep + item, "-outfmt", "10 sseq"],
-                            stdout=subprocess.PIPE)
-    formatted_results = result.stdout.decode('utf8').splitlines()
-    nb_seq1 = len([u for u in formatted_results if seq1[fin_prefixe:fin_suffixe]
-                in u]) + len([u for u in formatted_results if seq1[
-                                            debut_prefixe:debut_suffixe] in u])
-    nb_seq2 = len([u for u in formatted_results if seq2[fin_prefixe:fin_suffixe]
-                in u]) + len([u for u in formatted_results if seq2[
-                                            debut_prefixe:debut_suffixe] in u])
+    nb_seq1 = to_nb_seq(seq1, formatted_results,debut_prefixe, fin_prefixe,
+                        debut_suffixe, fin_suffixe)
+
+    nb_seq2 = to_nb_seq(seq2, formatted_results,debut_prefixe, fin_prefixe,
+                        debut_suffixe, fin_suffixe)
 
     if nb_seq1 > nb_seq2:
         lineage.append(cpt_lineage)
@@ -827,18 +798,14 @@ def intro_spoligo(item, rep, type_spoligo):
 def save_dico(fic = 'data/dico_africanum.pkl'):
     """
     This function serializes dico_afr to the file dico_africanum.pkl, and to the
-    archive data/archives/dico_afr-<date>.pkl
+    archive data/archives/dico_afr-<date>.pkl.
     dico_afr and dico_africanum.pkl have the same structure which is
-    which structure is :
     {
         a_SRA:
             {
                 'nb_reads':
                 'len_reads':
                 'couverture':
-                'Source':
-                'Author':
-                'study accession number':
                 'location':
                 'date':
                 'SRA':
@@ -846,8 +813,8 @@ def save_dico(fic = 'data/dico_africanum.pkl'):
                 'strain':
                 'taxid':
                 'name':
-                'bioproject':
                 'study':
+                'bioproject':
                 'spoligo':
                 'spoligo_new':
                 'spoligo_nb':
@@ -865,7 +832,15 @@ def save_dico(fic = 'data/dico_africanum.pkl'):
                 'lineage_Pali':
                 'lineage_Shitikov':
                 'lignee_Stucki':
+                'locus_resume':
+                'locus_detail':
+                'locus_position':
+                'locus_seq':
                 'REP':
+                ???
+                'Source':
+                'Author':
+                'study accession number':
             },
             ...
     }
@@ -881,6 +856,8 @@ def save_dico(fic = 'data/dico_africanum.pkl'):
     with open('data/archives/dico_afr-'+now.strftime("%Y_%m_%d-%H")+'.pkl',
               'wb') as f:
         dump(dico_afr, f)
+
+    print("dico:africanum and its archive have been updated.")
 
 
 def compare_dico_archives():
@@ -899,6 +876,24 @@ def compare_dico_archives():
             last_dico = u
 
     return last_dico
+
+
+def to_nb_seq(seq, chaine, debut_prefixe, fin_prefixe, debut_suffixe,
+              fin_suffixe):
+    """
+
+    Args:
+        seq (str):
+        debut_prefixe (int):
+        fin_prefixe (int):
+        debut_suffixe (int):
+        fin_suffixe (int):
+
+    Returns:
+        nb_seq (int):
+    """
+    return len([u for u in chaine if seq[fin_prefixe:fin_suffixe] in u]) + \
+             len([u for u in chaine if seq[debut_prefixe:debut_suffixe] in u])
 
 
 # ==============
@@ -1134,13 +1129,16 @@ if args.collect:
                 dico_afr[item][elt] = dicobis[elt]
                 print(f"   - {elt}: {dico_afr[item][elt]}")
 
-        # We check if the SRA is in the dictionary created from
-        # 'data/Brynildsrud_Dataset_S1.xls'
+        # ==== PRESENCE IN BRYNILDSRUD DATASET
+
+        # We check the presence of the SRA in the file
+        # 'data/Brynildsrud_Dataset_S1.xls' to update dico_afr
         Brynildsrud = to_Brynildsrud()
         if item in Brynildsrud:
             for elt in Brynildsrud[item]:
                 dico_afr[item][elt] = Brynildsrud[item][elt]
-                print(f"   - {elt}: {dico_afr[item][elt]}")
+                print(f"{item} is in the database Brynildsrud_Dataset_S1."
+                      f"xls\n     - {elt}: {dico_afr[item][elt]}")
         else:
             print(f"{item} is not in the database Brynildsrud_Dataset_S1.xls")
 
@@ -1180,7 +1178,8 @@ if args.collect:
             print("     " + dico_afr[item]['spoligo_new'])
             print("     " + str(dico_afr[item]['spoligo_new_nb']))
 
-        # if 'spoligio_vitro' for the SRA is not in dico_afr, then TODO
+        # If 'spoligio_vitro' is undefined for the SRA in dico_afr,
+        # then TODO
         if 'spoligo_vitro' not in dico_afr[item]:
             intro_spoligo(item, rep, 'spoligo_vitro')
             compt_spol_vitro(dico_afr, item, 'vitro', 'vitroOld', 'vitroBOld')
@@ -1213,9 +1212,13 @@ if args.collect:
 
         demi_longueur = 20
 
-        # if an item from dico_afr doesn't have a Coll lineage, then TODO
+        # ==== TESTING LINEAGE COLL =======================================
+
+        # If 'lineage_Coll' is undefined for the SRA in dico_afr, we parse a
+        # file containing Coll lineage SNPs to compare with chosen reads and
+        # update dico_afr.
         if 'lineage_Coll' not in dico_afr[item] or dico_afr[item]['lineage_Coll'] == '':
-            print("   - On ajoute la lignée selon les SNPs Coll")
+            print("We're adding the lineage according to the SNPs Coll")
             lignee = []
             wb = load_workbook(filename='data/Coll_62_SNPs.xlsx',
                                    read_only=True)
@@ -1226,8 +1229,7 @@ if args.collect:
                     pos = row[1].value-1
                     assert h37Rv[pos] == row[3].value.split('/')[0]
                 # print(row[0].value, row[1].value-1, row[3].value.split('/'))
-                    seq1 = h37Rv[pos - demi_longueur:pos +
-                                                          demi_longueur + 1]
+                    seq1 = h37Rv[pos - demi_longueur:pos + demi_longueur + 1]
 
                     if '*' not in row[0].value:
                         seq2 = seq1[:20] + row[3].value.split('/')[
@@ -1248,13 +1250,11 @@ if args.collect:
                             'utf8').splitlines()
                     #nb_seq1 = formated_results.count(seq1)
                     #nb_seq2 = formated_results.count(seq2)
-                    nb_seq1 = len([u for u in formatted_results if seq1[
-                                20:25] in u]) + len([u for u in
-                                formatted_results if seq1[16:21] in u])
+                    nb_seq1 = to_nb_seq(seq1, formatted_results, 16, 20, 21, 25)
+
                     #nb_seq2 = formated_results.count(seq2)
-                    nb_seq2 = len([u for u in formatted_results if seq2[
-                            20:25] in u]) + len([u for u in
-                            formatted_results if seq2[16:21] in u])
+                    nb_seq2 = to_nb_seq(seq2, formatted_results, 16, 20, 21, 25)
+
                     #print(row[0].value.replace('lineage', '').replace('*',''),nb_seq1,nb_seq2)
 
                     if nb_seq2 > nb_seq1:
@@ -1277,15 +1277,32 @@ if args.collect:
 
             lignee = sorted(set(lignee))
             dico_afr[item]['lineage_Coll'] = lignee
-            print("     Lignée (Coll) : " + ", ".join(dico_afr[item][
+            print("Lineage (Coll) : " + ", ".join(dico_afr[item][
                                                         'lineage_Coll']))
             save_dico()
-            print("step 18")  # TODO only for dev
+
+        # ==== TESTING LINEAGE L6+ANIMAL =================================
 
         # if an item in dico_afr doesn't have a L6+animal lineage, then TODO
         if 'lineage_L6+animal' not in dico_afr[item]:
-            add_l6_dico(dico_afr, item, rep, 13, 18, 17, 22)
-            print("step 19")  # TODO only for dev
+            print("We're adding the lineage according to the SNPs L6+animal")
+            seq1 = 'ACGTCGATGGTCGCGACCTCCGCGGCATAGTCGAA'
+            seq2 = "ACGTCGATGGTCGCGACTTCCGCGGCATAGTCGAA"
+            formatted_results = to_formatted_results(seq2, rep, item)
+            nb_seq1 = to_nb_seq(seq1, formatted_results, 13, 17, 18, 22)
+            nb_seq2 = to_nb_seq(seq2, formatted_results, 13, 17, 18, 22)
+
+            if nb_seq1 > nb_seq2:
+                dico_afr[item]['lineage_L6+animal'] = '1'
+            elif nb_seq2 > nb_seq1:
+                dico_afr[item]['lineage_L6+animal'] = '2'
+            else:
+                dico_afr[item]['lineage_L6+animal'] = 'X'
+
+            print(f"Lineage (L6+animal): {dico_afr[item]['lineage_L6+animal']}")
+            save_dico()
+
+        # ==== TESTING PGG LINEAGE ======================================
 
         # If dico_afr has no information about 'lineage_PGG' regarding the
         # SRA, then we select a read around position 2154724 before blasting
@@ -1315,6 +1332,8 @@ if args.collect:
             print("Lineage (PGG): " + dico_afr[item]['lineage_PGG'] + ' (' +
                   ", ".join(dico_afr[item]['lineage_PGG_cp']) + ')')
             save_dico()
+
+        # ==== TESTING PALI LINEAGE =============================
 
         # if an item from dico_afr doesn't have a Pali lineage, then TODO
         # We extract data from Palittapon_SNPs.xlsx into the dictionary
