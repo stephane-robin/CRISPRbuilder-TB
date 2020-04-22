@@ -533,89 +533,6 @@ def add_spoligo_dico(type_sit, dico_afr, item, spol_sit):
     save_dico()
 
 
-def add_lineagePSS_dico(cle_lignee, dico_reads, dico_afr, item, rep):
-    """
-    This function updates 'lineage_Pali', 'lineage-Shitikov' or 'Lignee_Stucki'
-    in dico_afr for the SRA.
-
-    Args:
-        cle_lignee (str): 'Lineage_Pali' or 'Lineage_Shitikov' or
-        'Lignee_Stucki'
-        dico_reads (dict): dictionary of reads resulting from to_reads()
-        dico_afr (dict): dictionary used to update dico_africanum.pkl
-        item (str): a specific SRR from listdir(REP+'sequences/')
-        rep (str): path to a folder representing a specific SRR
-
-    Returns:
-        (void)
-
-    Note:
-        - we browse the dictionary of a lineage Pali, Shitikov or Stucki,
-          and pick 2 reads (seq1 and seq2) per value of the dictionary,
-        - we open the 'snp.fasta' file and write on it the 2nd read from before,
-        - we blast the SRA from 'snp.fasta' in relation to the 'item',
-        - we keep only the results that contain selected parts of the reads
-          seq1 and seq2, and put them in sequences,
-        - we assign the length of those sequences to nb_seq1 and nb_seq2,
-        - we create an empty list called 'lignee'
-        - if nb_seq2 is greater than nb_seq1, then we add the 3rd read from
-          the initial dictionary to 'lignee',
-        - we sort the elements of 'lignee' and add them to dico_afr[item][
-          'lineage...']
-    """
-    lignee = []
-    cpt = 1
-
-    if cle_lignee == 'lineage_Pali':
-        nom_lignee = "Pali"
-    if cle_lignee == 'lineage_Shitikov':
-        nom_lignee = "Shitikov"
-    if cle_lignee == 'Lignee_Stucki':
-        nom_lignee = "Stucki"
-
-    print(f"We're adding the lineage according to the SNPs {nom_lignee}")
-
-    for item2, pos0 in enumerate(dico_reads):
-        seq1, seq2 = dico_reads[pos0][:2]
-
-        with open('/tmp/snp.fasta', 'w') as f:
-            f.write('>\n' + seq2)
-
-        cmd = "blastn -query /tmp/snp.fasta -num_threads 12 -evalue 1e-5 " \
-              "-task blastn -db " + rep + item + " -outfmt '10 sseq' -out " \
-              "/tmp/snp_" + nom_lignee + ".blast"
-        system(cmd)
-
-        with open("/tmp/snp_"+ nom_lignee +".blast") as f:
-            formatted_results = f.read().splitlines()
-        # nb_seq1 = formatted_results.count(seq1) # TODO ???
-        # nb_seq2 = formatted_results.count(seq2)
-
-        nb_seq1 = len([u for u in formatted_results if seq1[20:25] in u]) + len(
-            [u for u in formatted_results if seq1[16:21] in u])
-        # nb_seq2 = formatted_results.count(seq2)
-
-        nb_seq2 = len([u for u in formatted_results if seq2[20:25] in u]) + len(
-            [u for u in formatted_results if seq2[16:21] in u])
-
-        if nb_seq2 > nb_seq1:  # or (nb_seq2>0 and nb_seq1==0): # TODO ???
-            cpt += 1 # TODO when do we use cpt ??? what's its purpose ???
-            lignee.append(dico_reads[pos0][2])
-
-    lignee = [u for u in sorted(set(lignee))]
-
-    if cle_lignee == 'Lignee_Stucki':
-        if '4.10' in lignee:
-            lignee.remove('4.10')
-        else:
-            lignee.append('4.10')
-
-    dico_afr[item][cle_lignee] = lignee
-    print("Lineage (" + nom_lignee + ") : " + ", ".join(dico_afr[item][
-                                                                cle_lignee]))
-    save_dico()
-
-
 def to_formatted_results(seq, rep, item):
     """
 
@@ -636,85 +553,6 @@ def to_formatted_results(seq, rep, item):
                              "blastn", "-db", rep + item, "-outfmt", "10 sseq"],
                             stdout=subprocess.PIPE)
     return result.stdout.decode('utf8').splitlines()
-
-
-
-def pgg_ni_dico(item, rep, h37Rv, pos, demi_longueur, fin_prefixe, fin_suffixe,
-                debut_prefixe, debut_suffixe, cpt_lineage, lineage):
-    """
-    This function selects a read around the position pos (using demi_longueur),
-    transforms the read before blasting it. The result is analysed to update
-    the lineage.
-
-    Args:
-        item (str): a specific SRR from listdir('REP/sequences/')
-        rep (str): path to a folder representing a specific SRR
-        h37Rv (str): genome sequence of the strain H37Rv
-        pos (int): starting position to read the genome
-        demi_longueur (int): represents half the length of the reads
-        debut_prefixe (int): beginning index of the 1st part of each read
-        fin_prefixe (int): final index of the 1st part of each read
-        debut_suffixe (int): beginning index of the 2nd part of each read
-        fin_suffixe (int): final index of the 2nd part of each read
-        lineage (list): possible lineage to update
-
-    Returns:
-        (void)
-
-    Note:
-        - we select a read 'seq1' around a specific position 'pos' and define
-          its length by twice 'demi_longueur',
-        - from the read 'seq1', we define a read 'seq2' which is 'seq1' with
-          a nitrogenous base replaced by 'A' at the 'debut_suffixe-1' position,
-        - we serialize the read 'seq2' into 'snp.fasta' and blast the file
-          obtained,
-        - the formatted result is analysed to update the lineage.
-
-    Examples:
-        In this example, we decide to change in position 323 the nitrogenous
-        base into A. We thus assign 324 to 'pos' and 20 to 'demi_longueur'.
-        h represents h37Rv. The 2 different reads are composed of the
-        following strings
-
-        seq1 = h[304] ... h[344]
-        seq2 = h[304] ... h[322] A  h[324] ... h[344]
-
-        Both if conditions revolve around A or h[323].
-
-        nb_seq1 represents the 2 following strings which should be in the
-        formatted results
-                                    h[323] ... h[327]
-                         h[319] ... h[323]
-
-        nb_seq2 represents the 2 following strings which should be in the
-        formatted results
-                                       A ... h[327]
-                            h[319] ... A
-
-        which is formally interpreted by
-                                       A  debut_suffixe ... fin_suffixe
-        debut_prefixe ... fin_suffixe  A
-
-    """
-    cpt_lineage += 1
-    seq1 = h37Rv[pos - demi_longueur:pos + demi_longueur + 1]
-    seq2 = seq1[:fin_prefixe] + 'A' + seq1[debut_suffixe:]
-
-    formatted_results = to_formatted_results(seq2, rep, item)
-
-    nb_seq1 = to_nb_seq(seq1, formatted_results,debut_prefixe, fin_prefixe,
-                        debut_suffixe, fin_suffixe)
-
-    nb_seq2 = to_nb_seq(seq2, formatted_results,debut_prefixe, fin_prefixe,
-                        debut_suffixe, fin_suffixe)
-
-    if nb_seq1 > nb_seq2:
-        lineage.append(cpt_lineage)
-    elif nb_seq2 > nb_seq1:
-        lineage.append('1')
-    else:
-        lineage.append('X')
-    print("The lineage is being updated.")
 
 
 def compt_spol_vitro(dico_afr, item, type_blast, nom_espaceur, nomB_espaceur):
@@ -901,17 +739,15 @@ def to_nb_seq(seq, chaine, debut_prefixe, fin_prefixe, debut_suffixe,
 # ==============
 
 # ==== DEFINING THE CLI ===================================================
-
 # We ask the user for the action to take
-
 mp = argparse.ArgumentParser(prog='CRISPRbuilder-TB', description="Collect and "
-                                                          "annotate "
-                                              "Mycobacterium tuberculosis WGS data for CRISPR investigations.")
-mp.add_argument("sra", type=str, help="requires the reference of a SRA "
-                                           "in the "
-                                     "format ...")
-mp.add_argument("--collect", action='store_true', help="collects the reference of a SRA to ...")
+    "annotate Mycobacterium tuberculosis WGS data for CRISPR investigations.")
+mp.add_argument("sra", type=str, help="requires the reference of a SRA in the "
+                                                        "format ...")
+mp.add_argument("--collect", action='store_true', help="collects the reference "
+                                                       "of a SRA to ...")
 args = mp.parse_args()
+
 # item represents the RSA reference
 item = args.sra
 
@@ -920,7 +756,6 @@ item = args.sra
 rep = '../REP/sequences/' + item + '/'
 
 # ==== INITILIZING THE SEQUENCE OF H37RV AND DICO_AFR =========================
-
 # We create a string called h37Rv containing the genome sequence of the strain
 # H37Rv.
 h37Rv = fasta_to_seq()
@@ -936,50 +771,45 @@ if len(listdir('data/archives/')) > 0:
 else:
     with open('data/dico_africanum.pkl', 'rb') as f:
         dico_afr = load(f)
-
 taille_dico_afr = len(dico_afr) # TODO make sure it's useful
 
-# If the option chose by the user is --collect, then we proceed
+# ==== WHEN THE SELECTED OPTION IS COLLECT ===================================
 if args.collect:
     print(f"We're collecting the data regarding {item}")
 
-    #if item not in dico_afr: # and item[0] == 'S': #E pour ERR (pour
+    #If item not in dico_afr: # and item[0] == 'S': #E pour ERR (pour
     # Christophe), à remplacer par S (SRR, pour Guislaine) TODO ???
     # TODO for prod only
     #print('\n' + item + ' ' + str(taille_dico_afr + 1) + "/" + str(len(
         #listdir('../REP/sequences/'))) + '\n')
 
     # ==== CHECKING IF THE SRA IS ALREADY IN THE DATABASE ===================
-
     #system('cp data/dico_africanum.pkl data/dico_africanum_old.pkl') # TODO ???
-    # if the SRA is not in dico_afr, then we add it to dico_afr
+    # If the SRA is not in dico_afr, we add it to dico_afr
     if item not in dico_afr:
         print(f"We're adding {item} to the database.")
         dico_afr[item] = {}
-
-    # if the SRA is not in REP, then we create a repository named as the SRA
-    # in REP
+    # if the SRA is not in REP, we create a repository named as the SRA in REP
     if item not in listdir('../REP/sequences/'):
         print(f"We're adding {item} to the repository.")
         mkdir(rep)
 
-    # if the SRA directory contains no file in fasta format, then we
-    # download directly from NCBI the fasta regarding this SRA
+    # ==== DOWNLOADING FASTA FILES OF THE SRA ===========================
+    # If the SRA directory contains no file in fasta format, we download
+    # directly from NCBI the fasta regarding this SRA
     if len([u for u in listdir(rep) if 'fasta' in u]) == 0:
-
         print("We're downloading the files in fasta format")
-
-        # TODO parallel-fastq doesn't work, changed it
-        """
+        # TODO ../REP is it the good address ???
         completed = subprocess.run(['parallel-fastq-dump', '-t', '8',
                                     '--split-files', '--fasta', '-O', '../REP',
                                     '-s', item]) # TODO change address for prod
-        """
+        """ I ADDED IT BECAUSE PARALLEL-FASTA DIDN'T WORK
         wd = getcwd()
         chdir(rep)
         completed = subprocess.run(['fastq-dump', '--fasta', '--split-files',
              item])
         chdir(wd)
+        """
 
         # if the download worked
         if completed.returncode == 0:
@@ -995,7 +825,7 @@ if args.collect:
             save_dico()
             # continue TODO warning change made
 
-    # if item_1.fasta or item_2.fasta is not in the SRA directory, then we
+    # If item_1.fasta or item_2.fasta is not in the SRA directory, then we
     # delete the SRA from dico_afr
     if (item + '_1.fasta' not in listdir(rep) or item + '_2.fasta' not in
             listdir(rep)):  # or (item+'_1.fasta' not in listdir(rep) and
@@ -1007,7 +837,7 @@ if args.collect:
         save_dico()
         # continue TODO warninig change made
 
-    # if SRA_shuffled.fasta is not in the SRA directory, then we mix both fasta
+    # If SRA_shuffled.fasta is not in the SRA directory, then we mix both fasta
     # files, which correspond to the two splits ends.
     if item + '_shuffled.fasta' not in listdir(rep):
 
@@ -1021,7 +851,8 @@ if args.collect:
         system("cat " + rep + item + '_1.fasta ' + rep + item + '_2.fasta '
                                         '> ' + rep + item + '_shuffled.fasta')
 
-    # if 'dico.txt' is in the SRA directory, then we assign the SRA reference
+    # ==== UPDATING SRA IN DICO_AFR ===================================
+    # If 'dico.txt' is in the SRA directory, we assign the SRA reference
     # to dico_afr
     if 'dico.txt' in listdir(rep):
         dico_afr[item] = eval(open(rep + 'dico.txt').read())
@@ -1046,10 +877,9 @@ if args.collect:
         f.write(open(rep+item+'_2.fasta', 'r').read())
     '''
 
-    # ==== CHECKING THE PRESENCE OF KEYS IN dico_afr[item] =================
-
-    # if the number of reads for the SRA is not in dico_afr or undefined,
-    # then we open 'nb.txt' to evaluate this number
+    # ==== UPDATING NB_READS IN DICO_AFR ================================
+    # If there's no nb_reads reference in dico_afr[SRA], we open 'nb.txt' to
+    # evaluate this number.
     if 'nb_reads' not in dico_afr[item] or dico_afr[item]['nb_reads'] == '':
         system('cat ' + rep + item + "_shuffled.fasta | grep '>' | wc -l > "
                                 "/tmp/nb.txt")
@@ -1058,16 +888,18 @@ if args.collect:
         print("The number of reads is: ", nb)
         dico_afr[item]['nb_reads'] = nb
 
-    # if the length of the reads for the SRA is not in dico_afr, then we
-    # evaluate it from the SRA_shuffled.fasta file
+    # ==== UPDATING LEN_READS IN DICO_AFR ====================================
+    # If there's no 'len_reads' reference in dico_afr[SRA], we evaluate
+    # it from the SRA_shuffled.fasta file
     if 'len_reads' not in dico_afr[item]:
         nb = len(''.join(open(rep + item + '_shuffled.fasta').read(
             10000).split('>')[1].split('\n')[1:]))
         print("The length of the reads is: ", nb)
         dico_afr[item]['len_reads'] = nb
 
-    # if the coverage of the reads for the SRA is not in dico_afr, then we
-    # evaluate it before assigning the result to dico_afr
+    # ==== UPDATING COVERAGE IN DICO_AFR ======================================
+    # If there's no 'coouverture' reference in dico_afr[SRA], we evaluate it
+    # before assigning the result to dico_afr
     if 'couverture' not in dico_afr[item] or dico_afr[item].get('couverture') \
             == '':
         dico_afr[item]['couverture'] = round(dico_afr[item].get('nb_reads') *
@@ -1083,10 +915,8 @@ if args.collect:
         # continue TODO warning change made
     """
 
-    # ==== LOW COVERAGE : DATA CLEANING ======================================
-
-    # if a SRA in dico_afr has a low coverage, then delete this SRA from
-    # dico_afr
+    # ==== LOW COVERAGE : DATA CLEANING OF DICO_AFR ===========================
+    # If a SRA in dico_afr has a low coverage, we delete this SRA from dico_afr
     if dico_afr[item].get('couverture') < 50 or 'low_cover.txt' in listdir(
             rep):
         del dico_afr[item]
@@ -1095,10 +925,10 @@ if args.collect:
         save_dico()
         system('touch ' + rep + 'low_cover.txt')
 
-    # ==== GOOD COVERAGE : POPULATING THE DATABASE ========================
-
-    # If the SRA in dico_afr has a good coverage, then we proceed.
     else:
+        # ==== CREATING BLAST DATABASE ================================
+        # If the SRA in dico_afr has a good coverage, we create a database
+        # for Blast
         if item+'.nal' not in listdir(rep) and item+'.nin' not in listdir(rep):
             print("We're creating a database for Blast")
             completed = subprocess.run(
@@ -1106,11 +936,11 @@ if args.collect:
                  '-dbtype', 'nucl', '-title', item, '-out', rep + item])
             assert completed.returncode == 0
 
+        # === UPDATING SOURCE, AUTHOR, ACCESSION NBER, LOCATION IN DICO_AFR ===
+        # If there's no 'source' reference in dico_afr[SRA], we browse
+        # the list 'Origines'. if the SRA is in the 'run accessions' section,
+        # we update dico_afr[SRA].
         if 'Source' not in dico_afr[item]:
-            # We browse the list 'Origines', if the SRA is in the
-            # 'run accessions' section, then we assign the values for 'Source',
-            # 'Author', 'study accession number' and 'location' to
-            # dico_afr[item]
             for u in Origines:
                 if item in u['run accessions']:
                     for elt in ['Source', 'Author', 'study accession number',
@@ -1121,16 +951,16 @@ if args.collect:
                         except: # TODO specify except
                             pass
 
-        # if the taxid for the SRA is not in dico_afr, then we collect
-        # data from NCBI to update dico_afr
+        # ==== UPDATING DICO_AFR FROM NCBI ===============================
+        # If there's no 'taxid' reference in dico_afr[SRA],we collect data
+        # from NCBI to update dico_afr
         if 'taxid' not in dico_afr[item]:
             dicobis = get_info(item)
             for elt in dicobis:
                 dico_afr[item][elt] = dicobis[elt]
                 print(f"   - {elt}: {dico_afr[item][elt]}")
 
-        # ==== PRESENCE IN BRYNILDSRUD DATASET
-
+        # ==== UPDATING DICO_AFR WITH THE DATASET BRYNILDSRUD ================
         # We check the presence of the SRA in the file
         # 'data/Brynildsrud_Dataset_S1.xls' to update dico_afr
         Brynildsrud = to_Brynildsrud()
@@ -1142,6 +972,7 @@ if args.collect:
         else:
             print(f"{item} is not in the database Brynildsrud_Dataset_S1.xls")
 
+        # ==== UPDATING THE SPOLIGOTYPES IN DICO_AFR ========================
         # if 'spoligo' for the SRA is not in dico_afr or is undefined,
         # then TODO
         if 'spoligo' not in dico_afr[item] or dico_afr[item]['spoligo'] == '':
@@ -1193,8 +1024,6 @@ if args.collect:
                                              'spoligo_vitro_new_nb']))
             save_dico()
 
-        # ==== UPDATING THE SPOLIGOTYPES IN DICO_AFR ========================
-
         # We transform data from 1_3882_SORTED.xls into a dictionary called
         # spol_sit containing spoligotypes with their corresponding SITs.
         spol_sit = to_spol_sit()
@@ -1213,7 +1042,6 @@ if args.collect:
         demi_longueur = 20
 
         # ==== TESTING LINEAGE COLL =======================================
-
         # If 'lineage_Coll' is undefined for the SRA in dico_afr, we parse a
         # file containing Coll lineage SNPs to compare with chosen reads and
         # update dico_afr.
@@ -1282,7 +1110,6 @@ if args.collect:
             save_dico()
 
         # ==== TESTING LINEAGE L6+ANIMAL =================================
-
         # if an item in dico_afr doesn't have a L6+animal lineage, then TODO
         if 'lineage_L6+animal' not in dico_afr[item]:
             print("We're adding the lineage according to the SNPs L6+animal")
@@ -1303,21 +1130,80 @@ if args.collect:
             save_dico()
 
         # ==== TESTING PGG LINEAGE ======================================
-
         # If dico_afr has no information about 'lineage_PGG' regarding the
-        # SRA, then we select a read around position 2154724 before blasting
-        # it, another one around position 7585-1 before blasting it and update
+        # SRA, we select a read around position 2154724 before blasting it
+        # another one around position 7585-1 before blasting it and updating
         # the lineage in dico_afr[SRA].
+        """
+        This function selects a read around the position pos (using demi_longueur),
+        transforms the read before blasting it. The result is analysed to update
+        the lineage.
+        Note:
+        - we select a read 'seq1' around a specific position 'pos' and define
+          its length by twice 'demi_longueur',
+        - from the read 'seq1', we define a read 'seq2' which is 'seq1' with
+          a nitrogenous base replaced by 'A' at the 'debut_suffixe-1' position,
+        - we serialize the read 'seq2' into 'snp.fasta' and blast the file
+          obtained,
+        - the formatted result is analysed to update the lineage.
+
+        Examples:
+        In this example, we decide to change in position 323 the nitrogenous
+        base into A. We thus assign 324 to 'pos' and 20 to 'demi_longueur'.
+        h represents h37Rv. The 2 different reads are composed of the
+        following strings
+
+        seq1 = h[304] ... h[344]
+        seq2 = h[304] ... h[322] A  h[324] ... h[344]
+
+        Both if conditions revolve around A or h[323].
+
+        nb_seq1 represents the 2 following strings which should be in the
+        formatted results
+                                    h[323] ... h[327]
+                         h[319] ... h[323]
+
+        nb_seq2 represents the 2 following strings which should be in the
+        formatted results
+                                       A ... h[327]
+                            h[319] ... A
+
+        which is formally interpreted by
+                                       A  debut_suffixe ... fin_suffixe
+        debut_prefixe ... fin_suffixe  A
+        """
         if 'lineage_PGG' not in dico_afr[item]:
             lineage = []
             print("We're adding the lineage according to the SNPs PGG")
             pos = 2154724
-            cpt_lineage = 1
-            pgg_ni_dico(item, rep, h37Rv, pos, demi_longueur, 19, 24, 15,
-                            20, cpt_lineage, lineage)
+            seq1 = h37Rv[pos - demi_longueur:pos + demi_longueur + 1]
+            seq2 = seq1[:19] + 'A' + seq1[20:]
+            formatted_results = to_formatted_results(seq2, rep, item)
+            nb_seq1 = to_nb_seq(seq1, formatted_results, 15, 19, 20, 24)
+            nb_seq2 = to_nb_seq(seq2, formatted_results, 15, 19, 20, 24)
+
+            if nb_seq1 > nb_seq2:
+                lineage.append(2)
+            elif nb_seq2 > nb_seq1:
+                lineage.append('1')
+            else:
+                lineage.append('X')
+            print("The lineage is being updated.")
+
             pos = 7585-1
-            pgg_ni_dico(item, rep, h37Rv, pos, demi_longueur, 20, 25, 16,
-                            21, cpt_lineage, lineage)
+            seq1 = h37Rv[pos - demi_longueur:pos + demi_longueur + 1]
+            seq2 = seq1[:20] + 'A' + seq1[21:]
+            formatted_results = to_formatted_results(seq2, rep, item)
+            nb_seq1 = to_nb_seq(seq1, formatted_results, 16, 20, 21, 25)
+            nb_seq2 = to_nb_seq(seq2, formatted_results, 16, 20, 21, 25)
+
+            if nb_seq1 > nb_seq2:
+                lineage.append(3)
+            elif nb_seq2 > nb_seq1:
+                lineage.append('1')
+            else:
+                lineage.append('X')
+            print("The lineage is being updated.")
             dico_afr[item]['lineage_PGG_cp'] = lineage
             # TODO IMPORTANT work on the initialization of lineage
             if lineage == ['1', '1']:
@@ -1334,35 +1220,138 @@ if args.collect:
             save_dico()
 
         # ==== TESTING PALI LINEAGE =============================
-
-        # if an item from dico_afr doesn't have a Pali lineage, then TODO
-        # We extract data from Palittapon_SNPs.xlsx into the dictionary
-        # Lignee_Pali containing positions, reads and lineage numbers.
+        """
+        - we browse the dictionary of a lineage Pali, Shitikov or Stucki,
+          and pick 2 reads (seq1 and seq2) per value of the dictionary,
+        - we open the 'snp.fasta' file and write on it the 2nd read from before,
+        - we blast the SRA from 'snp.fasta' in relation to the 'item',
+        - we keep only the results that contain selected parts of the reads
+          seq1 and seq2, and put them in sequences,
+        - we assign the length of those sequences to nb_seq1 and nb_seq2,
+        - we create an empty list called 'lignee'
+        - if nb_seq2 is greater than nb_seq1, then we add the 3rd read from
+          the initial dictionary to 'lignee',
+        - we sort the elements of 'lignee' and add them to dico_afr[item][
+          'lineage...']
+        """
+        # If dico_afr has no information about 'lineage_Pali' regarding the
+        # SRA, we extract data from Palittapon_SNPs.xlsx into the dictionary
+        # Lignee_Pali containing positions, reads and lineage numbers, we
+        # select a read in a specific position before blasting it and updating
+        # the lineage in dico_afr[SRA].
         if 'lineage_Pali' not in dico_afr[item]:
             Lignee_Pali = to_reads('data/Palittapon_SNPs.xlsx', demi_longueur)
-            add_lineagePSS_dico('lineage_Pali', Lignee_Pali, dico_afr,
-                                item, rep)
-            print("step 21")  # TODO only for dev
+            lignee = []
+            cpt = 1
+            print("We're adding the lineage according to the SNPs Pali")
 
-        # if an item from dico_afr doesn't have a Shitikov lineage,
-        # then TODO
-        # We extract data from Shitikov_L2_SNPs.xlsx into the dictionary
-        # Lineage_Shitikov containing positions, reads and lineage numbers.
+            for item2, pos0 in enumerate(Lignee_Pali):
+                seq1, seq2 = Lignee_Pali[pos0][:2]
+                with open('/tmp/snp.fasta', 'w') as f:
+                    f.write('>\n' + seq2)
+                cmd = "blastn -query /tmp/snp.fasta -num_threads 12 -evalue 1e-5 " \
+                      "-task blastn -db " + rep + item + " -outfmt '10 sseq' -out " \
+                                                         "/tmp/snp_Pali.blast"
+                system(cmd)
+                with open("/tmp/snp_Pali.blast") as f:
+                    formatted_results = f.read().splitlines()
+                # nb_seq1 = formatted_results.count(seq1) # TODO ???
+                # nb_seq2 = formatted_results.count(seq2)
+                nb_seq1 = to_nb_seq(seq1, formatted_results, 16, 20, 21, 25)
+                nb_seq2 = to_nb_seq(seq2, formatted_results, 16, 20, 21, 25)
+
+                if nb_seq2 > nb_seq1:  # or (nb_seq2>0 and nb_seq1==0): # TODO ???
+                    cpt += 1  # TODO when do we use cpt ??? what's its purpose ???
+                    lignee.append(Lignee_Pali[pos0][2])
+
+            lignee = [u for u in sorted(set(lignee))]
+
+            dico_afr[item]['lineage_Pali'] = lignee
+            print("Lineage (Pali) :" + ", ".join(dico_afr[item]['lineage_Pali']))
+            save_dico()
+
+        # ==== TESTING SHITIKOV LINEAGE =================================
+        # If dico_afr has no information about 'lineage_Shitikov' regarding the
+        # SRA, we extract data from Shitikov_L2_SNPs.xlsx into the dictionary
+        # Lignee_Shitikov containing positions, reads and lineage numbers, we
+        # select a read in a specific position before blasting it and updating
+        # the lineage in dico_afr[SRA].
         if 'lineage_Shitikov' not in dico_afr[item]:
             Lignee_Shitikov = to_reads('data/Shitikov_L2_SNPs.xlsx',
                                        demi_longueur)
-            add_lineagePSS_dico('lineage_Shitikov', Lignee_Shitikov,
-                                        dico_afr, item, rep)
-            print("step 22")  # TODO only for dev
+            lignee = []
+            cpt = 1
+            print("We're adding the lineage according to the SNPs Shitikov")
 
-        # if an item from dico_afr doesn't have a Stucki lineage, then TODO
-        # We extract data from Stucki_L4-SNPs.xlsx into the dictionary
-        # Lignee_Stucki containing positions, reads and lineage numbers.
+            for item2, pos0 in enumerate(Lignee_Shitikov):
+                seq1, seq2 = Lignee_Shitikov[pos0][:2]
+                with open('/tmp/snp.fasta', 'w') as f:
+                    f.write('>\n' + seq2)
+                cmd = "blastn -query /tmp/snp.fasta -num_threads 12 -evalue 1e-5 " \
+                      "-task blastn -db " + rep + item + " -outfmt '10 sseq' -out " \
+                                                         "/tmp/snp_Shitikov.blast"
+                system(cmd)
+                with open("/tmp/snp_Shitikov.blast") as f:
+                    formatted_results = f.read().splitlines()
+                # nb_seq1 = formatted_results.count(seq1) # TODO ???
+                # nb_seq2 = formatted_results.count(seq2)
+
+                nb_seq1 = to_nb_seq(seq1, formatted_results, 16, 20, 21, 25)
+                nb_seq2 = to_nb_seq(seq2, formatted_results, 16, 20, 21, 25)
+
+                if nb_seq2 > nb_seq1:  # or (nb_seq2>0 and nb_seq1==0): # TODO ???
+                    cpt += 1  # TODO when do we use cpt ??? what's its purpose ???
+                    lignee.append(Lignee_Shitikov[pos0][2])
+
+            lignee = [u for u in sorted(set(lignee))]
+            dico_afr[item]['lineage_Shitikov'] = lignee
+            print("Lineage (Shitikov) : " + ", ".join(dico_afr[item][
+                                                        'lineage_Shitikov']))
+            save_dico()
+
+        # ==== TESTING STUCKI LINEAGE ====================================
+        # If dico_afr has no information about 'lineage_Shitikov' regarding the
+        # SRA, we extract data from Stucki_L4-SNPs.xlsx into the dictionary
+        # Lignee_Stucki containing positions, reads and lineage numbers, we
+        # select a read in a specific position before blasting it and updating
+        # the lineage in dico_afr[SRA].
         if 'Lignee_Stucki' not in dico_afr[item]:
             Lignee_Stucki = to_reads('data/Stucki_L4-SNPs.xlsx', demi_longueur)
-            add_lineagePSS_dico('Lignee_Stucki', Lignee_Stucki, dico_afr,
-                                    item, rep)
-            print("step 23")  # TODO only for dev
+            lignee = []
+            cpt = 1
+            print("We're adding the lineage according to the SNPs Stucki")
+
+            for item2, pos0 in enumerate(Lignee_Stucki):
+                seq1, seq2 = Lignee_Stucki[pos0][:2]
+                with open('/tmp/snp.fasta', 'w') as f:
+                    f.write('>\n' + seq2)
+                cmd = "blastn -query /tmp/snp.fasta -num_threads 12 -evalue 1e-5 " \
+                      "-task blastn -db " + rep + item + " -outfmt '10 sseq' -out " \
+                                                         "/tmp/snp_Stucki.blast"
+                system(cmd)
+                with open("/tmp/snp_Stucki.blast") as f:
+                    formatted_results = f.read().splitlines()
+                # nb_seq1 = formatted_results.count(seq1) # TODO ???
+                # nb_seq2 = formatted_results.count(seq2)
+                nb_seq1 = to_nb_seq(seq1, formatted_results, 16, 20, 21, 25)
+                nb_seq2 = to_nb_seq(seq2, formatted_results, 16, 20, 21, 25)
+
+                if nb_seq2 > nb_seq1:  # or (nb_seq2>0 and nb_seq1==0): # TODO ???
+                    cpt += 1  # TODO when do we use cpt ??? what's its purpose ???
+                    lignee.append(Lignee_Stucki[pos0][2])
+
+            lignee = [u for u in sorted(set(lignee))]
+
+            if '4.10' in lignee:
+                lignee.remove('4.10')
+            else:
+                lignee.append('4.10')
+
+            dico_afr[item]['Lignee_Stucki'] = lignee
+            print("Lineage (Stucki): " + ", ".join(dico_afr[item][
+                                                        'Lignee_Stucki']))
+            save_dico()
+
         '''
         avant_IS = []
         if dico_afr[item]['IS_mapper'] == '':
