@@ -189,8 +189,9 @@ def to_Brynildsrud():
                 author = 'Brynildsrud et al.'
 
             source = source.replace('This study', 'Global expansion of '
-                                'Mycobacterium tuberculosis lineage 4 shaped by '
-                                'colonial migration and local adaptation')
+                                    'Mycobacterium tuberculosis lineage 4 '
+                                    'shaped by colonial migration and local '
+                                    'adaptation')
 
             if len(wws.cell_value(row, 3)) > 1:
                 study = wws.cell_value(row, 3)
@@ -207,25 +208,23 @@ def to_Brynildsrud():
                 if une_date:
                     date = dat
 
-    Brynildsrud[srr] = {
-        'Source': source,
-        'Author': author,
-        'study accession number': study,
-        'location': location,
-        'date': date
-    }
+        Brynildsrud[srr] = {
+            'Source': source,
+            'Author': author,
+            'study accession number': study,
+            'location': location,
+            'date': date
+        }
     return Brynildsrud
 
 
 def fasta_to_seq():
     """
-    This function extracts data from 'data/NC_000962.3.fasta' containing the
-    genome sequence of the H37Rv strain with header, and put them into a single
-    line string called h representing this genome sequence without the header.
+    This function creates a string called h containing the genome sequence of
+    the H37Rv strain without headers, extracted from 'data/NC_000962.3.fasta'
 
     Returns:
         h (str): genome sequence in a single line and without the headers
-
     """
     h = open('data/NC_000962.3.fasta').read()
     h = ''.join(h.split('\n')[1:])
@@ -235,9 +234,8 @@ def fasta_to_seq():
 
 def to_reads(xlsx_lignee, demi_longueur):
     """
-    This function takes data from xlsx_lignee and extracts 2 reads per
-    lineage and their specific position to put them in a dictionary called
-    Lignee_renvoyee.
+    This function creates a dictionary called Lignee_renvoyee containing 2
+    reads per lineage and their specific position, extracted from xlsx_lignee.
 
     Args:
         xlsx_lignee (str): dataset in xlsx format representing a specific
@@ -316,7 +314,6 @@ def get_info(srr):
           to dico0['taxid'], dico0['name'], dico0['study'], dico0['cemter'],
         - we assign dico[...]['#text'] to dico0['bioproject'], separating the
           cases when dico[...]['EXTERNAL_ID'] is a string or a list.
-
     """
     Entrez.email = "christophe.guyeux@univ-fcomte.fr"
     ret = Entrez.efetch(db="sra", id=srr, retmode="xml")
@@ -381,12 +378,8 @@ def get_info(srr):
             'bioproject': bioproject
         }
 
-        print(dico['EXPERIMENT_PACKAGE_SET']['EXPERIMENT_PACKAGE']['STUDY'][
-                  'IDENTIFIERS']['EXTERNAL_ID'])  # TODO only for dev
-
-    # TODO test dev mode
-    print("get_info() achieved")
-
+        #print(dico['EXPERIMENT_PACKAGE_SET']['EXPERIMENT_PACKAGE']['STUDY'][
+                  #'IDENTIFIERS']['EXTERNAL_ID'])  # TODO only for dev
     return dico0
 
 
@@ -400,7 +393,6 @@ def change(x):
 
     Returns:
         (str): corresponding nitrogenous base
-
     """
     if x == 'A':
         return 'T'
@@ -427,7 +419,6 @@ def rev_comp(s):
 
     Returns:
         (str): represents the reverse list of corresponding nitrogenous bases
-
     """
     u = [change(x) for x in s]
     u.reverse()
@@ -449,7 +440,6 @@ def similaire(x, y):
 
     Returns:
         (float): score divided by size of the alignment
-
     """
     alignments = pairwise2.align.globalxx(x, y)
 
@@ -479,7 +469,6 @@ def to_spol_sit():
           column from ws as keys and the successive elements of the 'SIT'
           column from ws as values to the dictionary spol_sit (after
           replacing 'n' into a black square and 'o' into a white square).
-
     """
     wb = open_workbook('data/1_3882_SORTED.xls')
     ws = wb.sheet_by_index(0)
@@ -535,15 +524,16 @@ def add_spoligo_dico(type_sit, dico_afr, item, spol_sit):
 
 def to_formatted_results(seq, rep, item):
     """
+    This function serializes a sequence into 'tmp/snp.fasta' and blast it
+    before returning a formatted result.
 
     Args:
-        seq (str):
-        rep (str):
-        item (str):
+        seq (str): a genome sequence
+        rep (str): path to the SRA repertory
+        item (str): the SRA reference
 
     Returns:
-        (str): formatted result
-
+        (str): a formatted result of a sequence blast
     """
     with open('/tmp/snp.fasta', 'w') as f:
         f.write('>\n' + seq)
@@ -571,13 +561,14 @@ def compt_spol_vitro(dico_afr, item, type_blast, nom_espaceur, nomB_espaceur):
     """
     with open('/tmp/'+item+type_blast+'_'+'.blast') as f:
         matches = f.read()
-        nb = int(open('data/spoligo_'+type_blast+'.fasta').read().count('>') / 2)
+        nb = int(open('data/spoligo_'+type_blast+'.fasta').read().count('>')
+                 / 2)
 
         for k in range(1, nb + 1):
             # if 'espaceur'+spol.capitalize()+str(k) in matches:
 
             if min([matches.count('espaceur_' + nom_espaceur + str(k) + ','),
-                    matches.count('espaceur_' + nomB_espaceur + str(k) + ',')]) \
+                    matches.count('espaceur_' + nomB_espaceur + str(k) + ',')])\
                     / dico_afr[item].get('couverture') > 0.05:
                 dico_afr[item]['spoligo_'+type_blast] += '\u25A0'
             else:
@@ -685,7 +676,6 @@ def save_dico(fic = 'data/dico_africanum.pkl'):
 
     Returns:
         (void)
-
     """
     with open('data/dico_africanum.pkl', 'wb') as f:
         dump(dico_afr, f)
@@ -762,8 +752,10 @@ h37Rv = fasta_to_seq()
 taille_gen = len(h37Rv)
 
 # We check if there is any dico_africanum.pkl file in '/data/archives' and
-# assign the most recent one to the dictionary dico_afr. If the repertory is
-# empty, then we parse the original dico_africanum.pkl to dico_afr.
+# assign the most recent one to the dictionary dico_afr. If '/data/archives' is
+# empty, we parse the original dico_africanum.pkl to dico_afr. We will update
+# dico_afr during the execution of the code and update dico_africanum.pkl in
+# '/data/archives'
 if len(listdir('data/archives/')) > 0:
     nom_dico = compare_dico_archives()
     with open('data/archives/' + nom_dico, 'rb') as f:
@@ -841,8 +833,8 @@ if args.collect:
     # files, which correspond to the two splits ends.
     if item + '_shuffled.fasta' not in listdir(rep):
 
-        print("We mix both fasta files, which correspond to the two splits "
-              "ends.")
+        print("We're mixing both fasta files, which correspond to the two "
+              "splits ends.")
 
         for fic in ['_1', '_2']:
             system("sed -i 's/" + item + './' + item + fic + "./g' " +
@@ -1489,7 +1481,7 @@ if args.collect:
         # On supprime d'éventuels métagénomes, etc.
 
         if 'low_cover.txt' not in listdir(rep):
-            with open(rep+'dico.txt','w') as f:
+            with open(rep+'dico.txt', 'w') as f:
                 f.write(str(dico_afr[item]))
         '''with open('data/spoligos_me.csv', mode='w') as csv_file:
             fieldnames = list(dico_afr[next(iter(dico_afr))].keys())
@@ -1514,6 +1506,11 @@ if args.collect:
                 print("The file couldn't be found in the repository.")
 
     save_dico()
+
+    for k in dico_afr:
+        if 'Mycobacterium' not in dico_afr[k].get('name') and len(dico_afr[k].
+                                    get('name')) > 0:
+            print(dico_afr[k].get('name'))
 
     # We display information regarding the SRA
     for cle in dico_afr[item]:
