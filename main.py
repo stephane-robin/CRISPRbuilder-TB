@@ -598,7 +598,7 @@ def intro_spoligo(item, rep, type_spoligo):
         nb, mess1, mess2, mess3 = 12, "_old", "old", ""
 
     if type_spoligo == 'spoligo_vitro':
-        nb, mess1, mess2, mess3 = 8, "", "_vitro", "_vitro"
+        nb, mess1, mess2, mess3 = '8', "", "_vitro", "_vitro"
 
     print(f"The {type_spoligo} are being blasted")
     dico_afr[item][type_spoligo] = ''
