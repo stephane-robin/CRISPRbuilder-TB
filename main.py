@@ -14,8 +14,6 @@ from datetime import datetime
 import argparse
 # TODO check the relevance of importing the whole modules and not only part
 #  of them
-# TODO change the address '../REP/sequences/' into 'REP/sequences/' in the
-#  whole code. Same with the address '../REP'
 
 
 # =======
@@ -592,10 +590,9 @@ def intro_spoligo(item, rep, type_spoligo):
 
     Returns:
         (void)
-
     """
     if type_spoligo == 'spoligo':
-        nb, mess1, mess2, mess3 = 12, "_old", "old", ""
+        nb, mess1, mess2, mess3 = '12', "_old", "old", ""
 
     if type_spoligo == 'spoligo_vitro':
         nb, mess1, mess2, mess3 = '8', "", "_vitro", "_vitro"
@@ -742,8 +739,7 @@ args = mp.parse_args()
 item = args.sra
 
 # We define the path for the file named as the SRA
-# item = 'SRR8368689' # TODO only for dev
-rep = '../REP/sequences/' + item + '/'
+rep = 'REP/sequences/' + item + '/'
 
 # ==== INITILIZING THE SEQUENCE OF H37RV AND DICO_AFR =========================
 # We create a string called h37Rv containing the genome sequence of the strain
@@ -767,13 +763,13 @@ taille_dico_afr = len(dico_afr) # TODO make sure it's useful
 
 # ==== WHEN THE SELECTED OPTION IS COLLECT ===================================
 if args.collect:
-    print(f"We're collecting the data regarding {item}")
+    print(f"We're collecting data regarding {item}")
 
     #If item not in dico_afr: # and item[0] == 'S': #E pour ERR (pour
     # Christophe), à remplacer par S (SRR, pour Guislaine) TODO ???
     # TODO for prod only
     #print('\n' + item + ' ' + str(taille_dico_afr + 1) + "/" + str(len(
-        #listdir('../REP/sequences/'))) + '\n')
+        #listdir('REP/sequences/'))) + '\n')
 
     # ==== CHECKING IF THE SRA IS ALREADY IN THE DATABASE ===================
     #system('cp data/dico_africanum.pkl data/dico_africanum_old.pkl') # TODO ???
@@ -782,7 +778,7 @@ if args.collect:
         print(f"We're adding {item} to the database.")
         dico_afr[item] = {}
     # if the SRA is not in REP, we create a repository named as the SRA in REP
-    if item not in listdir('../REP/sequences/'):
+    if item not in listdir('REP/sequences/'):
         print(f"We're adding {item} to the repository.")
         mkdir(rep)
 
@@ -791,9 +787,9 @@ if args.collect:
     # directly from NCBI the fasta regarding this SRA
     if len([u for u in listdir(rep) if 'fasta' in u]) == 0:
         print("We're downloading the files in fasta format")
-        # TODO ../REP is it the good address ???
+        # TODO REP is it the good address ???
         completed = subprocess.run(['parallel-fastq-dump', '-t', '8',
-                                    '--split-files', '--fasta', '-O', '../REP',
+                                    '--split-files', '--fasta', '-O', 'REP',
                                     '-s', item]) # TODO change address for prod
         """ I ADDED IT BECAUSE PARALLEL-FASTA DIDN'T WORK
         wd = getcwd()
@@ -808,7 +804,7 @@ if args.collect:
             print("fasta files successfully downloaded.")
             for k in listdir(rep):
                 if k.endswith('.fasta'):
-                    shutil.move('../REP' + k, rep + k)
+                    shutil.move('REP' + k, rep + k)
 
         # if the download didn't work, we delete the SRA from dico_afr
         else:
@@ -1496,7 +1492,7 @@ if args.collect:
 
         # If SRA is a metagenome, we delete it from dico_afr and delete the
         # repository in 'REP/sequences'.
-        if 'metagenome' in dico_afr[item]['name'] and item in listdir('../REP/sequences'):
+        if 'metagenome' in dico_afr[item]['name'] and item in listdir('REP/sequences'):
             print(f"The item {item} is a metagenome. We delete it from the "
                   "database.")
             del dico_afr[item]
