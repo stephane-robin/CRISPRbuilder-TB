@@ -11,9 +11,9 @@ from shutil import copyfile
 from Bio import pairwise2, SeqIO
 from Bio.pairwise2 import format_alignment
 from Bio import Entrez  # provides code to access NCBI over the Web
-from datetime import datetime
 
-item = 'SRR8368689'
-rep = '../REP/sequences/'+item+'/'
-completed = subprocess.run(['makeblastdb', '-in', rep+item+'_shuffled.fasta',
-                            '-dbtype', 'nucl','-title', item, '-out', rep+item])
+with open('essai.txt', 'r') as f:
+    liste_SRA = f.readlines()
+    liste_SRA = [elt.replace('\n', '') for elt in liste_SRA]
+
+print(liste_SRA)

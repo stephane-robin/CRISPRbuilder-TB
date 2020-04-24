@@ -517,7 +517,6 @@ def add_spoligo_dico(type_sit, dico_afr, item, spol_sit):
 
     print(f"We're adding the {type_sit}: {dico_afr[item][type_sit]} to the "
           f"database")
-    save_dico()
 
 
 def to_formatted_results(seq, rep, item):
@@ -621,12 +620,9 @@ def intro_spoligo(item, rep, type_spoligo):
     print("intro_spoligo() achieved")
 
 
-def save_dico(fic = 'data/dico_africanum.pkl'):
-    """
-    This function serializes dico_afr to the file dico_africanum.pkl, and to the
-    archive data/archives/dico_afr-<date>.pkl.
-    dico_afr and dico_africanum.pkl have the same structure which is
-    {
+
+"""
+{
         a_SRA:
             {
                 'nb_reads':
@@ -670,37 +666,10 @@ def save_dico(fic = 'data/dico_africanum.pkl'):
             },
             ...
     }
-
-    Returns:
-        (void)
-    """
-    with open('data/dico_africanum.pkl', 'wb') as f:
-        dump(dico_afr, f)
-
-    now = datetime.now()
-    with open('data/archives/dico_afr-'+now.strftime("%Y_%m_%d-%H")+'.pkl',
-              'wb') as f:
-        dump(dico_afr, f)
-
-    print("dico:africanum and its archive have been updated.")
+"""
 
 
-def compare_dico_archives():
-    """
-    This function compares the names of the different files dico_africanum.pkl
-    which are present in the archive 'data/archives/' and returns the name of
-    the most recent one.
 
-    Returns:
-        last_dico(str): the name of the most recent dico_africanum.pkl in
-        'data/archives'
-    """
-    last_dico = listdir('data/archives/')[0]
-    for u in listdir('data/archives/'):
-        if u > last_dico:
-            last_dico = u
-
-    return last_dico
 
 
 def to_nb_seq(seq, chaine, debut_prefixe, fin_prefixe, debut_suffixe,
@@ -721,55 +690,8 @@ def to_nb_seq(seq, chaine, debut_prefixe, fin_prefixe, debut_suffixe,
              len([u for u in chaine if seq[debut_prefixe:debut_suffixe] in u])
 
 
-# ==============
-# MAIN PROCEDURE
-# ==============
+def collect_SRA(item):
 
-# ==== DEFINING THE CLI ===================================================
-# We ask the user for the action to take
-mp = argparse.ArgumentParser(prog='CRISPRbuilder-TB', description="Collect and "
-    "annotate Mycobacterium tuberculosis WGS data for CRISPR investigations.")
-mp.add_argument("sra", type=str, help="requires the reference of a SRA in the "
-                                                        "format ...")
-mp.add_argument("--collect", action='store_true', help="collects the reference "
-                                                       "of a SRA to ...")
-args = mp.parse_args()
-
-# item represents the RSA reference
-item = args.sra
-
-# We define the path for the file named as the SRA
-rep = 'REP/sequences/' + item + '/'
-
-# ==== INITILIZING THE SEQUENCE OF H37RV AND DICO_AFR =========================
-# We create a string called h37Rv containing the genome sequence of the strain
-# H37Rv.
-h37Rv = fasta_to_seq()
-taille_gen = len(h37Rv)
-
-# We check if there is any dico_africanum.pkl file in '/data/archives' and
-# assign the most recent one to the dictionary dico_afr. If '/data/archives' is
-# empty, we parse the original dico_africanum.pkl to dico_afr. We will update
-# dico_afr during the execution of the code and update dico_africanum.pkl in
-# '/data/archives'
-if len(listdir('data/archives/')) > 0:
-    nom_dico = compare_dico_archives()
-    with open('data/archives/' + nom_dico, 'rb') as f:
-        dico_afr = load(f)
-else:
-    with open('data/dico_africanum.pkl', 'rb') as f:
-        dico_afr = load(f)
-taille_dico_afr = len(dico_afr) # TODO make sure it's useful
-
-# ==== WHEN THE SELECTED OPTION IS COLLECT ===================================
-if args.collect:
-    print(f"We're collecting data regarding {item}")
-
-    #If item not in dico_afr: # and item[0] == 'S': #E pour ERR (pour
-    # Christophe), à remplacer par S (SRR, pour Guislaine) TODO ???
-    # TODO for prod only
-    #print('\n' + item + ' ' + str(taille_dico_afr + 1) + "/" + str(len(
-        #listdir('REP/sequences/'))) + '\n')
 
     # ==== CHECKING IF THE SRA IS ALREADY IN THE DATABASE ===================
     #system('cp data/dico_africanum.pkl data/dico_africanum_old.pkl') # TODO ???
@@ -783,7 +705,7 @@ if args.collect:
         mkdir(rep)
 
     # ==== DOWNLOADING FASTA FILES OF THE SRA ===========================
-    # If the SRA directory contains no file in fasta format, we download
+    # If the SRA directo+ry contains no file in fasta format, we download
     # directly from NCBI the fasta regarding this SRA
     if len([u for u in listdir(rep) if 'fasta' in u]) == 0:
         print("We're downloading the files in fasta format")
@@ -810,8 +732,6 @@ if args.collect:
         else:
             del dico_afr[item]
             print("Failed to download fasta files.")
-            save_dico()
-            # continue TODO warning change made
 
     # If item_1.fasta or item_2.fasta is not in the SRA directory, then we
     # delete the SRA from dico_afr
@@ -822,8 +742,6 @@ if args.collect:
         shutil.rmtree(rep)
         print("The fasta files don't have the proper format. The operation "
               "wasn't successful.")
-        save_dico()
-        # continue TODO warninig change made
 
     # If SRA_shuffled.fasta is not in the SRA directory, then we mix both fasta
     # files, which correspond to the two splits ends.
@@ -910,7 +828,6 @@ if args.collect:
         del dico_afr[item]
         print(f"The coverage is too low. {item} is being removed from the "
               "database")
-        save_dico()
         system('touch ' + rep + 'low_cover.txt')
 
     else:
@@ -991,7 +908,6 @@ if args.collect:
 
             print("Lineage Coll: " + ", ".join(dico_afr[item][
                                                         'lineage_Coll']))
-            save_dico()
             print("     " + dico_afr[item]['spoligo'])
             print("     " + str(dico_afr[item]['spoligo_nb']))
             print("     " + dico_afr[item]['spoligo_new'])
@@ -1010,7 +926,6 @@ if args.collect:
             print("     " + str(dico_afr[item]['spoligo_vitro_nb']))
             print("     " + str(dico_afr[item][
                                              'spoligo_vitro_new_nb']))
-            save_dico()
 
         # We transform data from 1_3882_SORTED.xls into a dictionary called
         # spol_sit containing spoligotypes with their corresponding SITs.
@@ -1095,7 +1010,6 @@ if args.collect:
             dico_afr[item]['lineage_Coll'] = lignee
             print("Lineage (Coll) : " + ", ".join(dico_afr[item][
                                                         'lineage_Coll']))
-            save_dico()
 
         # ==== TESTING LINEAGE L6+ANIMAL =================================
         # if an item in dico_afr doesn't have a L6+animal lineage, then TODO
@@ -1115,7 +1029,6 @@ if args.collect:
                 dico_afr[item]['lineage_L6+animal'] = 'X'
 
             print(f"Lineage (L6+animal): {dico_afr[item]['lineage_L6+animal']}")
-            save_dico()
 
         # ==== TESTING PGG LINEAGE ======================================
         # If dico_afr has no information about 'lineage_PGG' regarding the
@@ -1205,7 +1118,6 @@ if args.collect:
 
             print("Lineage (PGG): " + dico_afr[item]['lineage_PGG'] + ' (' +
                   ", ".join(dico_afr[item]['lineage_PGG_cp']) + ')')
-            save_dico()
 
         # ==== TESTING PALI LINEAGE =============================
         """
@@ -1256,7 +1168,6 @@ if args.collect:
 
             dico_afr[item]['lineage_Pali'] = lignee
             print("Lineage (Pali) :" + ", ".join(dico_afr[item]['lineage_Pali']))
-            save_dico()
 
         # ==== TESTING SHITIKOV LINEAGE =================================
         # If dico_afr has no information about 'lineage_Shitikov' regarding the
@@ -1295,7 +1206,6 @@ if args.collect:
             dico_afr[item]['lineage_Shitikov'] = lignee
             print("Lineage (Shitikov) : " + ", ".join(dico_afr[item][
                                                         'lineage_Shitikov']))
-            save_dico()
 
         # ==== TESTING STUCKI LINEAGE ====================================
         # If dico_afr has no information about 'lineage_Shitikov' regarding the
@@ -1338,7 +1248,6 @@ if args.collect:
             dico_afr[item]['Lignee_Stucki'] = lignee
             print("Lineage (Stucki): " + ", ".join(dico_afr[item][
                                                         'Lignee_Stucki']))
-            save_dico()
 
         '''
         avant_IS = []
@@ -1501,8 +1410,6 @@ if args.collect:
             except: # TODO precise exception
                 print("The file couldn't be found in the repository.")
 
-    save_dico()
-
     for k in dico_afr:
         if 'Mycobacterium' not in dico_afr[k].get('name') and len(dico_afr[k].
                                     get('name')) > 0:
@@ -1511,3 +1418,46 @@ if args.collect:
     # We display information regarding the SRA
     for cle in dico_afr[item]:
         print(f"{cle}: {dico_afr[item][cle]}")
+
+
+# ==============
+# MAIN PROCEDURE
+# ==============
+
+# ==== DEFINING THE CLI ===================================================
+# We ask the user for the action to take
+mp = argparse.ArgumentParser(prog='CRISPRbuilder-TB', description="Collect and "
+    "annotate Mycobacterium tuberculosis WGS data for CRISPR investigations.")
+mp.add_argument("sra", type=str, help="requires the reference of a SRA in the "
+                                                        "format ...")
+mp.add_argument("--collect", action='store_true', help="collects the reference "
+                                                       "of a SRA to ...")
+mp.add_argument("--list", action='store_true', help="collects the reference "
+                                                "of a list of SRA to ...")
+args = mp.parse_args()
+
+# item represents the RSA reference
+item = args.sra
+
+# We define the path for the file named as the SRA
+rep = 'REP/sequences/' + item + '/'
+
+# ==== INITILIZING THE SEQUENCE OF H37RV AND DICO_AFR =========================
+# We create a string called h37Rv containing the genome sequence of the strain
+# H37Rv.
+h37Rv = fasta_to_seq()
+taille_gen = len(h37Rv)
+dico_afr = {}
+
+# ==== WHEN THE SELECTED OPTION IS COLLECT ===================================
+if args.collect:
+    collect_SRA(item)
+
+if args.list:
+    with open('essai.txt', 'r') as f:
+        liste_SRA = f.readlines()
+        liste_SRA = [elt.replace('\n', '') for elt in liste_SRA]
+    #TODO suppress nul elt form liste_SRA
+    for item in liste_SRA:
+        collect_SRA(item)
+
