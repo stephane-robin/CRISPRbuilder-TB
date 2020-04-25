@@ -12,6 +12,7 @@ from Bio.pairwise2 import format_alignment
 from Bio import Entrez # provides code to access NCBI over the Web
 from datetime import datetime
 import argparse
+import csv
 # TODO check the relevance of importing the whole modules and not only part
 #  of them
 
@@ -1433,7 +1434,7 @@ mp.add_argument("sra", type=str, help="requires the reference of a SRA in the "
 mp.add_argument("--collect", action='store_true', help="collects the reference "
                                                        "of a SRA to ...")
 mp.add_argument("--list", action='store_true', help="collects the reference "
-                                                "of a list of SRA to ...")
+                            "of a list of SRA to ..., NECESSARY TO ADD O")
 args = mp.parse_args()
 
 # item represents the RSA reference
@@ -1453,11 +1454,14 @@ dico_afr = {}
 if args.collect:
     collect_SRA(item)
 
+# ==== WHEN THE SELECTED OPRION IS LIST =====================================
+# We read the content of essai.txt, transform it into a list without spaces
+# and \n symbols. We browse the list to apply collect_SRA().
 if args.list:
     with open('essai.txt', 'r') as f:
-        liste_SRA = f.readlines()
+        chaine_SRA = f.read()
+        liste_SRA = chaine_SRA.strip().split()
         liste_SRA = [elt.replace('\n', '') for elt in liste_SRA]
-    #TODO suppress nul elt form liste_SRA
     for item in liste_SRA:
-        collect_SRA(item)
+        collect_SRA(item.strip())
 
