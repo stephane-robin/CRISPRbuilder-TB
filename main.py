@@ -13,6 +13,7 @@ from Bio import Entrez # provides code to access NCBI over the Web
 from datetime import datetime
 import argparse
 import csv
+from collections import namedtuple
 # TODO check the relevance of importing the whole modules and not only part
 #  of them
 
@@ -231,7 +232,7 @@ def fasta_to_seq():
     return h
 
 
-def to_reads(xlsx_lignee, demi_longueur):
+def to_reads(demi_longueur):
     """
     This function creates a dictionary called Lignee_renvoyee containing 2
     reads per lineage and their specific position, extracted from xlsx_lignee.
@@ -265,18 +266,72 @@ def to_reads(xlsx_lignee, demi_longueur):
         - - from seq1 we switch the character on position 'longueur' from
             'source' to 'cible', and create the substring seq2,
         - - we create the tuple (seq1, seq2, lignee)
-
     """
+    Lignee_renvoyee = {}
+
+    with open('snps.csv', 'rt') as f:
+        csv_reader = csv.reader(f, delimiter=',', quotechar=' ')
+        next(csv_reader)
+        for row in csv_reader:
+            lignee = row[0].strip()
+            if row[1] == ' ':
+                continue
+            pos0 = int(row[1].strip())
+            pos = pos0 - 1
+            source = row[3].strip()[0]
+            cible = row[3].strip()[2]
+            seq1 = h37Rv[pos - demi_longueur:pos + demi_longueur + 1]
+            seq2 = seq1[:demi_longueur] + cible + seq1[demi_longueur + 1:]
+            Lignee_renvoyee[pos] = (seq1, seq2, lignee)
+
+    print("We have selected specific reads to compare with different lineages")
+    return Lignee_renvoyee
+
+
+def to_reads2(xlsx_lignee, demi_longueur):
+    """
+    This function creates a dictionary called Lignee_renvoyee containing 2
+    reads per lineage and their specific position, extracted from xlsx_lignee.
+
+    Args:
+        xlsx_lignee (str): dataset in xlsx format representing a specific
+        lineage
+        demi_longueur (int): half the length of the reads
+
+    Returns:
+        Lignee_renvoyee (dict): with the following structure
+        {
+            (
+                position_number:
+                    (a_read, a_read, lineage_number),
+                ...
+            )
+        }
+
+    Note:
+        - we read the 1st sheet of xlsx_lignee.
+        - we browse the sheet from the 1st row containing data except for
+          headers. For each row, if the 'position' cell is not empty :
+        - - from the 'lineage' column we keep only the lineage number without
+            any * and assign it to 'lignee',
+        - - from the 'position' column we decrease the position number by 1,
+        - - from the 'Allele change on strain +' column we extract the 1st
+            character (A, T, G or C) and assign it to 'source', we extract the
+            3rd character (A, T, G or C) and assign it to 'cible',
+        - - we create a substring seq1 from h37Rv
+        - - from seq1 we switch the character on position 'longueur' from
+            'source' to 'cible', and create the substring seq2,
+        - - we create the tuple (seq1, seq2, lignee)
+    """
+
     Lignee_renvoyee = {}
     wb = load_workbook(filename=xlsx_lignee, read_only=True)
     fiche = wb['Feuil1']
 
     for row in fiche.iter_rows(min_row=2):
         if row[1].value != None:
-            if xlsx_lignee == 'data/Palittapon_SNPs.xlsx':
-                lignee = row[0].value.lstrip('lineage')
-            else:
-                lignee = row[0].value.lstrip('lineage').replace('*', '')
+
+            lignee = row[0].value
             pos0 = row[1].value
             pos = pos0 - 1
             source = row[3].value[0]
@@ -693,17 +748,23 @@ def to_nb_seq(seq, chaine, debut_prefixe, fin_prefixe, debut_suffixe,
 
 def collect_SRA(item):
 
+    # We define the path for the file named as the SRA
+    rep = item
+
+
 
     # ==== CHECKING IF THE SRA IS ALREADY IN THE DATABASE ===================
     #system('cp data/dico_africanum.pkl data/dico_africanum_old.pkl') # TODO ???
+
+    # if the SRA is not in REP, we create a repository named as the SRA in REP
+    if item not in listdir():
+        print(f"We're creating a repository {item}.")
+        mkdir(item)
+
     # If the SRA is not in dico_afr, we add it to dico_afr
     if item not in dico_afr:
         print(f"We're adding {item} to the database.")
         dico_afr[item] = {}
-    # if the SRA is not in REP, we create a repository named as the SRA in REP
-    if item not in listdir('REP/sequences/'):
-        print(f"We're adding {item} to the repository.")
-        mkdir(rep)
 
     # ==== DOWNLOADING FASTA FILES OF THE SRA ===========================
     # If the SRA directo+ry contains no file in fasta format, we download
@@ -711,31 +772,32 @@ def collect_SRA(item):
     if len([u for u in listdir(rep) if 'fasta' in u]) == 0:
         print("We're downloading the files in fasta format")
         # TODO REP is it the good address ???
-        completed = subprocess.run(['parallel-fastq-dump', '-t', '8',
-                                    '--split-files', '--fasta', '-O', 'REP',
-                                    '-s', item]) # TODO change address for prod
-        """ I ADDED IT BECAUSE PARALLEL-FASTA DIDN'T WORK
+        #completed = subprocess.run(['parallel-fastq-dump', '-t', '8',
+                                    #'--split-files', '--fasta', '-O', 'REP',
+                                    #'-s', item]) # TODO change address for prod
+        # I ADDED IT BECAUSE PARALLEL-FASTA DIDN'T WORK
         wd = getcwd()
         chdir(rep)
         completed = subprocess.run(['fastq-dump', '--fasta', '--split-files',
              item])
         chdir(wd)
-        """
+
 
         # if the download worked
         if completed.returncode == 0:
             print("fasta files successfully downloaded.")
             for k in listdir(rep):
                 if k.endswith('.fasta'):
-                    shutil.move('REP' + k, rep + k)
+                    shutil.move('' + k, rep + k) # TODO warning change REP into ''
 
         # if the download didn't work, we delete the SRA from dico_afr
         else:
             del dico_afr[item]
             print("Failed to download fasta files.")
 
-    # If item_1.fasta or item_2.fasta is not in the SRA directory, then we
-    # delete the SRA from dico_afr
+
+    # If item_1.fasta or item_2.fasta is not in the SRA directory, we
+    # delete the SRA from dico_afr and remove the directory SRA.
     if (item + '_1.fasta' not in listdir(rep) or item + '_2.fasta' not in
             listdir(rep)):  # or (item+'_1.fasta' not in listdir(rep) and
         # item+'_3.fasta' not in listdir(rep):
@@ -746,7 +808,7 @@ def collect_SRA(item):
 
     # If SRA_shuffled.fasta is not in the SRA directory, then we mix both fasta
     # files, which correspond to the two splits ends.
-    if item + '_shuffled.fasta' not in listdir(rep):
+    elif item + '_shuffled.fasta' not in listdir(rep):
 
         print("We're mixing both fasta files, which correspond to the two "
               "splits ends.")
@@ -1120,6 +1182,7 @@ def collect_SRA(item):
             print("Lineage (PGG): " + dico_afr[item]['lineage_PGG'] + ' (' +
                   ", ".join(dico_afr[item]['lineage_PGG_cp']) + ')')
 
+
         # ==== TESTING PALI LINEAGE =============================
         """
         - we browse the dictionary of a lineage Pali, Shitikov or Stucki,
@@ -1140,14 +1203,19 @@ def collect_SRA(item):
         # Lignee_Pali containing positions, reads and lineage numbers, we
         # select a read in a specific position before blasting it and updating
         # the lineage in dico_afr[SRA].
+
+
+        cpt = 1 # TODO where is it useful ???
+        cpt += 1  # TODO when do we use cpt ??? what's its purpose ???
+
+        Lignee_SNP = to_reads(demi_longueur)
+
         if 'lineage_Pali' not in dico_afr[item]:
-            Lignee_Pali = to_reads('data/Palittapon_SNPs.xlsx', demi_longueur)
             lignee = []
-            cpt = 1
             print("We're adding the lineage according to the SNPs Pali")
 
-            for item2, pos0 in enumerate(Lignee_Pali):
-                seq1, seq2 = Lignee_Pali[pos0][:2]
+            for item2, pos0 in enumerate(Lignee_SNP):
+                seq1, seq2 = Lignee_SNP[pos0][:2]
                 with open('/tmp/snp.fasta', 'w') as f:
                     f.write('>\n' + seq2)
                 cmd = "blastn -query /tmp/snp.fasta -num_threads 12 -evalue 1e-5 " \
@@ -1162,8 +1230,7 @@ def collect_SRA(item):
                 nb_seq2 = to_nb_seq(seq2, formatted_results, 16, 20, 21, 25)
 
                 if nb_seq2 > nb_seq1:  # or (nb_seq2>0 and nb_seq1==0): # TODO ???
-                    cpt += 1  # TODO when do we use cpt ??? what's its purpose ???
-                    lignee.append(Lignee_Pali[pos0][2])
+                    lignee.append(Lignee_SNP[pos0][2])
 
             lignee = [u for u in sorted(set(lignee))]
 
@@ -1177,14 +1244,11 @@ def collect_SRA(item):
         # select a read in a specific position before blasting it and updating
         # the lineage in dico_afr[SRA].
         if 'lineage_Shitikov' not in dico_afr[item]:
-            Lignee_Shitikov = to_reads('data/Shitikov_L2_SNPs.xlsx',
-                                       demi_longueur)
             lignee = []
-            cpt = 1
             print("We're adding the lineage according to the SNPs Shitikov")
 
-            for item2, pos0 in enumerate(Lignee_Shitikov):
-                seq1, seq2 = Lignee_Shitikov[pos0][:2]
+            for item2, pos0 in enumerate(Lignee_SNP):
+                seq1, seq2 = Lignee_SNP[pos0][:2]
                 with open('/tmp/snp.fasta', 'w') as f:
                     f.write('>\n' + seq2)
                 cmd = "blastn -query /tmp/snp.fasta -num_threads 12 -evalue 1e-5 " \
@@ -1200,8 +1264,7 @@ def collect_SRA(item):
                 nb_seq2 = to_nb_seq(seq2, formatted_results, 16, 20, 21, 25)
 
                 if nb_seq2 > nb_seq1:  # or (nb_seq2>0 and nb_seq1==0): # TODO ???
-                    cpt += 1  # TODO when do we use cpt ??? what's its purpose ???
-                    lignee.append(Lignee_Shitikov[pos0][2])
+                    lignee.append(Lignee_SNP[pos0][2])
 
             lignee = [u for u in sorted(set(lignee))]
             dico_afr[item]['lineage_Shitikov'] = lignee
@@ -1215,13 +1278,11 @@ def collect_SRA(item):
         # select a read in a specific position before blasting it and updating
         # the lineage in dico_afr[SRA].
         if 'Lignee_Stucki' not in dico_afr[item]:
-            Lignee_Stucki = to_reads('data/Stucki_L4-SNPs.xlsx', demi_longueur)
             lignee = []
-            cpt = 1
             print("We're adding the lineage according to the SNPs Stucki")
 
-            for item2, pos0 in enumerate(Lignee_Stucki):
-                seq1, seq2 = Lignee_Stucki[pos0][:2]
+            for item2, pos0 in enumerate(Lignee_SNP):
+                seq1, seq2 = Lignee_SNP[pos0][:2]
                 with open('/tmp/snp.fasta', 'w') as f:
                     f.write('>\n' + seq2)
                 cmd = "blastn -query /tmp/snp.fasta -num_threads 12 -evalue 1e-5 " \
@@ -1236,8 +1297,7 @@ def collect_SRA(item):
                 nb_seq2 = to_nb_seq(seq2, formatted_results, 16, 20, 21, 25)
 
                 if nb_seq2 > nb_seq1:  # or (nb_seq2>0 and nb_seq1==0): # TODO ???
-                    cpt += 1  # TODO when do we use cpt ??? what's its purpose ???
-                    lignee.append(Lignee_Stucki[pos0][2])
+                    lignee.append(Lignee_SNP[pos0][2])
 
             lignee = [u for u in sorted(set(lignee))]
 
@@ -1380,7 +1440,7 @@ def collect_SRA(item):
     if item in dico_afr:
 
         if dico_afr[item].get('REP', '') == '':
-            dico_afr[item]['REP'] = '../REP'
+            dico_afr[item]['REP'] = ''
         # On rajoute d'éventuelles clé manquantes:
 
         dico_afr[item].setdefault('name', '')
@@ -1402,7 +1462,7 @@ def collect_SRA(item):
 
         # If SRA is a metagenome, we delete it from dico_afr and delete the
         # repository in 'REP/sequences'.
-        if 'metagenome' in dico_afr[item]['name'] and item in listdir('REP/sequences'):
+        if 'metagenome' in dico_afr[item]['name'] and item in listdir():
             print(f"The item {item} is a metagenome. We delete it from the "
                   "database.")
             del dico_afr[item]
@@ -1440,9 +1500,6 @@ args = mp.parse_args()
 # item represents the RSA reference
 item = args.sra
 
-# We define the path for the file named as the SRA
-rep = 'REP/sequences/' + item + '/'
-
 # ==== INITILIZING THE SEQUENCE OF H37RV AND DICO_AFR =========================
 # We create a string called h37Rv containing the genome sequence of the strain
 # H37Rv.
@@ -1454,7 +1511,7 @@ dico_afr = {}
 if args.collect:
     collect_SRA(item)
 
-# ==== WHEN THE SELECTED OPRION IS LIST =====================================
+# ==== WHEN THE SELECTED OPTION IS LIST =====================================
 # We read the content of essai.txt, transform it into a list without spaces
 # and \n symbols. We browse the list to apply collect_SRA().
 if args.list:
@@ -1465,3 +1522,42 @@ if args.list:
     for item in liste_SRA:
         collect_SRA(item.strip())
 
+if args.add:
+    chaine_csv = input('Please apply the following format when adding a new '
+                       'line to the lineage.csv database:\n'
+                       '1. use comas between the different fields\n'
+                       '2. don\'t use apostrophe or quote marks around the elemts '
+                       'of the field\n'
+                       '3. fill up the different fields in this order:\n'
+                       'lineage, Position, Gene coord., Allele change, Codon number,'
+                       'Codon change, Amino acid change, Locus Id, Gene name, Gene '
+                       'type, Type of mutation, 5\' gene, 3\' gene, Strand, '
+                       'Sublineage surname, Essential, Origin\n')
+    chaine_csv = chaine_csv.strip()
+    liste_csv = chaine_csv.split(',')
+    liste_csv = [u.strip() for u in liste_csv]
+    if len(liste_csv) > 17:
+        print('The line you wrote doesn\'t match the number of fields in '
+              'lineage.csv. Please proceed again.')
+    else:
+        if len(liste_csv) < 17:
+            liste_tmp = []
+            for i in range(17 - len(liste_csv)):
+                liste_tmp.append(' ')
+            liste_csv.extend(liste_tmp)
+
+        with open('snps.csv', 'a', newline='') as f:
+            c = csv.writer(f, delimiter=',', quotechar=' ',
+                           quoting=csv.QUOTE_MINIMAL)
+            c.writerow(liste_csv)
+
+if args.remove:
+    ligne_csv = input('Please select which line you would like to delete.\n')
+
+if args.change:
+    ligne_csv = input('Please select which line you would like to delete.\n')
+
+# TODO warning SRR8368696_shuffled is built in the current directory and not
+#  in SRR8368696.
+
+# TODO work on the cli for csv
