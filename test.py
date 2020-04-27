@@ -15,34 +15,43 @@ import argparse
 import csv
 from collections import namedtuple
 
-chaine_csv = input('Please apply the following format when adding a new '
-                       'line to the lineage.csv database:\n'
-                       '1. use comas between the different fields\n'
-                       '2. don\'t use apostrophe or quote marks around the elemts '
-                       'of the field\n'
-                       '3. fill up the different fields in this order:\n'
-                       'lineage, Position, Gene coord., Allele change, Codon number,'
-                       'Codon change, Amino acid change, Locus Id, Gene name, Gene '
-                       'type, Type of mutation, 5\' gene, 3\' gene, Strand, '
-                       'Sublineage surname, Essential, Origin\n')
-chaine_csv = chaine_csv.strip()
-liste_csv = chaine_csv.split(',')
-liste_csv = [u.strip() for u in liste_csv]
-if len(liste_csv) > 17:
-    print('The line you wrote doesn\'t match the number of fields in '
-              'lineage.csv. Please proceed again.')
-else:
-    if len(liste_csv) < 17:
-        liste_tmp = []
-        for i in range(17 - len(liste_csv)):
-            liste_tmp.append(' ')
-        liste_csv.extend(liste_tmp)
+def fasta_to_seq():
+    """
+    This function creates a string called h containing the genome sequence of
+    the H37Rv strain without headers, extracted from 'data/NC_000962.3.fasta'
 
-    with open('snps.csv', 'a', newline='') as f:
-        c = csv.writer(f, delimiter=',', quotechar=' ',
-                           quoting=csv.QUOTE_MINIMAL)
-        c.writerow(liste_csv)
+    Returns:
+        h (str): genome sequence in a single line and without the headers
+    """
+    h = open('data/NC_000962.3.fasta').read()
+    h = ''.join(h.split('\n')[1:])
 
+    return h
 
+h37Rv = fasta_to_seq()
+
+def ff():
+    demi_longueur = 20
+    Lignee_renvoyee = {}
+
+    with open('data/lineage.csv', 'rt') as f:
+        csv_reader = csv.reader(f, delimiter=',', quotechar='"')
+        next(csv_reader)
+        for row in csv_reader:
+            if row[1] != '':
+                lignee = row[0].strip()
+                pos0 = int(row[1].strip())
+                pos = pos0 - 1
+                source = row[3].strip()[0]
+                cible = row[3].strip()[2]
+                assert h37Rv[pos] == source
+                seq1 = h37Rv[pos - demi_longueur:pos + demi_longueur + 1]
+                seq2 = seq1[:demi_longueur] + cible + seq1[demi_longueur + 1:]
+                Lignee_renvoyee[pos] = (seq1, seq2, lignee)
+
+    print("We have selected specific reads to compare with different lineages")
+    return Lignee_renvoyee
+
+print(ff())
 
 

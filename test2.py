@@ -16,8 +16,5 @@ import csv
 from collections import namedtuple
 
 
-with open('snps.csv', 'rt') as f:
-    csv_reader = csv.reader(f, delimiter=',', quotechar=' ')
-
-    for row in csv_reader:
-        print(row[0].strip() == 'lineage')
+for pos, spol in enumerate(['old', 'new']):
+    print(pos, spol)
