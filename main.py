@@ -698,8 +698,7 @@ def to_nb_seq(seq, chaine, debut_prefixe, fin_prefixe, debut_suffixe,
     return len([u for u in chaine if seq[fin_prefixe:fin_suffixe] in u]) + \
              len([u for u in chaine if seq[debut_prefixe:debut_suffixe] in u])
 
-# TODO le fichier SRR créé est vide, boucle infinie, les fastas se retrouvent
-#  dans le dossier courant
+
 def collect_SRA(item):
 
     # ==== CHECKING IF THE SRA IS ALREADY IN THE DATABASE ===================
@@ -715,36 +714,24 @@ def collect_SRA(item):
         dico_afr[item] = {}
 
     # ==== DOWNLOADING FASTA FILES FOR THE SRA ===========================
-    # If the SRA directo+ry contains no file in fasta format, we download
+    # If the SRA directory contains no file in fasta format, we download
     # directly from NCBI the fasta regarding this SRA
     if len([u for u in listdir(rep) if 'fasta' in u]) == 0:
         print("We're downloading the files in fasta format")
 
         completed = subprocess.run(['parallel-fastq-dump', '-t', '8',
                                     '--split-files', '--fasta', '-O', '',
-                                    '-s', item]) #TODO warning changed 'REP' into ''
-        # I ADDED IT BECAUSE PARALLEL-FASTA DIDN'T WORK
-        """
-        wd = getcwd()
-        chdir(rep)
-        completed = subprocess.run(['fastq-dump', '--fasta', '--split-files',
-             item])
-        chdir(wd)
-        """
-
-
+                                    '-s', item])
         # if the download worked
         if completed.returncode == 0:
             print("fasta files successfully downloaded.")
-            for k in listdir(rep):
+            for k in listdir():
                 if k.endswith('.fasta'):
-                    shutil.move('' + k, rep + k) # TODO warning change REP into ''
-
+                    shutil.move(k, rep + k)
         # if the download didn't work, we delete the SRA from dico_afr
         else:
             del dico_afr[item]
             print("Failed to download fasta files.")
-
 
     # If item_1.fasta or item_2.fasta is not in the SRA directory, we
     # delete the SRA from dico_afr and remove the directory SRA.
@@ -782,19 +769,7 @@ def collect_SRA(item):
                 print(f"{cle}: {dico_afr[item][cle]}")
         """
         dico_afr[item]['SRA'] = item
-        to_save = False # TODO not used
 
-    '''
-    for fic in ['_1', '_2']:
-        with open(rep+item+fic+'.fasta', 'r') as f:
-            txt = f.read()
-        txt = txt.replace(item+'.', item+fic+'.')
-        with open(rep+item+fic+'.fasta', 'w') as f:
-            f.write(txt)
-    with open(rep+item+'_shuffled.fasta', 'w') as f:
-        f.write(open(rep+item+'_1.fasta', 'r').read())
-        f.write(open(rep+item+'_2.fasta', 'r').read())
-    '''
 
     # ==== UPDATING NB_READS IN DICO_AFR ================================
     # If there's no nb_reads reference in dico_afr[SRA], we open 'nb.txt' to

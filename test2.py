@@ -15,6 +15,5 @@ import argparse
 import csv
 from collections import namedtuple
 
-
-for pos, spol in enumerate(['old', 'new']):
-    print(pos, spol)
+item = 'SRR8368696'
+rep = item + '/'
