@@ -15,5 +15,13 @@ import argparse
 import csv
 from collections import namedtuple
 
-item = 'SRR8368696'
-rep = item + '/'
+with open('data/lineage2.csv', 'r', newline='') as csvin, \
+        open('data/lineage3.csv', 'w', newline='') as csvout:
+    csv_reader = csv.reader(csvin, delimiter=',', quotechar='"',
+                            quoting=csv.QUOTE_MINIMAL)
+    csv_writer = csv.writer(csvout, delimiter=',',
+                            quotechar='"',
+                            quoting=csv.QUOTE_MINIMAL)
+    for row in csv_reader:
+        if row[0].strip() != '4.1.3':
+            csv_writer.writerow(row)

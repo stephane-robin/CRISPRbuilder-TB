@@ -1443,15 +1443,20 @@ def collect_SRA(item):
 mp = argparse.ArgumentParser(prog='CRISPRbuilder-TB', description="Collect and "
     "annotate Mycobacterium tuberculosis WGS data for CRISPR investigations.")
 mp.add_argument("sra", type=str, help="requires the reference of a SRA in the "
-                                                        "format ...")
+                "format ... or the path to a file. See doc")
 mp.add_argument("--collect", action='store_true', help="collects the reference "
                                                        "of a SRA to ...")
 mp.add_argument("--list", action='store_true', help="collects the reference "
                             "of a list of SRA to ..., NECESSARY TO ADD O")
+mp.add_argument("--add", action='store_true', help="collects data to updata "
+                                                   "data/lineage.csv")
+mp.add_argument("--remove", action='store_true', help="")
+mp.add_argument("--change", action='store_true', help="")
+mp.add_argument("--print", action='store_true', help="")
 args = mp.parse_args()
 
 # item represents the RSA reference
-item = args.sra
+valeur_option = args.sra
 
 # ==== INITILIZING THE SEQUENCE OF H37RV AND DICO_AFR =========================
 # We create a string called h37Rv containing the genome sequence of the strain
@@ -1462,13 +1467,14 @@ dico_afr = {}
 
 # ==== WHEN THE SELECTED OPTION IS COLLECT ===================================
 if args.collect:
-    collect_SRA(item)
+    collect_SRA(valeur_option)
 
 # ==== WHEN THE SELECTED OPTION IS LIST =====================================
 # We read the content of essai.txt, transform it into a list without spaces
 # and \n symbols. We browse the list to apply collect_SRA().
 if args.list:
-    with open('essai.txt', 'r') as f:
+
+    with open(valeur_option, 'r') as f:
         chaine_SRA = f.read()
         liste_SRA = chaine_SRA.strip().split()
         liste_SRA = [elt.replace('\n', '') for elt in liste_SRA]
@@ -1476,41 +1482,117 @@ if args.list:
         collect_SRA(item.strip())
 
 if args.add:
-    chaine_csv = input('Please apply the following format when adding a new '
-                       'line to the lineage.csv database:\n'
-                       '1. use comas between the different fields\n'
-                       '2. don\'t use apostrophe or quote marks around the elemts '
-                       'of the field\n'
-                       '3. fill up the different fields in this order:\n'
-                       'lineage, Position, Gene coord., Allele change, Codon number,'
-                       'Codon change, Amino acid change, Locus Id, Gene name, Gene '
-                       'type, Type of mutation, 5\' gene, 3\' gene, Strand, '
-                       'Sublineage surname, Essential, Origin\n')
-    chaine_csv = chaine_csv.strip()
-    liste_csv = chaine_csv.split(',')
-    liste_csv = [u.strip() for u in liste_csv]
-    if len(liste_csv) > 17:
-        print('The line you wrote doesn\'t match the number of fields in '
-              'lineage.csv. Please proceed again.')
-    else:
-        if len(liste_csv) < 17:
-            liste_tmp = []
-            for i in range(17 - len(liste_csv)):
-                liste_tmp.append(' ')
-            liste_csv.extend(liste_tmp)
+    reponse = input("You're about to add a new content to the file "
+                    "lineage.csv. Do you wish to proceed ? (y/n)")
+    if reponse=='y':
+        chaine_csv = input("Please fill in the various fields. If you don't "
+                           "know the value of a specific field, press enter."
+                           "\nLineage "
+                            "?\n").strip()
+        chaine_csv += ',' + input("Position ?\n").strip()
+        chaine_csv += ',' + input("Gene coord. ?\n").strip()
+        chaine_csv += ',' + input("Allele change ?\n").strip()
+        chaine_csv += ',' + input("Codon number ?\n").strip()
+        chaine_csv += ',' + input("Codon change ?\n").strip()
+        chaine_csv += ',' + input("Amino acid change ?\n").strip()
+        chaine_csv += ',' + input("Locus Id ?\n").strip()
+        chaine_csv += ',' + input("Gene name ?\n").strip()
+        chaine_csv += ',' + input("Gene type ?\n").strip()
+        chaine_csv += ',' + input("Type of mutation ?\n").strip()
+        chaine_csv += ',' + input("5' gene ?\n").strip()
+        chaine_csv += ',' + input("3' gene ?\n").strip()
+        chaine_csv += ',' + input("Strand ?\n").strip()
+        chaine_csv += ',' + input("Sublineage surname ?\n").strip()
+        chaine_csv += ',' + input("Essential ?\n").strip() + ',,'
 
-        with open('data/lineage.csv', 'a', newline='') as f:
-            c = csv.writer(f, delimiter=',', quotechar=' ',
+        chaine_csv = chaine_csv.strip()
+        liste_csv = chaine_csv.split(',')
+        liste_csv = [u.strip() for u in liste_csv]
+
+        with open('data/lineage2.csv', 'a', newline='') as f:
+            c = csv.writer(f, delimiter=',', quotechar='"',
                            quoting=csv.QUOTE_MINIMAL)
             c.writerow(liste_csv)
+    else:
+        print("Your request was cancelled")
+
+if args.print:
+    print("Here is the content of the file data/lineage.csv:\n")
+    with open('data/lineage.csv', 'r', newline='') as f:
+        csv_reader = csv.reader(f, delimiter=',', quotechar='"')
+        for row in csv_reader:
+            print(', '.join(row))
 
 if args.remove:
-    ligne_csv = input('Please select which line you would like to delete.\n')
+    reponse = input("You're about to remove a content from the file "
+                    "lineage.csv. Do you wish to proceed ? (y/n)")
+    if reponse == 'y':
+        ligne_lineage_csv = input("Which lineage would you like to delete ?\n")
+        ligne_pos_csv = input("Confirm the position in this lineage you would "
+                              "like to delete:\n")
+        with open('data/lineage.csv', 'r', newline='') as csvin, \
+                open('data/lineage2.csv', 'w', newline='') as csvout:
+            csv_reader = csv.reader(csvin, delimiter=',', quotechar='"',
+                                    quoting=csv.QUOTE_MINIMAL)
+            csv_writer = csv.writer(csvout, delimiter=',', quotechar='"',
+                                    quoting=csv.QUOTE_MINIMAL)
+            for row in csv_reader:
+                if row[0].strip() != ligne_lineage_csv or row[1].strip() != \
+                        ligne_pos_csv:
+                    csv_writer.writerow(row)
+        remove('data/lineage.csv')
+        rename('data/lineage2.csv', 'data/lineage.csv')
+    else:
+        print("Your request was cancelled.")
 
 if args.change:
-    ligne_csv = input('Please select which line you would like to delete.\n')
+    reponse = input("You're about to change the content from the file "
+                    "lineage.csv. Do you wish to proceed ? (y/n)")
+    if reponse == 'y':
+        ligne_lineage_csv = input("Which lineage would you like to change ?\n")
+        ligne_pos_csv = input("Confirm the position in this lineage you would "
+                              "like to make change:\n")
+        chaine_csv = input("Please fill in the various fields. If you don't "
+                           "know the value of a specific field, press enter."
+                           "\nLineage "
+                           "?\n").strip()
+        chaine_csv += ',' + input("Position ?\n").strip()
+        chaine_csv += ',' + input("Gene coord. ?\n").strip()
+        chaine_csv += ',' + input("Allele change ?\n").strip()
+        chaine_csv += ',' + input("Codon number ?\n").strip()
+        chaine_csv += ',' + input("Codon change ?\n").strip()
+        chaine_csv += ',' + input("Amino acid change ?\n").strip()
+        chaine_csv += ',' + input("Locus Id ?\n").strip()
+        chaine_csv += ',' + input("Gene name ?\n").strip()
+        chaine_csv += ',' + input("Gene type ?\n").strip()
+        chaine_csv += ',' + input("Type of mutation ?\n").strip()
+        chaine_csv += ',' + input("5' gene ?\n").strip()
+        chaine_csv += ',' + input("3' gene ?\n").strip()
+        chaine_csv += ',' + input("Strand ?\n").strip()
+        chaine_csv += ',' + input("Sublineage surname ?\n").strip()
+        chaine_csv += ',' + input("Essential ?\n").strip() + ',,'
+        chaine_csv = chaine_csv.strip()
+        liste_csv = chaine_csv.split(',')
+        liste_csv = [u.strip() for u in liste_csv]
+
+        with open('data/lineage.csv', 'r', newline='') as csvin, \
+                open('data/lineage2.csv', 'w', newline='') as csvout:
+            csv_reader = csv.reader(csvin, delimiter=',', quotechar='"',
+                                    quoting=csv.QUOTE_MINIMAL)
+            csv_writer = csv.writer(csvout, delimiter=',', quotechar='"',
+                                    quoting=csv.QUOTE_MINIMAL)
+            for row in csv_reader:
+                if row[0].strip() != ligne_lineage_csv or row[1].strip() != \
+                        ligne_pos_csv:
+                    csv_writer.writerow(row)
+                else:
+                    csv_writer.writerow(liste_csv)
+        remove('data/lineage.csv')
+        rename('data/lineage2.csv', 'data/lineage.csv')
+    else:
+        print("Your request was cancelled.")
+
+
 
 # TODO warning SRR8368696_shuffled is built in the current directory and not
 #  in SRR8368696.
-
-# TODO work on the cli for csv
