@@ -1,3 +1,5 @@
+import pathlib
+
 import xmltodict # interprets XML files like JSON files
 import subprocess # allows to connect to input/output/error pipes of processes
 from os import mkdir, chdir, remove, listdir, rename, getcwd, system, stat
@@ -14,14 +16,10 @@ from datetime import datetime
 import argparse
 import csv
 from collections import namedtuple
+from pathlib import Path
+import pathlib
 
-with open('data/lineage2.csv', 'r', newline='') as csvin, \
-        open('data/lineage3.csv', 'w', newline='') as csvout:
-    csv_reader = csv.reader(csvin, delimiter=',', quotechar='"',
-                            quoting=csv.QUOTE_MINIMAL)
-    csv_writer = csv.writer(csvout, delimiter=',',
-                            quotechar='"',
-                            quoting=csv.QUOTE_MINIMAL)
-    for row in csv_reader:
-        if row[0].strip() != '4.1.3':
-            csv_writer.writerow(row)
+p = pathlib.Path.cwd().joinpath('essai.txt')
+with open(p, 'r') as f:
+    print(f.read())
+#print(pathlib.Path.home().joinpath('sequences', item, '/'))
