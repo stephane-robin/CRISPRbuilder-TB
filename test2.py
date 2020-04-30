@@ -19,7 +19,6 @@ from collections import namedtuple
 from pathlib import Path
 import pathlib
 
-p = pathlib.Path.cwd().joinpath('essai.txt')
-with open(p, 'r') as f:
-    print(f.read())
+p = pathlib.Path..joinpath('root', 'tmp').as_posix()
+print((p))
 #print(pathlib.Path.home().joinpath('sequences', item, '/'))

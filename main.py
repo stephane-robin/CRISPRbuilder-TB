@@ -172,19 +172,18 @@ def to_Brynildsrud():
             ...
         }
     """
+    Brynildsrud = {}
+    source, author, study, location, date = '', '', '', '', ''
     p = pathlib.Path.cwd().joinpath('data', 'Brynildsrud_Dataset_S1.xls')
     wwb = open_workbook(p)
     wws = wwb.sheet_by_index(0)
-
-    Brynildsrud = {}
-    source, author, study, location, date = '', '', '', '', ''
 
     for row in range(1, wws.nrows):
         srr = wws.cell_value(row, 4)
 
         if len(srr) > 1:
-            Brynildsrud[srr] = {}
 
+            Brynildsrud[srr] = {}
             source = wws.cell_value(row, 5).replace(',', '')
 
             if source == 'This study':
@@ -223,7 +222,7 @@ def to_Brynildsrud():
 def fasta_to_seq():
     """
     This function creates a string called h containing the genome sequence of
-    the H37Rv strain without headers, extracted from 'data/NC_000962.3.fasta'
+    the H37RV strain without headers, extracted from 'data/NC_000962.3.fasta'
 
     Returns:
         h (str): genome sequence in a single line and without the headers
@@ -234,7 +233,7 @@ def fasta_to_seq():
     return h
 
 
-def to_reads(demi_longueur):
+def to_reads():
     """
     This function creates a dictionary called Lignee_renvoyee containing 2
     reads per lineage and their specific position, extracted from xlsx_lignee.
@@ -242,7 +241,6 @@ def to_reads(demi_longueur):
     Args:
         xlsx_lignee (str): dataset in xlsx format representing a specific
         lineage
-        demi_longueur (int): half the length of the reads
 
     Returns:
         Lignee_renvoyee (dict): with the following structure
@@ -264,16 +262,17 @@ def to_reads(demi_longueur):
         - - from the 'Allele change on strain +' column we extract the 1st
             character (A, T, G or C) and assign it to 'source', we extract the
             3rd character (A, T, G or C) and assign it to 'cible',
-        - - we create a substring seq1 from h37Rv
+        - - we create a substring seq1 from H37RV
         - - from seq1 we switch the character on position 'longueur' from
             'source' to 'cible', and create the substring seq2,
         - - we create the tuple (seq1, seq2, lignee)
     """
     Lignee_renvoyee = {}
 
-    with open(p_csv, 'rt') as f:
+    with open(P_CSV, 'rt') as f:
         csv_reader = csv.reader(f, delimiter=',', quotechar='"')
         next(csv_reader)
+
         for row in csv_reader:
             if row[1] != '':
                 lignee = row[0].strip()
@@ -281,9 +280,9 @@ def to_reads(demi_longueur):
                 pos = pos0 - 1
                 source = row[3].strip()[0]
                 cible = row[3].strip()[2]
-                assert h37Rv[pos] == source
-                seq1 = h37Rv[pos - demi_longueur:pos + demi_longueur + 1]
-                seq2 = seq1[:demi_longueur] + cible + seq1[demi_longueur + 1:]
+                assert H37RV[pos] == source
+                seq1 = H37RV[pos - DEMI_LONGUEUR:pos + DEMI_LONGUEUR + 1]
+                seq2 = seq1[:DEMI_LONGUEUR] + cible + seq1[DEMI_LONGUEUR + 1:]
                 Lignee_renvoyee[pos] = (seq1, seq2, lignee)
 
     print("We have selected specific reads to compare with different lineages")
@@ -638,11 +637,12 @@ def collect_SRA(item):
     # ==== CHECKING IF THE SRA IS ALREADY IN THE DATABASE ===================
     # We define the path for the file named as the SRA
     rep = pathlib.Path.cwd().joinpath('sequences', item)
-    rep = 'sequences/' + item + '/'
+    # TODO check that it corresponds to rep = 'sequences/' + item + '/'
+
     # if the SRA is not in sequences, we create a directory named as the SRA in
     # sequences
-    p = Path("sequences/" + item)
-    p.mkdir(exist_ok=True, parents=True)
+    # TODO CHECK p = Path("sequences/" + item)
+    rep.mkdir(exist_ok=True, parents=True)
     if item not in listdir('sequences'):
         print(f"We're creating a directory {item}.")
     # If the SRA is not in dico_afr, we add it to dico_afr
@@ -672,8 +672,8 @@ def collect_SRA(item):
 
     # If item_1.fasta or item_2.fasta is not in the SRA directory, we
     # delete the SRA from dico_afr and remove the directory SRA.
-    if (item + '_1.fasta' not in listdir(rep) or item + '_2.fasta' not in
-            listdir(rep)):  # or (item+'_1.fasta' not in listdir(rep) and
+    if (item + '_1.fasta' not in listdir(rep) or
+            item + '_2.fasta' not in listdir(rep)):  # or (item+'_1.fasta' not in listdir(rep) and
         # item+'_3.fasta' not in listdir(rep):
         del dico_afr[item]
         shutil.rmtree(rep)
@@ -689,35 +689,21 @@ def collect_SRA(item):
 
         for fic in ['_1', '_2']:
             # TODO
+
             system("sed -i 's/" + item + './' + item + fic + "./g' " +
                    rep + item + fic + '.fasta')
-        # TODO
         system("cat " + rep + item + '_1.fasta ' + rep + item + '_2.fasta > ' +
                rep + item + '_shuffled.fasta')
-
-    # ==== UPDATING SRA IN DICO_AFR ===================================
-    # If 'dico.txt' is in the SRA directory, we assign the SRA reference
-    # to dico_afr
-    if 'dico.txt' in listdir(rep):
-        dico_afr[item] = eval(open(rep + 'dico.txt').read())
-        """ TO WORK ON IT IS PRINTING dico_afr MAYBE TOO EARLY
-        for cle in dico_afr[item]:
-            if ('spoligo' not in cle) or ('spoligo' in cle and 'new' not
-                            in cle) or ('spoligo' in cle and 'new' in cle):
-                print(f"{cle}: {dico_afr[item][cle]}")
-        """
-        dico_afr[item]['SRA'] = item
-
 
     # ==== UPDATING NB_READS IN DICO_AFR ================================
     # If there's no nb_reads reference in dico_afr[SRA], we open 'nb.txt' to
     # evaluate this number.
     if 'nb_reads' not in dico_afr[item] or dico_afr[item]['nb_reads'] == '':
-        # TODO
-        system('cat ' + rep + item + "_shuffled.fasta | grep '>' | wc -l > "
-               "/tmp/nb.txt")
-        p = pathlib.Path.home().joinpath('tmp', 'nb.txt')
+        p = pathlib.Path.home().joinpath('tmp', 'nb.txt').as_posix()
+        print(p)
         # TODO check  /tmp/nb.txt
+        system('cat ' + rep + item + "_shuffled.fasta | grep '>' | wc -l > "
+               + p)
         nb = eval(open(p).read().split('\n')[0])
         #nb = open(rep+item+'_shuffled.fasta').read().count('>')
         print("The number of reads is: ", nb)
@@ -835,10 +821,13 @@ def collect_SRA(item):
             for pos, spol in enumerate(['old', 'new']):
                 # TODO check /tmp/' + item + '_'+spol+'.blast
                 # TODO data/spoligo_' + spol + '.fasta
+                # TODO check /tmp/' + item + '_' + spol + '.blast ' + rep
                 p1 = pathlib.Path.home().joinpath('tmp', item + '_' + spol +
                                                  '.blast')
                 p2 = pathlib.Path.cwd().joinpath('data', 'spoligo_' + spol +
                                                  '.fasta')
+                p3 = pathlib.Path.home().joinpath('tmp', item + '_' + spol +
+                                                  '.blast ' + rep)
                 with open(p1) as f:
                     matches = f.read()
                     nb = open(p2).read().count('>')
@@ -856,8 +845,8 @@ def collect_SRA(item):
                 dico_afr[item]['spoligo' + ['', '_new'][pos] + '_nb'] = [
                     matches.count('espaceur' + spol.capitalize() + str(k) + ',')
                     for k in range(1, nb + 1)]
-                # TODO
-                system('mv /tmp/' + item + '_' + spol + '.blast ' + rep)
+
+                system('mv '+ p3)
 
             print("     " + dico_afr[item]['spoligo'])
             print("     " + str(dico_afr[item]['spoligo_nb']))
@@ -872,17 +861,19 @@ def collect_SRA(item):
             dico_afr[item]['spoligo_vitro_new'] = ''
 
             completed = subprocess.run("blastn -num_threads 8 -query "
-                        "data/spoligo_vitro.fasta -evalue 1e-6 -task blastn -db"
-                        " " + rep + item + " -outfmt '10 qseqid sseqid sstart "
-                        "send qlen length score evalue' -out /tmp/" + item +
-                        "_vitro.blast", shell=True)
+                                       "data/spoligo_vitro.fasta -evalue 1e-6 "
+                                       "-task blastn -db " + rep + item +
+                                       " -outfmt '10 qseqid sseqid sstart send "
+                                       "qlen length score evalue' -out /tmp/" +
+                                       item + "_vitro.blast", shell=True)
             assert completed.returncode == 0
 
             completed = subprocess.run("blastn -num_threads 8 -query "
-                        "data/spoligo_vitro_new.fasta -evalue 1e-6 -task blastn"
-                        " -db " + rep + item + " -outfmt '10 qseqid sseqid "
-                        "sstart send qlen length score evalue' -out /tmp/" +
-                        item + "_vitro_new.blast", shell=True)
+                                       "data/spoligo_vitro_new.fasta -evalue "
+                                       "1e-6 -task blastn -db " + rep + item +
+                                       " -outfmt '10 qseqid sseqid sstart send "
+                                       "qlen length score evalue' -out /tmp/" +
+                                       item + "_vitro_new.blast", shell=True)
             assert completed.returncode == 0
 
             print("We write the spoligo_vitro obtained in the csv file")
@@ -896,8 +887,7 @@ def collect_SRA(item):
             system('mv /tmp/' + item + '_*.blast ' + rep)
 
             print("     " + str(dico_afr[item]['spoligo_vitro_nb']))
-            print("     " + str(dico_afr[item][
-                                             'spoligo_vitro_new_nb']))
+            print("     " + str(dico_afr[item]['spoligo_vitro_new_nb']))
 
         # We transform data from 1_3882_SORTED.xls into a dictionary called
         # spol_sit containing spoligotypes with their corresponding SITs.
@@ -913,9 +903,6 @@ def collect_SRA(item):
         # with the 'SIT' reference.
         if 'SIT_silico' not in dico_afr[item]:
             add_spoligo_dico('SIT_silico', dico_afr, item, spol_sit)
-
-        demi_longueur = 20
-
 
         # ==== TESTING LINEAGE L6+ANIMAL =================================
         # if an item in dico_afr doesn't have a L6+animal lineage, then TODO
@@ -942,12 +929,12 @@ def collect_SRA(item):
         # another one around position 7585-1 before blasting it and updating
         # the lineage in dico_afr[SRA].
         """
-        This function selects a read around the position pos (using demi_longueur),
+        This function selects a read around the position pos (using DEMI_LONGUEUR),
         transforms the read before blasting it. The result is analysed to update
         the lineage.
         Note:
         - we select a read 'seq1' around a specific position 'pos' and define
-          its length by twice 'demi_longueur',
+          its length by twice 'DEMI_LONGUEUR',
         - from the read 'seq1', we define a read 'seq2' which is 'seq1' with
           a nitrogenous base replaced by 'A' at the 'debut_suffixe-1' position,
         - we serialize the read 'seq2' into 'snp.fasta' and blast the file
@@ -956,8 +943,8 @@ def collect_SRA(item):
 
         Examples:
         In this example, we decide to change in position 323 the nitrogenous
-        base into A. We thus assign 324 to 'pos' and 20 to 'demi_longueur'.
-        h represents h37Rv. The 2 different reads are composed of the
+        base into A. We thus assign 324 to 'pos' and 20 to 'DEMI_LONGUEUR'.
+        h represents H37RV. The 2 different reads are composed of the
         following strings
 
         seq1 = h[304] ... h[344]
@@ -983,7 +970,7 @@ def collect_SRA(item):
             lineage = []
             print("We're adding the lineage according to the SNPs PGG")
             pos = 2154724
-            seq1 = h37Rv[pos - demi_longueur:pos + demi_longueur + 1]
+            seq1 = H37RV[pos - DEMI_LONGUEUR:pos + DEMI_LONGUEUR + 1]
             seq2 = seq1[:19] + 'A' + seq1[20:]
             formatted_results = to_formatted_results(seq2, rep, item)
             nb_seq1 = to_nb_seq(seq1, formatted_results, 15, 19, 20, 24)
@@ -998,7 +985,7 @@ def collect_SRA(item):
             print("The lineage is being updated.")
 
             pos = 7585-1
-            seq1 = h37Rv[pos - demi_longueur:pos + demi_longueur + 1]
+            seq1 = H37RV[pos - DEMI_LONGUEUR:pos + DEMI_LONGUEUR + 1]
             seq2 = seq1[:20] + 'A' + seq1[21:]
             formatted_results = to_formatted_results(seq2, rep, item)
             nb_seq1 = to_nb_seq(seq1, formatted_results, 16, 20, 21, 25)
@@ -1025,15 +1012,15 @@ def collect_SRA(item):
             print("Lineage (PGG): " + dico_afr[item]['lineage_PGG'] + ' (' +
                   ", ".join(dico_afr[item]['lineage_PGG_cp']) + ')')
 
-            Lignee_SNP = to_reads(demi_longueur)
+            Lignee_SNP = to_reads()
 
             # ==== TESTING LINEAGE COLL =======================================
             # If 'lineage_Coll' is undefined for the SRA in dico_afr, we parse a
             # file containing Coll lineage SNPs to compare with chosen reads and
             # update dico_afr.
             # MARKER
-            if 'lineage_Coll' not in dico_afr[item] or dico_afr[item][
-                'lineage_Coll'] == '':
+            if 'lineage_Coll' not in dico_afr[item] or \
+                    dico_afr[item]['lineage_Coll'] == '':
                 lignee = []
                 print("We're adding the lineage according to the SNPs Coll")
 
@@ -1043,9 +1030,9 @@ def collect_SRA(item):
                     for row in csv_reader:
                         if row[1] != '':
                             pos = row[1].strip() - 1
-                            assert h37Rv[pos] == row[3].strip().split('/')[0]
+                            assert H37RV[pos] == row[3].strip().split('/')[0]
                             # print(row[0].value, row[1].value-1, row[3].value.split('/'))
-                            seq1 = h37Rv[pos - demi_longueur:pos + demi_longueur
+                            seq1 = H37RV[pos - DEMI_LONGUEUR:pos + DEMI_LONGUEUR
                                                              + 1]
 
                             if '*' not in row[0].strip():
@@ -1060,10 +1047,13 @@ def collect_SRA(item):
                             with open('/tmp/snp.fasta', 'w') as file:
                                 file.write('>\n' + seq2)
                             result = subprocess.run(["blastn", "-num_threads",
-                                    "8", "-query", "/tmp/snp.fasta", "-evalue",
-                                    "1e-5", "-task", "blastn", "-db",
-                                    rep + item, "-outfmt", "10 sseq"],
-                                    stdout=subprocess.PIPE)
+                                                     "8", "-query",
+                                                     "/tmp/snp.fasta",
+                                                     "-evalue", "1e-5", "-task",
+                                                     "blastn", "-db", rep +
+                                                     item, "-outfmt",
+                                                     "10 sseq"],
+                                                    stdout=subprocess.PIPE)
                             formatted_results = result.stdout.decode(
                                 'utf8').splitlines()
                             # nb_seq1 = formated_results.count(seq1)
@@ -1105,10 +1095,6 @@ def collect_SRA(item):
         # Lignee_Pali containing positions, reads and lineage numbers, we
         # select a read in a specific position before blasting it and updating
         # the lineage in dico_afr[SRA].
-
-        cpt = 1 # TODO where is it useful ???
-        cpt += 1  # TODO when do we use cpt ??? what's its purpose ???
-
         if 'lineage_Pali' not in dico_afr[item]:
             lignee = []
             print("We're adding the lineage according to the SNPs Pali")
@@ -1209,120 +1195,6 @@ def collect_SRA(item):
             print("Lineage (Stucki): " + ", ".join(dico_afr[item][
                                                         'Lignee_Stucki']))
 
-        '''
-        avant_IS = []
-        if dico_afr[item]['IS_mapper'] == '':
-        if 'ISmapper' not in listdir(REP) or item not in listdir(REP+'ISmapper/'):
-            print("   - On exécute ISmapper")    
-            rename(rep+item+'_1.fasta', rep+item+'_1.fastq')
-            rename(rep+item+'_2.fasta', rep+item+'_2.fastq')
-            completed = subprocess.run('ismap --reads '+rep+'*fastq --queries '+REP+'data/IS6110.fasta --reference '+REP+'data/H37Rv.gb --output_dir '+REP+'ISmapper', shell = True)
-            assert completed.returncode == 0
-            rename(rep+item+'_1.fastq', rep+item+'_1.fasta')
-            rename(rep+item+'_2.fastq', rep+item+'_2.fasta')
-            for fic in listdir(REP):
-                if '.log' in fic:
-                    rename(REP+fic, REP+'ISmapper/'+item+'/IS6110/'+fic)
-        print("   - On collecte les résultats d'ISmapper")
-        dico_afr[item]['IS_mapper'] = open(REP+'ISmapper/'+item+'/IS6110/'+item+'__NC_000962.3_table.txt').read().split('\n')[1]
-        save_dico()'''
-    '''
-    if dico_afr[item]['MIRU02'] == '':
-        print("   - On exécute MIRU-profiler")    
-        system(REP+'./MIRU-profiler -i '+rep+item+'_shuffled.fasta')
-        # On inscrit les MIRU dans le dico
-        res=open(REP+'24MIRU_results').read().split('\n')
-        if len(res)>1:
-            res = [u for u in res if len(u)>1]
-            for item2, k in enumerate(res[0].split('\t')[1:]):
-                dico_afr[item][k] = res[-1].split('\t')[item2+1]
-            save_dico()
-        # On effectue du nettoyage
-        rename(REP+'24MIRU_results', rep+'24MIRU_results')
-        shutil.rmtree(REP+'OUTPUT')'''
-    """
-    if dico_afr[item]['MIRU02'] == '':
-        if  'auto' not in ''.join(listdir(rep)):
-            print("   - On exécute velveth")
-            #system(REP+'./velveth '+rep+'auto 23,52,2 -fasta -shortPaired1 '+rep+item+'_shuffled.fasta')
-        '''dicoN50 = {}
-        for nom in listdir(rep):
-            if 'auto' in nom:
-                with open(rep+nom+'/Log') as f:
-                    log = f.read()
-                    if 'n50' in log:
-                        dicoN50[nom] = eval(log.split('n50 of ')[1].split(',')[0])
-                    else:
-                        print("   - On exécute velvetg")    
-                        system(REP+'./velvetg '+rep+nom+' -exp_cov auto')                            
-                        dicoN50[nom] = eval(log.split('n50 of ')[1].split(',')[0])
-        print("   - On ne conserve que le meilleur contig")    
-        best_contig = max([(dicoN50[cle], cle) for cle in dicoN50])[1]
-        for nom in listdir(rep):
-            if 'auto' in nom and nom != best_contig:
-                shutil.rmtree(rep+nom)
-        print("   - On exécute MIRU-profiler")    
-        system(REP+'./MIRU-profiler -i '+rep+best_contig+'/contigs.fa')
-        # On inscrit les MIRU dans le dico
-        res=open(REP+'24MIRU_results').read().split('\n')
-        if len(res)>1:
-            res = [u for u in res if len(u)>1]
-            for item2, k in enumerate(res[0].split('\t')[1:]):
-                dico_afr[item][k] = res[-1].split('\t')[item2+1]
-            save_dico()
-        # On effectue du nettoyage
-        rename(REP+'24MIRU_results', rep+'24MIRU_results')
-        shutil.rmtree(REP+'OUTPUT')'''
-        """
-    """if 'IS6110.log' not in listdir(rep) and item+"_IS.blast" not in listdir(rep): # or stat(rep+'IS6110.log').st_size == 0:
-        print("   - On compte le nombre d'IS6110")
-        cmd = "blastn -query data/IS6110.fasta -evalue 1e-5 -task blastn -db "+rep+item+" -max_target_seqs 2000000 -outfmt '10 qstart sstart send sseqid' -out /tmp/"+item+"_IS.blast"
-        system(cmd)
-        with open("/tmp/"+item+"_IS.blast") as f:
-            dd = f.read().splitlines()
-        copyfile("/tmp/"+item+"_IS.blast", rep+item+"_IS.blast")
-        ee=[]
-        for k in range(41,70):
-            ee.extend([u for u in dd if u.startswith('1,'+str(k)+',')])
-        ee = [(u.split(',')[1], u.split(',')[3]) for u in ee if eval(u.split(',')[1])<eval(u.split(',')[2])]
-        if ee != []:
-            fasta_sequences = {}
-            for u in ['_1', '_2']:
-                fasta_sequences[item+u] = SeqIO.parse(open(rep+item+u+'.fasta'),'fasta')
-            avant = []
-            avant2 = []
-            for sens in fasta_sequences:
-                for fasta in fasta_sequences[sens]:
-                    name, sequence = fasta.id, str(fasta.seq)
-                    for u in ee:
-                        if name == u[1]:
-                            seq = sequence[eval(u[0])-41:eval(u[0])-1]
-                            avant.append(seq)
-                            avant2.append(sequence[eval(u[0])-41:eval(u[0])+41])
-                            '''
-                            if seq not in avant_sequences:
-                                avant_sequences.append(seq)
-                            if avant_IS == [] or  max([similaire(seq, v) for v in avant_IS]) < 0.7:
-                                avant_IS.append(seq)
-                                quel_IS = seq
-                            else:
-                                _, quel_IS = max([(similaire(seq, v), v) for v in avant_IS], key=lambda x:x[0])
-                            if quel_IS+'_IS' not in dico_afr[item]:
-                                for item2 in list(dico_afr):
-                                    dico_afr[item2][quel_IS+'_IS'] = 0
-                            dico_afr[item][quel_IS+'_IS'] += 1
-                            if avant == []:
-                                avant = [seq]
-                            elif seq not in avant and max([similaire(seq, v) for v in avant]) < 0.7:
-                                avant.append(seq)'''
-            #print(avant)
-            #dico_afr[item]['IS6110'] = str(len(avant))
-            with open(rep+'IS6110.log','w') as f:
-                f.write('\n'.join(avant))
-            with open(rep+'IS6110_2.log','w') as f:
-                f.write('\n'.join(avant2))
-            save_dico()
-    """
     # We check if the SRA is in the database Origines, and update the location
     # of the SRA in dico_afr[item]
     booleen_origines = False
@@ -1344,20 +1216,6 @@ def collect_SRA(item):
 
         dico_afr[item].setdefault('name', '')
         # On supprime d'éventuels métagénomes, etc.
-
-        if 'low_cover.txt' not in listdir(rep):
-            with open(rep+'dico.txt', 'w') as f:
-                f.write(str(dico_afr[item]))
-        '''with open('data/spoligos_me.csv', mode='w') as csv_file:
-            fieldnames = list(dico_afr[next(iter(dico_afr))].keys())
-            writer = csv.DictWriter(csv_file, fieldnames=fieldnames)#, 'name', 'accession', 'date', 'taxid', 'IS6110', 'location', 'center', 'strain'])
-            writer.writeheader()
-            for k in dict(dico_afr):
-                if dico_afr[k] != {}:
-                    writer.writerow(dico_afr[k])
-        with open('data/spoligos.csv', 'w') as f1:
-            with open('data/spoligos_me.csv', 'r') as f2:
-                f1.write(f2.read().replace('\u25A0', 'n').replace('\u25A1', 'o'))'''
 
         # If SRA is a metagenome, we delete it from dico_afr and delete the
         # repository in 'REP/sequences'.
@@ -1385,7 +1243,7 @@ def collect_SRA(item):
 # ==============
 
 # ==== DEFINING THE CLI ===================================================
-# We ask the user for the action to take
+# We ask the user for the option to choose
 mp = argparse.ArgumentParser(prog='CRISPRbuilder-TB', description="Collects and"
     " annotates Mycobacterium tuberculosis data for CRISPR investigation.")
 mp.add_argument("sra", type=str, help="requires the reference of a SRA, "
@@ -1408,10 +1266,12 @@ args = mp.parse_args()
 valeur_option = args.sra
 
 # ==== INITILIZING THE SEQUENCE OF H37RV AND DICO_AFR =========================
-# We create a string called h37Rv containing the genome sequence of the strain
+# We create a string called H37RV containing the genome sequence of the strain
 # H37Rv.
-h37Rv = fasta_to_seq()
-TAILLE_GEN = len(h37Rv)
+H37RV = fasta_to_seq()
+TAILLE_GEN = len(H37RV)
+# We define the value of half the length of the reads.
+DEMI_LONGUEUR = 20
 # We create a directory called 'sequences' which will contain the different
 # SRA directories.
 p = Path("sequences")
@@ -1502,8 +1362,8 @@ if args.remove:
             csv_writer = csv.writer(csvout, delimiter=',', quotechar='"',
                                     quoting=csv.QUOTE_MINIMAL)
             for row in csv_reader:
-                if row[0].strip() != ligne_lineage_csv or row[1].strip() != \
-                        ligne_pos_csv:
+                if row[0].strip() != ligne_lineage_csv or \
+                        row[1].strip() != ligne_pos_csv:
                     csv_writer.writerow(row)
         remove(P_CSV)
         rename(p_csv_tmp, P_CSV)
@@ -1552,8 +1412,8 @@ if args.change:
             csv_writer = csv.writer(csvout, delimiter=',', quotechar='"',
                                     quoting=csv.QUOTE_MINIMAL)
             for row in csv_reader:
-                if row[0].strip() != ligne_lineage_csv or row[1].strip() != \
-                        ligne_pos_csv:
+                if row[0].strip() != ligne_lineage_csv or \
+                        row[1].strip() != ligne_pos_csv:
                     csv_writer.writerow(row)
                 else:
                     csv_writer.writerow(liste_csv)
