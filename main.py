@@ -227,7 +227,7 @@ def fasta_to_seq():
     Returns:
         h (str): genome sequence in a single line and without the headers
     """
-    p = pathlib.Path.cwd().joinpath('data', 'NC_000962.3.fasta')
+    p = pathlib.Path.cwd().joinpath('data', 'NC_000962.3.fasta').as_posix()
     h = open(p).read()
     h = ''.join(h.split('\n')[1:])
     return h
@@ -454,7 +454,7 @@ def to_spol_sit():
           column from ws as values to the dictionary spol_sit (after
           replacing 'n' into a black square and 'o' into a white square).
     """
-    p = pathlib.Path.cwd().joinpath('data', '1_3882_SORTED.xls')
+    p = pathlib.Path.cwd().joinpath('data', '1_3882_SORTED.xls').as_posix()
     wb = open_workbook(p)
     ws = wb.sheet_by_index(0)
     spol_sit = {}
@@ -545,8 +545,10 @@ def compt_spol_vitro(dico_afr, item, type_blast, nom_espaceur, nomB_espaceur):
         (void)
 
     """
-    p1 = pathlib.Path.home().joinpath('tmp', item + type_blast + '_.blast')
-    p2 = pathlib.Path.cwd().joinpath('data', 'spoligo_' + type_blast + '.fasta')
+    p1 = pathlib.Path.home().joinpath('tmp', item + type_blast +
+                                      '_.blast').as_posix()
+    p2 = pathlib.Path.cwd().joinpath('data', 'spoligo_' + type_blast +
+                                     '.fasta').as_posix()
     # TODO check for the path above which should be
     # TODO '/tmp/'+item+type_blast+'_'+'.blast' and 'data/spoligo_'+type_blast+'.fasta'
     with open(p1) as f:
@@ -567,52 +569,7 @@ def compt_spol_vitro(dico_afr, item, type_blast, nom_espaceur, nomB_espaceur):
         'espaceur_' + nom_espaceur + str(k) + ','), matches.count(
         'espaceur_' + nomB_espaceur + str(k) + ',')) for k in range(1, nb + 1)]
 
-"""
-{
-        a_SRA:
-            {
-                'nb_reads':
-                'len_reads':
-                'couverture':
-                'location':
-                'date':
-                'SRA':
-                'center':
-                'strain':
-                'taxid':
-                'name':
-                'study':
-                'bioproject':
-                'spoligo':
-                'spoligo_new':
-                'spoligo_nb':
-                'spoligo_new_nb':
-                'spoligo_vitro':
-                'spoligo_vitro_new':
-                'spoligo_vitro_nb':
-                'spoligo_vitro_new_nb':
-                'SIT':
-                'SIT_silico':
-                'lineage_Coll':
-                'lineage_L6+animal':
-                'lineage_PGG_cp':
-                'lineage_PGG':
-                'lineage_Pali':
-                'lineage_Shitikov':
-                'lignee_Stucki':
-                'locus_resume':
-                'locus_detail':
-                'locus_position':
-                'locus_seq':
-                'REP':
-                ???
-                'Source':
-                'Author':
-                'study accession number':
-            },
-            ...
-    }
-"""
+
 
 def to_nb_seq(seq, chaine, debut_prefixe, fin_prefixe, debut_suffixe,
               fin_suffixe):
@@ -636,13 +593,14 @@ def collect_SRA(item):
 
     # ==== CHECKING IF THE SRA IS ALREADY IN THE DATABASE ===================
     # We define the path for the file named as the SRA
-    rep = pathlib.Path.cwd().joinpath('sequences', item)
+    rep = pathlib.Path.cwd().joinpath('sequences', item).as_posix()
     # TODO check that it corresponds to rep = 'sequences/' + item + '/'
 
     # if the SRA is not in sequences, we create a directory named as the SRA in
     # sequences
     # TODO CHECK p = Path("sequences/" + item)
-    rep.mkdir(exist_ok=True, parents=True)
+    pathlib.Path.cwd().joinpath('sequences', item).mkdir(exist_ok=True,
+                                                         parents=True)
     if item not in listdir('sequences'):
         print(f"We're creating a directory {item}.")
     # If the SRA is not in dico_afr, we add it to dico_afr
@@ -823,11 +781,11 @@ def collect_SRA(item):
                 # TODO data/spoligo_' + spol + '.fasta
                 # TODO check /tmp/' + item + '_' + spol + '.blast ' + rep
                 p1 = pathlib.Path.home().joinpath('tmp', item + '_' + spol +
-                                                 '.blast')
+                                                 '.blast').as_posix()
                 p2 = pathlib.Path.cwd().joinpath('data', 'spoligo_' + spol +
-                                                 '.fasta')
+                                                 '.fasta').as_posix()
                 p3 = pathlib.Path.home().joinpath('tmp', item + '_' + spol +
-                                                  '.blast ' + rep)
+                                                  '.blast ' + rep).as_posix()
                 with open(p1) as f:
                     matches = f.read()
                     nb = open(p2).read().count('>')
@@ -1278,10 +1236,55 @@ p = Path("sequences")
 p.mkdir(exist_ok=True, parents=True)
 # We initialize dico_afr
 dico_afr = {}
+"""
+{
+        a_SRA:
+            {
+                'nb_reads':
+                'len_reads':
+                'couverture':
+                'location':
+                'date':
+                'SRA':
+                'center':
+                'strain':
+                'taxid':
+                'name':
+                'study':
+                'bioproject':
+                'spoligo':
+                'spoligo_new':
+                'spoligo_nb':
+                'spoligo_new_nb':
+                'spoligo_vitro':
+                'spoligo_vitro_new':
+                'spoligo_vitro_nb':
+                'spoligo_vitro_new_nb':
+                'SIT':
+                'SIT_silico':
+                'lineage_Coll':
+                'lineage_L6+animal':
+                'lineage_PGG_cp':
+                'lineage_PGG':
+                'lineage_Pali':
+                'lineage_Shitikov':
+                'lignee_Stucki':
+                'locus_resume':
+                'locus_detail':
+                'locus_position':
+                'locus_seq':
+                ???
+                'Source':
+                'Author':
+                'study accession number':
+            },
+            ...
+    }
+"""
 # We define the path to data/lineage.csv and a temporary csv file in a
 # cross-platform way
-P_CSV = pathlib.Path.cwd().joinpath('data', 'lineage.csv')
-p_csv_tmp = pathlib.Path.cwd().joinpath('data', 'temp.csv')
+P_CSV = pathlib.Path.cwd().joinpath('data', 'lineage.csv').as_posix()
+p_csv_tmp = pathlib.Path.cwd().joinpath('data', 'temp.csv').as_posix()
 
 # ==== WHEN THE SELECTED OPTION IS COLLECT ===================================
 if args.collect:

@@ -19,6 +19,6 @@ from collections import namedtuple
 from pathlib import Path
 import pathlib
 
-p = pathlib.Path..joinpath('root', 'tmp').as_posix()
+p = pathlib.Path.home().joinpath('..', 'tmp')
 print((p))
 #print(pathlib.Path.home().joinpath('sequences', item, '/'))
