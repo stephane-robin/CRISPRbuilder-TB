@@ -16,9 +16,11 @@ from datetime import datetime
 import argparse
 import csv
 from collections import namedtuple
+from pathlib import PurePath
 from pathlib import Path
 import pathlib
+import tempfile
 
-p = pathlib.Path.home().joinpath('..', 'tmp')
-print((p))
-#print(pathlib.Path.home().joinpath('sequences', item, '/'))
+p = PurePath('sequences')
+p.mkdir(exist_ok=True, parents=True)
+
