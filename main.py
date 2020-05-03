@@ -277,6 +277,7 @@ def to_brynildsrud():
             ...
         }
     """
+    print('TEST execute to_brynildsrud')
     brynildsrud = {}
     source, author, study, location, date = '', '', '', '', ''
     p = str(PurePath('data', 'Brynildsrud_Dataset_S1.xls'))
@@ -332,6 +333,7 @@ def fasta_to_seq():
     Returns:
         h (str): genome sequence in a single line and without the headers
     """
+    print('TEST execute fasta_to_seq')
     p = str(PurePath('data', 'NC_000962.3.fasta'))
     h = open(p).read()
     h = ''.join(h.split('\n')[1:])
@@ -372,6 +374,7 @@ def to_reads():
             'source' to 'cible', and create the substring seq2,
         - - we create the tuple (seq1, seq2, lignee)
     """
+    print('TEST execute to_reads')
     Lignee_renvoyee = {}
 
     with open(P_CSV, 'rt') as f:
@@ -418,6 +421,7 @@ def get_info(srr):
         - we assign dico[...]['#text'] to dico0['bioproject'], separating the
           cases when dico[...]['EXTERNAL_ID'] is a string or a list.
     """
+    print('TEST execute get_info')
     Entrez.email = "christophe.guyeux@univ-fcomte.fr"
     ret = Entrez.efetch(db="sra", id=srr, retmode="xml")
     dico = xmltodict.parse(ret.read())
@@ -556,6 +560,7 @@ def to_spol_sit():
           column from ws as values to the dictionary spol_sit (after
           replacing 'n' into a black square and 'o' into a white square).
     """
+    print('TEST execute to_spol_sit')
     p = str(PurePath('data', '1_3882_SORTED.xls'))
     wb = open_workbook(p)
     ws = wb.sheet_by_index(0)
@@ -591,6 +596,7 @@ def add_spoligo_dico(type_sit, dico_afr, item, spol_sit):
          reference. If this spoligotype is not in spol_sit, then we update
          dico_afr with 'X' as a 'SIT' reference.
     """
+    print('TEST execute add_spoligo_dico')
     if type_sit == 'SIT':
         type_spoligo = 'spoligo'
     elif type_sit == 'SIT_silico':
@@ -621,6 +627,7 @@ def to_formatted_results(seq, repitem):
     Returns:
         (str): a formatted result of a sequence blast
     """
+    print('TEST execute to_formatted_results')
     with tempfile.TemporaryDirectory() as tf:
         p = str(PurePath(tf, 'snp.fasta'))
         # TODO check that the path above corresponds to /tmp/snp.fasta
@@ -647,6 +654,7 @@ def compt_spol_vitro(dico_afr, item, type_blast, nom_espaceur, nomB_espaceur):
     Returns:
         (void)
     """
+    print('TEST execute comp_spol_vitro')
     with tempfile.TemporaryDirectory() as tf:
         p1 = str(PurePath(tf, item + type_blast + '_.blast'))
         p2 = str(PurePath('data', 'spoligo_' + type_blast + '.fasta'))
@@ -686,6 +694,7 @@ def to_nb_seq(seq, chaine, debut_prefixe, fin_prefixe, debut_suffixe,
     Returns:
         nb_seq (int):
     """
+    print('TEST execute to_nb_seq')
     return len([u for u in chaine if seq[fin_prefixe:fin_suffixe] in u]) + \
              len([u for u in chaine if seq[debut_prefixe:debut_suffixe] in u])
 
@@ -802,14 +811,22 @@ def collect_SRA(item):
         # TODO system("cat " + p1 + ' ' + p2 + ' > ' + p_shuffled)
 
     # ==== UPDATING NB_READS IN DICO_AFR ================================
-    # If there's no nb_reads reference in dico_afr[SRA], we open 'nb.txt' to
-    # evaluate this number.
+    # If there's no nb_reads reference in dico_afr[SRA], we count the number
+    # of '>' in /shuffled.fasta, keep it in /tmp/nb.txt and assign it to nb.
     if 'nb_reads' not in dico_afr[item] or dico_afr[item]['nb_reads'] == '':
+        print('TEST updating the reads')
         with tempfile.TemporaryDirectory() as fp:
             p = str(PurePath(fp, 'nb.txt'))
             # TODO check  /tmp/nb.txt
-            # TODO warning might not be compatible with windows
-            system("cat " + p_shuffled + " | grep '>' | wc -l > " + p)
+            # TODO system("cat " + p_shuffled + " | grep '>' | wc -l > " + p)
+            # TODO ??? why keep nb in a temp file /tmp/nb.txt ?
+            with open(p_shuffled, 'r') as f_in, open(p, 'w') as f_out:
+                lignes = f_in.readlines()
+                cpt = 0
+                for elt in lignes:
+                    cpt += elt.count('>')
+                f_out.write(str(cpt))
+
             nb = eval(open(p).read().split('\n')[0])
             #nb = open(rep+item+'_shuffled.fasta').read().count('>')
             print("The number of reads is: ", nb)
@@ -842,8 +859,8 @@ def collect_SRA(item):
         del dico_afr[item]
         print(f"The coverage is too low. {item} is being removed from the "
               "database")
-        # TODO warning might not be compatible with windows
-        # system('touch ' + rep + 'low_cover.txt')
+
+        # TODO system('touch ' + rep + 'low_cover.txt')
         p = str(PurePath(rep, 'low_cover.txt'))
         f = open(p)
         f.close()
@@ -895,7 +912,7 @@ def collect_SRA(item):
 
         # ==== UPDATING THE SPOLIGOTYPES IN DICO_AFR ========================
         # if 'spoligo' for the SRA is not in dico_afr or is undefined,
-        # then TODO
+        # then TODO find spoligo_vitro files
         """
         if 'spoligo' not in dico_afr[item] or dico_afr[item]['spoligo'] == '':
             print(f"The spoligotypes are being blasted")
@@ -1129,8 +1146,8 @@ def collect_SRA(item):
                     dico_afr[item]['lineage_Coll'] == '':
                 lignee = []
                 print("We're adding the lineage according to the SNPs Coll")
-
-                with open('data/lineage.csv', 'rt') as f:
+                # TODO ??? rt instead of r
+                with open(P_CSV, 'r') as f:
                     csv_reader = csv.reader(f, delimiter=',', quotechar='"')
                     next(csv_reader)
                     for row in csv_reader:
@@ -1150,16 +1167,19 @@ def collect_SRA(item):
                                 seq2 = seq1[:20] + row[3].strip().split('/')[
                                     0] + seq1[21:]
 
-                            with open('/tmp/snp.fasta', 'w') as file:
-                                file.write('>\n' + seq2)
-                            result = subprocess.run(["blastn", "-num_threads",
-                                                     "8", "-query",
-                                                     "/tmp/snp.fasta",
-                                                     "-evalue", "1e-5", "-task",
-                                                     "blastn", "-db", repitem,
-                                                     "-outfmt", "10 sseq"],
-                                                    stdout=subprocess.PIPE)
-                            formatted_results = result.stdout.decode(
+                            with tempfile.TemporaryDirectory() as tf:
+                                p = str(PurePath(tf, 'snp.fasta'))
+                                with open(p, 'w') as file:
+                                    file.write('>\n' + seq2)
+                                result = subprocess.run(["blastn",
+                                                         "-num_threads", "8",
+                                                         "-query", p, "-evalue",
+                                                         "1e-5", "-task",
+                                                         "blastn", "-db",
+                                                         repitem, "-outfmt",
+                                                         "10 sseq"],
+                                                        stdout=subprocess.PIPE)
+                                formatted_results = result.stdout.decode(
                                 'utf8').splitlines()
                             # nb_seq1 = formated_results.count(seq1)
                             # nb_seq2 = formated_results.count(seq2)
@@ -1206,14 +1226,18 @@ def collect_SRA(item):
 
             for item2, pos0 in enumerate(Lignee_SNP):
                 seq1, seq2 = Lignee_SNP[pos0][:2]
-                with open('/tmp/snp.fasta', 'w') as f:
-                    f.write('>\n' + seq2)
-                cmd = "blastn -query /tmp/snp.fasta -num_threads 12 -evalue 1e-5 " \
-                      "-task blastn -db " + repitem + " -outfmt '10 sseq' -out " \
-                                                         "/tmp/snp_Pali.blast"
-                system(cmd)
-                with open("/tmp/snp_Pali.blast") as f:
-                    formatted_results = f.read().splitlines()
+                with tempfile.TemporaryDirectory() as tf:
+                    p = str(PurePath(tf, 'snp.fasta'))
+                    p_blast = str(PurePath(tf, 'snp_Pali.blast'))
+                    # TODO check "/tmp/snp_Pali.blast"
+                    with open(p, 'w') as f:
+                        f.write('>\n' + seq2)
+                    cmd = "blastn -query " + p + " -num_threads 12 -evalue " \
+                          "1e-5 -task blastn -db " + repitem + " -outfmt '10 " \
+                          "sseq' -out " + p_blast
+                    system(cmd)
+                    with open(p_blast) as f:
+                        formatted_results = f.read().splitlines()
                 # nb_seq1 = formatted_results.count(seq1) # TODO ???
                 # nb_seq2 = formatted_results.count(seq2)
                 nb_seq1 = to_nb_seq(seq1, formatted_results, 16, 20, 21, 25)
@@ -1239,16 +1263,19 @@ def collect_SRA(item):
 
             for item2, pos0 in enumerate(Lignee_SNP):
                 seq1, seq2 = Lignee_SNP[pos0][:2]
-                with open('/tmp/snp.fasta', 'w') as f:
-                    f.write('>\n' + seq2)
-                cmd = "blastn -query /tmp/snp.fasta -num_threads 12 -evalue 1e-5 " \
-                      "-task blastn -db " + repitem + " -outfmt '10 sseq' -out " \
-                                                         "/tmp/snp_Shitikov.blast"
-                system(cmd)
-                with open("/tmp/snp_Shitikov.blast") as f:
-                    formatted_results = f.read().splitlines()
-                # nb_seq1 = formatted_results.count(seq1) # TODO ???
-                # nb_seq2 = formatted_results.count(seq2)
+                with tempfile.TemporaryDirectory() as tf:
+                    p = str(PurePath(tf, 'snp.fasta'))
+                    p_blast = str(PurePath(tf, 'snp_Shitikov.blast'))
+                    with open(p, 'w') as f:
+                        f.write('>\n' + seq2)
+                    cmd = "blastn -query " + p + " -num_threads 12 -evalue 1e-5 " \
+                      "-task blastn -db " + repitem + " -outfmt '10 sseq' " \
+                      "-out " + p_blast
+                    system(cmd)
+                    with open(p_blast) as f:
+                        formatted_results = f.read().splitlines()
+                    # nb_seq1 = formatted_results.count(seq1) # TODO ???
+                    # nb_seq2 = formatted_results.count(seq2)
 
                 nb_seq1 = to_nb_seq(seq1, formatted_results, 16, 20, 21, 25)
                 nb_seq2 = to_nb_seq(seq2, formatted_results, 16, 20, 21, 25)
@@ -1273,14 +1300,17 @@ def collect_SRA(item):
 
             for item2, pos0 in enumerate(Lignee_SNP):
                 seq1, seq2 = Lignee_SNP[pos0][:2]
-                with open('/tmp/snp.fasta', 'w') as f:
-                    f.write('>\n' + seq2)
-                cmd = "blastn -query /tmp/snp.fasta -num_threads 12 -evalue 1e-5 " \
-                      "-task blastn -db " + repitem + " -outfmt '10 sseq' -out " \
-                                                         "/tmp/snp_Stucki.blast"
-                system(cmd)
-                with open("/tmp/snp_Stucki.blast") as f:
-                    formatted_results = f.read().splitlines()
+                with tempfile.TemporaryDirectory() as tf:
+                    p = str(PurePath(tf, 'snp.fasta'))
+                    p_blast = str(PurePath(tf, 'snp_Stucki.blast'))
+                    with open(p, 'w') as f:
+                        f.write('>\n' + seq2)
+                    cmd = "blastn -query " + p + " -num_threads 12 -evalue 1e-5 " \
+                      "-task blastn -db " + repitem + " -outfmt '10 sseq' " \
+                      "-out " + p_blast
+                    system(cmd)
+                    with open(p_blast) as f:
+                        formatted_results = f.read().splitlines()
                 # nb_seq1 = formatted_results.count(seq1) # TODO ???
                 # nb_seq2 = formatted_results.count(seq2)
                 nb_seq1 = to_nb_seq(seq1, formatted_results, 16, 20, 21, 25)
@@ -1325,7 +1355,7 @@ def collect_SRA(item):
             del dico_afr[item]
             try:
                 shutil.rmtree(rep)
-                #system('rm -fr ' + rep)
+                # TODO system('rm -fr ' + rep)
             except FileNotFoundError:
                 print("The file couldn't be found in the repository.")
 
@@ -1433,7 +1463,7 @@ if args.add:
             c = csv.writer(f, delimiter=',', quotechar='"',
                            quoting=csv.QUOTE_MINIMAL)
             c.writerow(liste_csv)
-        print("The line has been added.")
+        print("The line has  added.")
     else:
         print("Your request was cancelled")
 

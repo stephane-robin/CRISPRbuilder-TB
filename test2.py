@@ -21,21 +21,29 @@ from pathlib import Path
 import pathlib
 import tempfile
 
+with tempfile.TemporaryDirectory() as fp:
+    p = str(PurePath(fp, 'nb.txt'))
+    #with open(p, 'w') as f_nb:
+        #pass
+    # TODO check  /tmp/nb.txt
+    # TODO system("cat " + p_shuffled + " | grep '>' | wc -l > " + p)
+    # TODO ??? why keep nb in a temp file /tmp/nb.txt ?
+    with open('essai.txt', 'r') as f_in, open(p, 'w') as f_out:
+        lignes = f_in.readlines()
+        cpt = 0
+        for elt in lignes:
+            cpt += elt.count('>')
+        f_out.write(str(cpt))
 
+    nb = eval(open(p).read().split('\n')[0])
+    print(nb)
 
-def cat(p1, p2, p_shuffled):
-    with open(p1, 'r') as f1, open(p2, 'r') as f2, open(p_shuffled, 'w') as \
-            f_shuffled:
-        lignes1 = f1.readlines()
-        for elt in lignes1:
-            f_shuffled.write(elt)
-        lignes2 = f2.readlines()
-        for elt in lignes2:
-            f_shuffled.write(elt)
-
-p1 = str(PurePath('essai.txt'))
-p2 = str(PurePath('essai2.txt'))
-p_shuffled = str(PurePath('essai_shuffled.txt'))
-
-cat(p1, p2, p_shuffled)
+"""
+with open('essai.txt', 'r') as f_in, open('essai2.txt', 'w') as f_out:
+    lignes = f_in.readlines()
+    cpt = 0
+    for elt in lignes:
+        cpt += elt.count('>')
+    f_out.write(str(cpt))
+"""
 
