@@ -21,6 +21,21 @@ from pathlib import Path
 import pathlib
 import tempfile
 
-p = PurePath('sequences')
-p.mkdir(exist_ok=True, parents=True)
+
+
+def cat(p1, p2, p_shuffled):
+    with open(p1, 'r') as f1, open(p2, 'r') as f2, open(p_shuffled, 'w') as \
+            f_shuffled:
+        lignes1 = f1.readlines()
+        for elt in lignes1:
+            f_shuffled.write(elt)
+        lignes2 = f2.readlines()
+        for elt in lignes2:
+            f_shuffled.write(elt)
+
+p1 = str(PurePath('essai.txt'))
+p2 = str(PurePath('essai2.txt'))
+p_shuffled = str(PurePath('essai_shuffled.txt'))
+
+cat(p1, p2, p_shuffled)
 

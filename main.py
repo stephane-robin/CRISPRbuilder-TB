@@ -258,13 +258,13 @@ Origines = [
 # =========
 
 
-def to_Brynildsrud():
+def to_brynildsrud():
     """
     This function parses information from 'data/Brynildsrud_Dataset_S1.xls'
-    into a dictionary called Brynildsrud.
+    into a dictionary called brynildsrud.
 
     Returns:
-        Brynildsrud (dict): which structure is
+        brynildsrud (dict): which structure is
         {
             a_SRA:
                 {
@@ -277,7 +277,7 @@ def to_Brynildsrud():
             ...
         }
     """
-    Brynildsrud = {}
+    brynildsrud = {}
     source, author, study, location, date = '', '', '', '', ''
     p = str(PurePath('data', 'Brynildsrud_Dataset_S1.xls'))
     wwb = open_workbook(p)
@@ -288,7 +288,7 @@ def to_Brynildsrud():
 
         if len(srr) > 1:
 
-            Brynildsrud[srr] = {}
+            brynildsrud[srr] = {}
             source = wws.cell_value(row, 5).replace(',', '')
 
             if source == 'This study':
@@ -314,14 +314,14 @@ def to_Brynildsrud():
                 if une_date:
                     date = dat
 
-        Brynildsrud[srr] = {
+        brynildsrud[srr] = {
             'Source': source,
             'Author': author,
             'study accession number': study,
             'location': location,
             'date': date
         }
-    return Brynildsrud
+    return brynildsrud
 
 
 def fasta_to_seq():
@@ -672,7 +672,6 @@ def compt_spol_vitro(dico_afr, item, type_blast, nom_espaceur, nomB_espaceur):
         'espaceur_' + nomB_espaceur + str(k) + ',')) for k in range(1, nb + 1)]
 
 
-
 def to_nb_seq(seq, chaine, debut_prefixe, fin_prefixe, debut_suffixe,
               fin_suffixe):
     """
@@ -691,20 +690,61 @@ def to_nb_seq(seq, chaine, debut_prefixe, fin_prefixe, debut_suffixe,
              len([u for u in chaine if seq[debut_prefixe:debut_suffixe] in u])
 
 
+def change_elt_file(path, suffixe):
+    """
+    This function changes "item + '.'" into "item + suffixe + '.'" in a file
+    reachable with path.
+
+    Args:
+        path(str): path for the file to change
+        suffixe(str): _1 or _2
+
+    Returns:
+        (None)
+    """
+    with open(path, 'r') as f_in, \
+            open('tp.fasta', 'w') as f_out:
+        lignes = f_in.readlines()
+        for elt in lignes:
+            ligneFinale = elt.replace(item + '.', item + suffixe + '.')
+            f_out.write(ligneFinale)
+    remove(path)
+    rename('tp.fasta', path)
+
+
+def concat(p1, p2, p_shuffled):
+    """
+    This function concatenates two files given by their paths p1 and p2 into a
+    third file that is created and accessible through the path p_shuffled.
+
+    Args:
+        p1(str): path for the 1st file
+        p2(str): path for the 2nd file
+        p_shuffled(str): path for the concatenated file
+
+    Returns:
+        (None)
+    """
+    with open(p1, 'r') as f1, open(p2, 'r') as f2, \
+            open(p_shuffled, 'w') as f_shuffled:
+        lignes1 = f1.readlines()
+        for elt in lignes1:
+            f_shuffled.write(elt)
+        lignes2 = f2.readlines()
+        for elt in lignes2:
+            f_shuffled.write(elt)
+
 def collect_SRA(item):
 
     # ==== CHECKING IF THE SRA IS ALREADY IN THE DATABASE ===================
+    # if the SRA is not in sequences, we create a directory named as the SRA in
+    # sequences
+    if item not in listdir('sequences'):
+        Path.cwd().joinpath('sequences', item).mkdir(exist_ok=True, parents=True)
+        print(f"We're creating a directory {item}.")
     # We define the path for the file named as the SRA
     rep = str(PurePath('sequences', item))
     repitem = str(PurePath('sequences', item, item))
-
-    # if the SRA is not in sequences, we create a directory named as the SRA in
-    # sequences
-    # TODO CHECK p = Path("sequences/" + item)
-    pathlib.Path.cwd().joinpath('sequences', item).mkdir(exist_ok=True,
-                                                         parents=True)
-    if item not in listdir('sequences'):
-        print(f"We're creating a directory {item}.")
     # If the SRA is not in dico_afr, we add it to dico_afr
     if item not in dico_afr:
         print(f"We're adding {item} to the database.")
@@ -749,14 +789,17 @@ def collect_SRA(item):
         print("We're mixing both fasta files, which correspond to the two "
               "splits ends.")
 
-        for fic in ['_1', '_2']:
-            # TODO warning might not be compatible with windows
-            p1 = str(PurePath(rep, item + '_1.fasta'))
-            p2 = str(PurePath(rep, item + '_2.fasta'))
+        p1 = str(PurePath(rep, item + '_1.fasta'))
+        p2 = str(PurePath(rep, item + '_2.fasta'))
 
-            system("sed -i 's/" + item + './' + item + fic + "./g' " +
-                   rep + item + fic + '.fasta')
-        system("cat " + p1 + ' ' + p2 + ' > ' + p_shuffled)
+        for fic in ['_1', '_2']:
+            change_elt_file(p1, fic)
+            change_elt_file(p2, fic)
+            # TODO system("sed -i 's/" + item + './' + item + fic + "./g' " +
+            # TODO rep + item + fic + '.fasta')
+
+        concat(p1, p2, p_shuffled)
+        # TODO system("cat " + p1 + ' ' + p2 + ' > ' + p_shuffled)
 
     # ==== UPDATING NB_READS IN DICO_AFR ================================
     # If there's no nb_reads reference in dico_afr[SRA], we open 'nb.txt' to
@@ -841,10 +884,10 @@ def collect_SRA(item):
         # ==== UPDATING DICO_AFR WITH THE DATASET BRYNILDSRUD ================
         # We check the presence of the SRA in the file
         # 'data/Brynildsrud_Dataset_S1.xls' to update dico_afr
-        Brynildsrud = to_Brynildsrud()
-        if item in Brynildsrud:
-            for elt in Brynildsrud[item]:
-                dico_afr[item][elt] = Brynildsrud[item][elt]
+        brynildsrud = to_brynildsrud()
+        if item in brynildsrud:
+            for elt in brynildsrud[item]:
+                dico_afr[item][elt] = brynildsrud[item][elt]
                 print(f"{item} is in the database Brynildsrud_Dataset_S1."
                       f"xls\n     - {elt}: {dico_afr[item][elt]}")
         else:
@@ -1281,8 +1324,9 @@ def collect_SRA(item):
                   "database.")
             del dico_afr[item]
             try:
-                system('rm -fr ' + rep)
-            except: # TODO precise exception
+                shutil.rmtree(rep)
+                #system('rm -fr ' + rep)
+            except FileNotFoundError:
                 print("The file couldn't be found in the repository.")
 
     for k in dico_afr:
