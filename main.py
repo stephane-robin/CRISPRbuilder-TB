@@ -1,6 +1,6 @@
 import xmltodict # interprets XML files like JSON files
 import subprocess # allows to connect to input/output/error pipes of processes
-from os import mkdir, chdir, remove, listdir, rename, getcwd, system, stat
+from os import mkdir, chdir, remove, listdir, rename, getcwd, system, stat, name
 from pickle import load, dump
 from xlrd import open_workbook
 from openpyxl import load_workbook
@@ -31,109 +31,7 @@ Origines = [
                "africanum)",
      'Author': "NCBI",
      'study accession number': '',
-     'run accessions': ['ERR2704812', 'ERR2704811', 'ERR2704810', 'ERR2704809',
-                        'ERR2704808', 'SRR7496542', 'ERR2679282', 'ERR2679278',
-                        'ERR2679258', 'ERR2679250', 'ERR2679246', 'ERR2383628',
-                        'ERR2383627', 'ERR2383626', 'ERR2383625', 'ERR2383624',
-                        'ERR2383623', 'ERR2383622', 'ERR2383621', 'ERR2383620',
-                        'ERR2383619', 'ERR2383618', 'ERR2181458', 'SRR6046675',
-                        'SRR6046695', 'SRR6046725', 'SRR6046334', 'SRR6046131',
-                        'SRR6046235', 'SRR6045962', 'SRR6045604', 'SRR6045301',
-                        'SRR6045425', 'SRR6045496', 'SRR6045027', 'SRR6044858',
-                        'SRR6044939', 'SRR6045015', 'ERR019854', 'ERR019872',
-                        'ERR017780', 'ERR017798', 'ERR026642', 'ERR1679637',
-                        'SRR3647358', 'ERR1334053', 'ERR1334052', 'ERR1334051',
-                        'ERR1334050', 'ERR1334049','ERR1215483', 'ERR1215482',
-                        'ERR1215481', 'ERR1215480', 'ERR1215479', 'ERR1215478',
-                        'ERR1215477', 'ERR1215476', 'ERR1215475', 'ERR1215474',
-                        'ERR1215473', 'ERR1215472', 'ERR1215471', 'ERR1215470',
-                        'ERR1215469', 'ERR1215468', 'ERR1215467', 'ERR1215466',
-                        'ERR1215465', 'ERR1215464', 'ERR1215463', 'ERR1215462',
-                        'ERR1215461', 'ERR1215460', 'ERR1203078', 'ERR1203077',
-                        'ERR1203076', 'ERR1203075', 'ERR1203074', 'ERR1203073',
-                        'ERR1203072', 'ERR1203071', 'ERR1203070', 'ERR1203069',
-                        'ERR1203068', 'ERR1203067', 'ERR1203066', 'ERR1203065',
-                        'ERR1203064', 'ERR1203063', 'ERR1203062', 'ERR1203061',
-                        'ERR1203060', 'ERR1203059', 'ERR1203058', 'ERR1203057',
-                        'ERR1203056', 'ERR1203055', 'ERR1203054', 'ERR1203053',
-                        'ERR1203052', 'SRR3085279', 'ERR1082143', 'ERR1082142',
-                        'ERR1082141', 'ERR1082140', 'ERR1082139', 'ERR1082138',
-                        'ERR1082137', 'ERR1082136', 'ERR1082135', 'ERR1082134',
-                        'ERR1082133', 'ERR1082132', 'ERR1082131', 'ERR1082130',
-                        'ERR1082129', 'ERR1082128', 'ERR1082127', 'ERR1082126',
-                        'ERR1082125', 'ERR1082124', 'ERR1082123', 'ERR1082122',
-                        'ERR1082121', 'ERR1082120', 'ERR1082119', 'ERR1082118',
-                        'ERR1082117', 'ERR1082116', 'ERR1082115', 'ERR1082114',
-                        'ERR1082113', 'SRR2667443', 'ERR909754', 'ERR909753',
-                        'ERR845916', 'ERR751349', 'ERR751348', 'ERR751347',
-                        'ERR751346', 'ERR751345', 'ERR751344', 'ERR751343',
-                        'ERR751342', 'ERR751341', 'ERR751340', 'ERR751339',
-                        'ERR751338', 'ERR751337', 'ERR751336', 'ERR751335',
-                        'ERR751334', 'ERR751333', 'ERR751332', 'ERR751331',
-                        'ERR751330', 'ERR751329', 'ERR751328', 'ERR751327',
-                        'ERR751326', 'ERR751325', 'ERR751324', 'ERR751323',
-                        'ERR751322', 'ERR751321', 'ERR751320', 'ERR751319',
-                        'ERR751318', 'ERR751317', 'ERR751316', 'ERR751315',
-                        'ERR751314', 'ERR751313', 'ERR751312', 'ERR751311',
-                        'ERR751310', 'ERR751309', 'ERR751308', 'ERR751307',
-                        'ERR751306', 'ERR751305', 'ERR751304', 'ERR751303',
-                        'ERR751302', 'ERR751301', 'ERR751300', 'ERR751299',
-                        'ERR751298', 'ERR751297', 'ERR751296', 'ERR751295',
-                        'ERR751294', 'ERR751293', 'ERR751292', 'ERR751291',
-                        'ERR751290', 'ERR702414', 'ERR702413', 'ERR702412',
-                        'ERR702411', 'ERR702410', 'ERR702409', 'ERR702408',
-                        'ERR702407', 'ERR702406', 'ERR702405', 'ERR702404',
-                        'ERR702403', 'ERR702402', 'ERR702401', 'ERR702400',
-                        'ERR702399', 'ERR702437', 'ERR702436', 'ERR702435',
-                        'ERR702434', 'ERR702433', 'ERR702432', 'ERR702431',
-                        'ERR702430', 'ERR702429', 'ERR702428', 'ERR702427',
-                        'ERR702426', 'ERR702425', 'ERR702424', 'ERR702423',
-                        'ERR702422', 'ERR702421', 'ERR702420', 'ERR702419',
-                        'ERR702418', 'ERR702417', 'ERR702416', 'ERR702415',
-                        'ERR517472', 'ERR517471', 'ERR502538', 'ERR502537',
-                        'ERR502536', 'ERR502535', 'ERR502534', 'ERR502533',
-                        'ERR502532', 'ERR502531', 'ERR502530', 'ERR502529',
-                        'ERR502528', 'ERR502527', 'ERR502526', 'ERR502525',
-                        'ERR502524', 'ERR502523', 'ERR502522', 'ERR502521',
-                        'ERR502520', 'ERR502519', 'ERR502518', 'ERR502517',
-                        'ERR502516', 'ERR502515', 'ERR502514', 'ERR502513',
-                        'ERR502512', 'ERR502511', 'ERR502510', 'ERR502509',
-                        'ERR502508', 'ERR502507', 'ERR502506', 'ERR502505',
-                        'ERR502504', 'ERR502503', 'ERR502502', 'ERR502501',
-                        'ERR502500', 'ERR502499', 'ERR502498', 'ERR502497',
-                        'ERR502496', 'ERR502495', 'ERR502494', 'ERR502493',
-                        'ERR502492', 'ERR502491', 'ERR502490', 'ERR502489',
-                        'ERR502488', 'ERR502487', 'ERR502486', 'ERR502485',
-                        'ERR502484', 'ERR502483', 'ERR502482', 'ERR502481',
-                        'ERR502480', 'ERR502479', 'ERR502478', 'ERR502477',
-                        'ERR502476', 'ERR502475', 'ERR502474', 'ERR502473',
-                        'ERR502472', 'ERR502471', 'ERR502470', 'SRR1735564',
-                        'SRR1735577', 'SRR1735574', 'SRR1735569', 'SRR1577834',
-                        'SRR1577833', 'SRR1577831', 'SRR1577828', 'SRR1577820',
-                        'SRR1577819', 'SRR1162789', 'SRR1162788', 'SRR1162738',
-                        'SRR1162716', 'SRR1162479', 'SRR1162477', 'SRR1162470',
-                        'SRR1162469', 'SRR1103551', 'SRR1103499', 'SRR1103472',
-                        'SRR1103387', 'SRR1057937', 'SRR1049960', 'SRR1049959',
-                        'SRR1049958', 'SRR998743', 'SRR998740', 'SRR998741',
-                        'SRR998742', 'SRR998655', 'SRR998652', 'SRR998654',
-                        'SRR998653', 'SRR998648', 'SRR998650', 'SRR998651',
-                        'SRR998649', 'SRR998646', 'SRR998647', 'SRR998645',
-                        'SRR998644', 'SRR998640', 'SRR998641', 'SRR998642',
-                        'SRR998643', 'SRR998637', 'SRR998638', 'SRR998636',
-                        'SRR998639', 'SRR998631', 'SRR998628', 'SRR998629',
-                        'SRR998630', 'SRR998626', 'SRR998624', 'SRR998625',
-                        'SRR998627', 'SRR998621', 'SRR998620', 'SRR998622',
-                        'SRR998623', 'SRR998619', 'SRR998616', 'SRR998617',
-                        'SRR998618', 'SRR998612', 'SRR998614', 'SRR998613',
-                        'SRR998615', 'SRR998611', 'SRR998608', 'SRR998610',
-                        'SRR998609', 'SRR998604', 'SRR998605', 'SRR998606',
-                        'SRR998607', 'SRR998601', 'SRR998603', 'SRR998600',
-                        'SRR998602', 'SRR998596', 'SRR998597', 'SRR998598',
-                        'SRR998599', 'SRR998594', 'SRR998592', 'SRR998593',
-                        'SRR998595', 'SRR998584', 'SRR998587', 'SRR998586',
-                        'SRR998585', 'SRR998580', 'SRR998583', 'SRR998582',
-                        'SRR998581', 'SRR998578', 'SRR998576', 'SRR998579',
-                        'SRR998577']},
+     'run accessions': ['ERR2704812', 'ERR2704811', 'ERR2704810', 'ERR2704809', 'ERR2704808', 'SRR7496542', 'ERR2679282', 'ERR2679278', 'ERR2679258', 'ERR2679250', 'ERR2679246', 'ERR2383628', 'ERR2383627', 'ERR2383626', 'ERR2383625', 'ERR2383624', 'ERR2383623', 'ERR2383622', 'ERR2383621', 'ERR2383620', 'ERR2383619', 'ERR2383618', 'ERR2181458', 'SRR6046675', 'SRR6046695', 'SRR6046725', 'SRR6046334', 'SRR6046131', 'SRR6046235', 'SRR6045962', 'SRR6045604', 'SRR6045301', 'SRR6045425', 'SRR6045496', 'SRR6045027', 'SRR6044858', 'SRR6044939', 'SRR6045015', 'ERR019854', 'ERR019872', 'ERR017780', 'ERR017798', 'ERR026642', 'ERR1679637', 'SRR3647358', 'ERR1334053', 'ERR1334052', 'ERR1334051', 'ERR1334050', 'ERR1334049','ERR1215483', 'ERR1215482', 'ERR1215481', 'ERR1215480', 'ERR1215479', 'ERR1215478', 'ERR1215477', 'ERR1215476', 'ERR1215475', 'ERR1215474', 'ERR1215473', 'ERR1215472', 'ERR1215471', 'ERR1215470', 'ERR1215469', 'ERR1215468', 'ERR1215467', 'ERR1215466', 'ERR1215465', 'ERR1215464', 'ERR1215463', 'ERR1215462', 'ERR1215461', 'ERR1215460', 'ERR1203078', 'ERR1203077', 'ERR1203076', 'ERR1203075', 'ERR1203074', 'ERR1203073', 'ERR1203072', 'ERR1203071', 'ERR1203070', 'ERR1203069', 'ERR1203068', 'ERR1203067', 'ERR1203066', 'ERR1203065', 'ERR1203064', 'ERR1203063', 'ERR1203062', 'ERR1203061', 'ERR1203060', 'ERR1203059', 'ERR1203058', 'ERR1203057', 'ERR1203056', 'ERR1203055', 'ERR1203054', 'ERR1203053', 'ERR1203052', 'SRR3085279', 'ERR1082143', 'ERR1082142', 'ERR1082141', 'ERR1082140', 'ERR1082139', 'ERR1082138', 'ERR1082137', 'ERR1082136', 'ERR1082135', 'ERR1082134', 'ERR1082133', 'ERR1082132', 'ERR1082131', 'ERR1082130', 'ERR1082129', 'ERR1082128', 'ERR1082127', 'ERR1082126', 'ERR1082125', 'ERR1082124', 'ERR1082123', 'ERR1082122', 'ERR1082121', 'ERR1082120', 'ERR1082119', 'ERR1082118', 'ERR1082117', 'ERR1082116', 'ERR1082115', 'ERR1082114', 'ERR1082113', 'SRR2667443', 'ERR909754', 'ERR909753', 'ERR845916', 'ERR751349', 'ERR751348', 'ERR751347', 'ERR751346', 'ERR751345', 'ERR751344', 'ERR751343', 'ERR751342', 'ERR751341', 'ERR751340', 'ERR751339', 'ERR751338', 'ERR751337', 'ERR751336', 'ERR751335', 'ERR751334', 'ERR751333', 'ERR751332', 'ERR751331', 'ERR751330', 'ERR751329', 'ERR751328', 'ERR751327', 'ERR751326', 'ERR751325', 'ERR751324', 'ERR751323', 'ERR751322', 'ERR751321', 'ERR751320', 'ERR751319', 'ERR751318', 'ERR751317', 'ERR751316', 'ERR751315', 'ERR751314', 'ERR751313', 'ERR751312', 'ERR751311', 'ERR751310', 'ERR751309', 'ERR751308', 'ERR751307', 'ERR751306', 'ERR751305', 'ERR751304', 'ERR751303', 'ERR751302', 'ERR751301', 'ERR751300', 'ERR751299', 'ERR751298', 'ERR751297', 'ERR751296', 'ERR751295', 'ERR751294', 'ERR751293', 'ERR751292', 'ERR751291', 'ERR751290', 'ERR702414', 'ERR702413', 'ERR702412', 'ERR702411', 'ERR702410', 'ERR702409', 'ERR702408', 'ERR702407', 'ERR702406', 'ERR702405', 'ERR702404', 'ERR702403', 'ERR702402', 'ERR702401', 'ERR702400', 'ERR702399', 'ERR702437', 'ERR702436', 'ERR702435', 'ERR702434', 'ERR702433', 'ERR702432', 'ERR702431', 'ERR702430', 'ERR702429', 'ERR702428', 'ERR702427', 'ERR702426', 'ERR702425', 'ERR702424', 'ERR702423', 'ERR702422', 'ERR702421', 'ERR702420', 'ERR702419', 'ERR702418', 'ERR702417', 'ERR702416', 'ERR702415', 'ERR517472', 'ERR517471', 'ERR502538', 'ERR502537', 'ERR502536', 'ERR502535', 'ERR502534', 'ERR502533', 'ERR502532', 'ERR502531', 'ERR502530', 'ERR502529', 'ERR502528', 'ERR502527', 'ERR502526', 'ERR502525', 'ERR502524', 'ERR502523', 'ERR502522', 'ERR502521', 'ERR502520', 'ERR502519', 'ERR502518', 'ERR502517', 'ERR502516', 'ERR502515', 'ERR502514', 'ERR502513', 'ERR502512', 'ERR502511', 'ERR502510', 'ERR502509', 'ERR502508', 'ERR502507', 'ERR502506', 'ERR502505', 'ERR502504', 'ERR502503', 'ERR502502', 'ERR502501', 'ERR502500', 'ERR502499', 'ERR502498', 'ERR502497', 'ERR502496', 'ERR502495', 'ERR502494', 'ERR502493', 'ERR502492', 'ERR502491', 'ERR502490', 'ERR502489', 'ERR502488', 'ERR502487', 'ERR502486', 'ERR502485', 'ERR502484', 'ERR502483', 'ERR502482', 'ERR502481', 'ERR502480', 'ERR502479', 'ERR502478', 'ERR502477', 'ERR502476', 'ERR502475', 'ERR502474', 'ERR502473', 'ERR502472', 'ERR502471', 'ERR502470', 'SRR1735564', 'SRR1735577', 'SRR1735574', 'SRR1735569', 'SRR1577834', 'SRR1577833', 'SRR1577831', 'SRR1577828', 'SRR1577820', 'SRR1577819', 'SRR1162789', 'SRR1162788', 'SRR1162738', 'SRR1162716', 'SRR1162479', 'SRR1162477', 'SRR1162470', 'SRR1162469', 'SRR1103551', 'SRR1103499', 'SRR1103472', 'SRR1103387', 'SRR1057937', 'SRR1049960', 'SRR1049959', 'SRR1049958', 'SRR998743', 'SRR998740', 'SRR998741', 'SRR998742', 'SRR998655', 'SRR998652', 'SRR998654', 'SRR998653', 'SRR998648', 'SRR998650', 'SRR998651', 'SRR998649', 'SRR998646', 'SRR998647', 'SRR998645', 'SRR998644', 'SRR998640', 'SRR998641', 'SRR998642', 'SRR998643', 'SRR998637', 'SRR998638', 'SRR998636', 'SRR998639', 'SRR998631', 'SRR998628', 'SRR998629', 'SRR998630', 'SRR998626', 'SRR998624', 'SRR998625', 'SRR998627', 'SRR998621', 'SRR998620', 'SRR998622', 'SRR998623', 'SRR998619', 'SRR998616', 'SRR998617', 'SRR998618', 'SRR998612', 'SRR998614', 'SRR998613', 'SRR998615', 'SRR998611', 'SRR998608', 'SRR998610', 'SRR998609', 'SRR998604', 'SRR998605', 'SRR998606', 'SRR998607', 'SRR998601', 'SRR998603', 'SRR998600', 'SRR998602', 'SRR998596', 'SRR998597', 'SRR998598', 'SRR998599', 'SRR998594', 'SRR998592', 'SRR998593', 'SRR998595', 'SRR998584', 'SRR998587', 'SRR998586', 'SRR998585', 'SRR998580', 'SRR998583', 'SRR998582', 'SRR998581', 'SRR998578', 'SRR998576', 'SRR998579', 'SRR998577']},
     #
     {'Source': "Requete SRA avec txid78331[Organism:exp] (M.canettii)",
      'Author': "NCBI",
@@ -277,7 +175,6 @@ def to_brynildsrud():
             ...
         }
     """
-    print('TEST execute to_brynildsrud')
     brynildsrud = {}
     source, author, study, location, date = '', '', '', '', ''
     p = str(PurePath('data', 'Brynildsrud_Dataset_S1.xls'))
@@ -325,29 +222,27 @@ def to_brynildsrud():
     return brynildsrud
 
 
-def fasta_to_seq():
+def to_h37rv():
     """
     This function creates a string called h containing the genome sequence of
-    the H37RV strain without headers, extracted from 'data/NC_000962.3.fasta'
+    the H37RV strain without headers, extracted from 'data/NC_000962.3.txt'
 
     Returns:
         h (str): genome sequence in a single line and without the headers
     """
-    print('TEST execute fasta_to_seq')
-    p = str(PurePath('data', 'NC_000962.3.fasta'))
-    h = open(p).read()
-    h = ''.join(h.split('\n')[1:])
+    p = str(PurePath('data', 'NC_000962.3.txt'))
+    with open(p, 'r') as fp:
+        h = fp.read()
     return h
 
 
-def to_reads():
+def to_reads(origine):
     """
     This function creates a dictionary called Lignee_renvoyee containing 2
     reads per lineage and their specific position, extracted from xlsx_lignee.
 
     Args:
-        xlsx_lignee (str): dataset in xlsx format representing a specific
-        lineage
+        origine(str): name of the dataset origin representing a specific lineage
 
     Returns:
         Lignee_renvoyee (dict): with the following structure
@@ -374,15 +269,14 @@ def to_reads():
             'source' to 'cible', and create the substring seq2,
         - - we create the tuple (seq1, seq2, lignee)
     """
-    print('TEST execute to_reads')
     Lignee_renvoyee = {}
 
-    with open(P_CSV, 'rt') as f:
+    with open(P_CSV, 'r') as f:
         csv_reader = csv.reader(f, delimiter=',', quotechar='"')
         next(csv_reader)
 
         for row in csv_reader:
-            if row[1] != '':
+            if row[16] == origine and row[1] != '':
                 lignee = row[0].strip()
                 pos0 = int(row[1].strip())
                 pos = pos0 - 1
@@ -421,7 +315,6 @@ def get_info(srr):
         - we assign dico[...]['#text'] to dico0['bioproject'], separating the
           cases when dico[...]['EXTERNAL_ID'] is a string or a list.
     """
-    print('TEST execute get_info')
     Entrez.email = "christophe.guyeux@univ-fcomte.fr"
     ret = Entrez.efetch(db="sra", id=srr, retmode="xml")
     dico = xmltodict.parse(ret.read())
@@ -560,7 +453,6 @@ def to_spol_sit():
           column from ws as values to the dictionary spol_sit (after
           replacing 'n' into a black square and 'o' into a white square).
     """
-    print('TEST execute to_spol_sit')
     p = str(PurePath('data', '1_3882_SORTED.xls'))
     wb = open_workbook(p)
     ws = wb.sheet_by_index(0)
@@ -596,7 +488,6 @@ def add_spoligo_dico(type_sit, dico_afr, item, spol_sit):
          reference. If this spoligotype is not in spol_sit, then we update
          dico_afr with 'X' as a 'SIT' reference.
     """
-    print('TEST execute add_spoligo_dico')
     if type_sit == 'SIT':
         type_spoligo = 'spoligo'
     elif type_sit == 'SIT_silico':
@@ -627,13 +518,9 @@ def to_formatted_results(seq, repitem):
     Returns:
         (str): a formatted result of a sequence blast
     """
-    print('TEST execute to_formatted_results')
-    with tempfile.TemporaryDirectory() as tf:
-        p = str(PurePath(tf, 'snp.fasta'))
-        # TODO check that the path above corresponds to /tmp/snp.fasta
-        with open(p, 'w') as f:
-            f.write('>\n' + seq)
-        result = subprocess.run(["blastn", "-num_threads", "12", "-query", p,
+    with open(P_FASTA, 'w') as f:
+        f.write('>\n' + seq)
+    result = subprocess.run(["blastn", "-num_threads", "12", "-query", P_FASTA,
                                  "-evalue", "1e-5", "-task", "blastn", "-db",
                                  repitem, "-outfmt", "10 sseq"],
                                 stdout=subprocess.PIPE)
@@ -655,25 +542,25 @@ def compt_spol_vitro(dico_afr, item, type_blast, nom_espaceur, nomB_espaceur):
         (void)
     """
     print('TEST execute comp_spol_vitro')
-    with tempfile.TemporaryDirectory() as tf:
-        p1 = str(PurePath(tf, item + type_blast + '_.blast'))
-        p2 = str(PurePath('data', 'spoligo_' + type_blast + '.fasta'))
-        # TODO check for the path above which should be
-        # TODO '/tmp/'+item+type_blast+'_'+'.blast' and 'data/spoligo_'+type_blast+'.fasta'
-        with open(p1) as f:
-            matches = f.read()
-            nb = int(open(p2).read().count('>') / 2)
 
-            for k in range(1, nb + 1):
-                # if 'espaceur'+spol.capitalize()+str(k) in matches:
+    p1 = str(PurePath('tmp', item + type_blast + '_.blast'))
+    p2 = str(PurePath('data', 'spoligo_' + type_blast + '.fasta'))
+    # TODO check for the path above which should be
+    # TODO '/tmp/'+item+type_blast+'_'+'.blast' and 'data/spoligo_'+type_blast+'.fasta'
+    with open(p1) as f:
+        matches = f.read()
+        nb = int(open(p2).read().count('>') / 2)
 
-                if min([matches.count('espaceur_' + nom_espaceur + str(k) +
+        for k in range(1, nb + 1):
+            # if 'espaceur'+spol.capitalize()+str(k) in matches:
+
+            if min([matches.count('espaceur_' + nom_espaceur + str(k) +
                             ','), matches.count('espaceur_' + nomB_espaceur +
                                                 str(k) + ',')]) / \
                         dico_afr[item].get('couverture') > 0.05:
-                    dico_afr[item]['spoligo_'+type_blast] += '\u25A0'
-                else:
-                    dico_afr[item]['spoligo_'+type_blast] += '\u25A1'
+                dico_afr[item]['spoligo_'+type_blast] += '\u25A0'
+            else:
+                dico_afr[item]['spoligo_'+type_blast] += '\u25A1'
 
     dico_afr[item]['spoligo_' + type_blast + '_nb'] = [(matches.count(
         'espaceur_' + nom_espaceur + str(k) + ','), matches.count(
@@ -683,18 +570,19 @@ def compt_spol_vitro(dico_afr, item, type_blast, nom_espaceur, nomB_espaceur):
 def to_nb_seq(seq, chaine, debut_prefixe, fin_prefixe, debut_suffixe,
               fin_suffixe):
     """
+    This function returns a length.
 
     Args:
-        seq (str):
-        debut_prefixe (int):
-        fin_prefixe (int):
-        debut_suffixe (int):
-        fin_suffixe (int):
+        seq(str): sequence of nucleotides
+        chaine(str):
+        debut_prefixe(int): beginning of the 1st section in the sequence seq
+        fin_prefixe(int): end of the 1st section in the sequence seq
+        debut_suffixe(int): beginning of the 2nd section in the sequence seq
+        fin_suffixe(int): end of the 2nd section in the sequence seq
 
     Returns:
         nb_seq (int):
     """
-    print('TEST execute to_nb_seq')
     return len([u for u in chaine if seq[fin_prefixe:fin_suffixe] in u]) + \
              len([u for u in chaine if seq[debut_prefixe:debut_suffixe] in u])
 
@@ -721,28 +609,6 @@ def change_elt_file(path, suffixe):
     rename('tp.fasta', path)
 
 
-def concat(p1, p2, p_shuffled):
-    """
-    This function concatenates two files given by their paths p1 and p2 into a
-    third file that is created and accessible through the path p_shuffled.
-
-    Args:
-        p1(str): path for the 1st file
-        p2(str): path for the 2nd file
-        p_shuffled(str): path for the concatenated file
-
-    Returns:
-        (None)
-    """
-    with open(p1, 'r') as f1, open(p2, 'r') as f2, \
-            open(p_shuffled, 'w') as f_shuffled:
-        lignes1 = f1.readlines()
-        for elt in lignes1:
-            f_shuffled.write(elt)
-        lignes2 = f2.readlines()
-        for elt in lignes2:
-            f_shuffled.write(elt)
-
 def collect_SRA(item):
 
     # ==== CHECKING IF THE SRA IS ALREADY IN THE DATABASE ===================
@@ -751,16 +617,17 @@ def collect_SRA(item):
     if item not in listdir('sequences'):
         Path.cwd().joinpath('sequences', item).mkdir(exist_ok=True, parents=True)
         print(f"We're creating a directory {item}.")
-    # We define the path for the file named as the SRA
-    rep = str(PurePath('sequences', item))
-    repitem = str(PurePath('sequences', item, item))
+        Path.cwd().joinpath('sequences', item, item).mkdir(exist_ok=True,
+                                                           parents=True)
     # If the SRA is not in dico_afr, we add it to dico_afr
     if item not in dico_afr:
         print(f"We're adding {item} to the database.")
         dico_afr[item] = {}
-
     # creating paths
+    rep = str(PurePath('sequences', item))
+    repitem = str(PurePath('sequences', item, item))
     p_shuffled = str(PurePath(rep, item + '_shuffled.fasta'))
+
     # ==== DOWNLOADING FASTA FILES FOR THE SRA ===========================
     # If the SRA directory contains no file in fasta format, we download
     # directly from NCBI the fasta regarding this SRA
@@ -775,7 +642,8 @@ def collect_SRA(item):
             print("fasta files successfully downloaded.")
             for k in listdir():
                 if k.endswith('.fasta'):
-                    shutil.move(k, rep + k)
+                    p = str(PurePath(rep, k))
+                    shutil.move(k, p)
         # if the download didn't work, we delete the SRA from dico_afr
         else:
             del dico_afr[item]
@@ -801,36 +669,38 @@ def collect_SRA(item):
         p1 = str(PurePath(rep, item + '_1.fasta'))
         p2 = str(PurePath(rep, item + '_2.fasta'))
 
-        for fic in ['_1', '_2']:
-            change_elt_file(p1, fic)
-            change_elt_file(p2, fic)
-            # TODO system("sed -i 's/" + item + './' + item + fic + "./g' " +
-            # TODO rep + item + fic + '.fasta')
+        if name == 'posix':
+            for fic in ['_1', '_2']:
+                #change_elt_file(p1, fic)
+                #change_elt_file(p2, fic)
+                system("sed -i 's/" + item + './' + item + fic + "./g' " + rep + item + fic + '.fasta')
 
-        concat(p1, p2, p_shuffled)
-        # TODO system("cat " + p1 + ' ' + p2 + ' > ' + p_shuffled)
+            #concat(p1, p2, p_shuffled)
+            system("cat " + p1 + " " + p2 + " > " + p_shuffled)
+        else:
+            print('windows powershell')
 
     # ==== UPDATING NB_READS IN DICO_AFR ================================
     # If there's no nb_reads reference in dico_afr[SRA], we count the number
     # of '>' in /shuffled.fasta, keep it in /tmp/nb.txt and assign it to nb.
     if 'nb_reads' not in dico_afr[item] or dico_afr[item]['nb_reads'] == '':
-        print('TEST updating the reads')
-        with tempfile.TemporaryDirectory() as fp:
-            p = str(PurePath(fp, 'nb.txt'))
-            # TODO check  /tmp/nb.txt
-            # TODO system("cat " + p_shuffled + " | grep '>' | wc -l > " + p)
+        if name == 'posix':
+            p = str(PurePath('tmp', 'nb.txt'))
+            system("cat " + p_shuffled + " | grep '>' | wc -l > " + p)
             # TODO ??? why keep nb in a temp file /tmp/nb.txt ?
-            with open(p_shuffled, 'r') as f_in, open(p, 'w') as f_out:
-                lignes = f_in.readlines()
-                cpt = 0
-                for elt in lignes:
-                    cpt += elt.count('>')
-                f_out.write(str(cpt))
+            #with open(p_shuffled, 'r') as f_in, open(p, 'w') as f_out:
+                #lignes = f_in.readlines()
+                #cpt = 0
+                #for elt in lignes:
+                    #cpt += elt.count('>')
+                #f_out.write(str(cpt))
+        else:
+            print('windows')
 
-            nb = eval(open(p).read().split('\n')[0])
-            #nb = open(rep+item+'_shuffled.fasta').read().count('>')
-            print("The number of reads is: ", nb)
-            dico_afr[item]['nb_reads'] = nb
+        nb = eval(open(p).read().split('\n')[0])
+        #nb = open(rep+item+'_shuffled.fasta').read().count('>')
+        print("The number of reads is: ", nb)
+        dico_afr[item]['nb_reads'] = nb
 
     # ==== UPDATING LEN_READS IN DICO_AFR ====================================
     # If there's no 'len_reads' reference in dico_afr[SRA], we evaluate
@@ -860,10 +730,13 @@ def collect_SRA(item):
         print(f"The coverage is too low. {item} is being removed from the "
               "database")
 
-        # TODO system('touch ' + rep + 'low_cover.txt')
-        p = str(PurePath(rep, 'low_cover.txt'))
-        f = open(p)
-        f.close()
+        if name == 'posix':
+            system('touch ' + rep + 'low_cover.txt')
+            #p = str(PurePath(rep, 'low_cover.txt'))
+            #f = open(p)
+            #f.close()
+        else:
+            print('windows')
 
     else:
         # ==== CREATING BLAST DATABASE ================================
@@ -887,7 +760,6 @@ def collect_SRA(item):
                                'location']:
                         # TODO replaced try except
                         dico_afr[item][elt] = u.get(elt)
-                        print(f"   - {elt}: {dico_afr[item][elt]}")
 
         # ==== UPDATING DICO_AFR FROM NCBI ===============================
         # If there's no 'taxid' reference in dico_afr[SRA],we collect data
@@ -896,7 +768,6 @@ def collect_SRA(item):
             dicobis = get_info(item)
             for elt in dicobis:
                 dico_afr[item][elt] = dicobis[elt]
-                print(f"   - {elt}: {dico_afr[item][elt]}")
 
         # ==== UPDATING DICO_AFR WITH THE DATASET BRYNILDSRUD ================
         # We check the presence of the SRA in the file
@@ -905,10 +776,10 @@ def collect_SRA(item):
         if item in brynildsrud:
             for elt in brynildsrud[item]:
                 dico_afr[item][elt] = brynildsrud[item][elt]
-                print(f"{item} is in the database Brynildsrud_Dataset_S1."
-                      f"xls\n     - {elt}: {dico_afr[item][elt]}")
+                print(f"{item} is in the database Brynildsrud\n"
+                      f"     - {elt}: {dico_afr[item][elt]}")
         else:
-            print(f"{item} is not in the database Brynildsrud_Dataset_S1.xls")
+            print(f"{item} is not in the database Brynildsrud")
 
         # ==== UPDATING THE SPOLIGOTYPES IN DICO_AFR ========================
         # if 'spoligo' for the SRA is not in dico_afr or is undefined,
@@ -1090,7 +961,7 @@ def collect_SRA(item):
         debut_prefixe ... fin_suffixe  A
         """
         if 'lineage_PGG' not in dico_afr[item]:
-            lineage = []
+            lignee = []
             print("We're adding the lineage according to the SNPs PGG")
             pos = 2154724
             seq1 = H37RV[pos - DEMI_LONGUEUR:pos + DEMI_LONGUEUR + 1]
@@ -1100,11 +971,11 @@ def collect_SRA(item):
             nb_seq2 = to_nb_seq(seq2, formatted_results, 15, 19, 20, 24)
 
             if nb_seq1 > nb_seq2:
-                lineage.append(2)
+                lignee.append(2)
             elif nb_seq2 > nb_seq1:
-                lineage.append('1')
+                lignee.append('1')
             else:
-                lineage.append('X')
+                lignee.append('X')
             print("The lineage is being updated.")
 
             pos = 7585-1
@@ -1115,27 +986,25 @@ def collect_SRA(item):
             nb_seq2 = to_nb_seq(seq2, formatted_results, 16, 20, 21, 25)
 
             if nb_seq1 > nb_seq2:
-                lineage.append(3)
+                lignee.append(3)
             elif nb_seq2 > nb_seq1:
-                lineage.append('1')
+                lignee.append('1')
             else:
-                lineage.append('X')
+                lignee.append('X')
             print("The lineage is being updated.")
-            dico_afr[item]['lineage_PGG_cp'] = lineage
+            dico_afr[item]['lineage_PGG_cp'] = lignee
             # TODO IMPORTANT work on the initialization of lineage
-            if lineage == ['1', '1']:
+            if lignee == ['1', '1']:
                 dico_afr[item]['lineage_PGG'] = '1'
-            elif lineage in [['1', '2'], ['2', '1']]:
+            elif lignee in [['1', '2'], ['2', '1']]:
                 dico_afr[item]['lineage_PGG'] = '2'
-            elif lineage in [['2', '3'], ['3', '2']]:
+            elif lignee in [['2', '3'], ['3', '2']]:
                 dico_afr[item]['lineage_PGG'] = '3'
             else:
                 dico_afr[item]['lineage_PGG'] = 'X'
 
             print("Lineage (PGG): " + dico_afr[item]['lineage_PGG'] + ' (' +
                   ", ".join(dico_afr[item]['lineage_PGG_cp']) + ')')
-
-            Lignee_SNP = to_reads()
 
             # ==== TESTING LINEAGE COLL =======================================
             # If 'lineage_Coll' is undefined for the SRA in dico_afr, we parse a
@@ -1146,17 +1015,17 @@ def collect_SRA(item):
                     dico_afr[item]['lineage_Coll'] == '':
                 lignee = []
                 print("We're adding the lineage according to the SNPs Coll")
-                # TODO ??? rt instead of r
                 with open(P_CSV, 'r') as f:
                     csv_reader = csv.reader(f, delimiter=',', quotechar='"')
                     next(csv_reader)
                     for row in csv_reader:
-                        if row[1] != '':
+                        if row[16] == 'Coll' and row[1] != '':
                             pos = int(row[1].strip()) - 1
-                            assert H37RV[pos] == row[3].strip().split('/')[0]
+                            # TEST assert H37RV[pos] == row[3].strip().split(
+                            # '/')[0]
                             # print(row[0].value, row[1].value-1, row[3].value.split('/'))
-                            seq1 = H37RV[pos - DEMI_LONGUEUR:pos + DEMI_LONGUEUR
-                                                             + 1]
+                            seq1 = H37RV[pos - DEMI_LONGUEUR:pos +
+                                                             DEMI_LONGUEUR + 1]
 
                             if '*' not in row[0].strip():
                                 seq2 = seq1[:20] + row[3].strip().split('/')[
@@ -1167,20 +1036,17 @@ def collect_SRA(item):
                                 seq2 = seq1[:20] + row[3].strip().split('/')[
                                     0] + seq1[21:]
 
-                            with tempfile.TemporaryDirectory() as tf:
-                                p = str(PurePath(tf, 'snp.fasta'))
-                                with open(p, 'w') as file:
-                                    file.write('>\n' + seq2)
-                                result = subprocess.run(["blastn",
-                                                         "-num_threads", "8",
-                                                         "-query", p, "-evalue",
-                                                         "1e-5", "-task",
-                                                         "blastn", "-db",
-                                                         repitem, "-outfmt",
-                                                         "10 sseq"],
-                                                        stdout=subprocess.PIPE)
-                                formatted_results = result.stdout.decode(
-                                'utf8').splitlines()
+                            with open(P_FASTA, 'w') as file:
+                                file.write('>\n' + seq2)
+                            result = subprocess.run(["blastn", "-num_threads",
+                                                     "8", "-query", P_FASTA,
+                                                     "-evalue",
+                                                     "1e-5", "-task", "blastn",
+                                                     "-db", repitem, "-outfmt",
+                                                     "10 sseq"],
+                                                    stdout=subprocess.PIPE)
+                            formatted_results = result.stdout.decode('utf8').\
+                                splitlines()
                             # nb_seq1 = formated_results.count(seq1)
                             # nb_seq2 = formated_results.count(seq2)
                             nb_seq1 = to_nb_seq(seq1, formatted_results, 16, 20,
@@ -1193,8 +1059,8 @@ def collect_SRA(item):
                             # print(row[0].value.replace('lineage', '').replace('*',''),nb_seq1,nb_seq2)
 
                             if nb_seq2 > nb_seq1:
-                                lignee.append(row[0].strip().replace('lineage',
-                                                        '').replace('*', ''))
+                                lignee.append(row[0].strip().replace(
+                                    'lineage', '').replace('*', ''))
                     lignee = sorted(set(lignee))
                     dico_afr[item]['lineage_Coll'] = lignee
                     print("Lineage Coll: " + ", ".join(dico_afr[item][
@@ -1222,22 +1088,21 @@ def collect_SRA(item):
         # the lineage in dico_afr[SRA].
         if 'lineage_Pali' not in dico_afr[item]:
             lignee = []
+            Lignee_SNP = to_reads('Pali')
             print("We're adding the lineage according to the SNPs Pali")
 
             for item2, pos0 in enumerate(Lignee_SNP):
                 seq1, seq2 = Lignee_SNP[pos0][:2]
-                with tempfile.TemporaryDirectory() as tf:
-                    p = str(PurePath(tf, 'snp.fasta'))
-                    p_blast = str(PurePath(tf, 'snp_Pali.blast'))
-                    # TODO check "/tmp/snp_Pali.blast"
-                    with open(p, 'w') as f:
-                        f.write('>\n' + seq2)
-                    cmd = "blastn -query " + p + " -num_threads 12 -evalue " \
+
+                p_blast = str(PurePath('tmp', 'snp_Pali.blast'))
+                with open(P_FASTA, 'w') as f:
+                    f.write('>\n' + seq2)
+                cmd = "blastn -query " + P_FASTA + " -num_threads 12 -evalue " \
                           "1e-5 -task blastn -db " + repitem + " -outfmt '10 " \
                           "sseq' -out " + p_blast
-                    system(cmd)
-                    with open(p_blast) as f:
-                        formatted_results = f.read().splitlines()
+                system(cmd)
+                with open(p_blast) as f:
+                    formatted_results = f.read().splitlines()
                 # nb_seq1 = formatted_results.count(seq1) # TODO ???
                 # nb_seq2 = formatted_results.count(seq2)
                 nb_seq1 = to_nb_seq(seq1, formatted_results, 16, 20, 21, 25)
@@ -1259,23 +1124,24 @@ def collect_SRA(item):
         # the lineage in dico_afr[SRA].
         if 'lineage_Shitikov' not in dico_afr[item]:
             lignee = []
+            Lignee_SNP = to_reads('Shiti')
             print("We're adding the lineage according to the SNPs Shitikov")
 
             for item2, pos0 in enumerate(Lignee_SNP):
                 seq1, seq2 = Lignee_SNP[pos0][:2]
-                with tempfile.TemporaryDirectory() as tf:
-                    p = str(PurePath(tf, 'snp.fasta'))
-                    p_blast = str(PurePath(tf, 'snp_Shitikov.blast'))
-                    with open(p, 'w') as f:
-                        f.write('>\n' + seq2)
-                    cmd = "blastn -query " + p + " -num_threads 12 -evalue 1e-5 " \
+
+                p_blast = str(PurePath('tmp', 'snp_Shitikov.blast'))
+                with open(P_FASTA, 'w') as f:
+                    f.write('>\n' + seq2)
+                cmd = "blastn -query " + P_FASTA + " -num_threads 12 -evalue " \
+                                                 "1e-5 " \
                       "-task blastn -db " + repitem + " -outfmt '10 sseq' " \
                       "-out " + p_blast
-                    system(cmd)
-                    with open(p_blast) as f:
-                        formatted_results = f.read().splitlines()
-                    # nb_seq1 = formatted_results.count(seq1) # TODO ???
-                    # nb_seq2 = formatted_results.count(seq2)
+                system(cmd)
+                with open(p_blast) as f:
+                    formatted_results = f.read().splitlines()
+                # nb_seq1 = formatted_results.count(seq1) # TODO ???
+                # nb_seq2 = formatted_results.count(seq2)
 
                 nb_seq1 = to_nb_seq(seq1, formatted_results, 16, 20, 21, 25)
                 nb_seq2 = to_nb_seq(seq2, formatted_results, 16, 20, 21, 25)
@@ -1296,21 +1162,21 @@ def collect_SRA(item):
         # the lineage in dico_afr[SRA].
         if 'Lignee_Stucki' not in dico_afr[item]:
             lignee = []
+            Lignee_SNP = to_reads('Stucki')
             print("We're adding the lineage according to the SNPs Stucki")
 
             for item2, pos0 in enumerate(Lignee_SNP):
                 seq1, seq2 = Lignee_SNP[pos0][:2]
-                with tempfile.TemporaryDirectory() as tf:
-                    p = str(PurePath(tf, 'snp.fasta'))
-                    p_blast = str(PurePath(tf, 'snp_Stucki.blast'))
-                    with open(p, 'w') as f:
-                        f.write('>\n' + seq2)
-                    cmd = "blastn -query " + p + " -num_threads 12 -evalue 1e-5 " \
-                      "-task blastn -db " + repitem + " -outfmt '10 sseq' " \
-                      "-out " + p_blast
-                    system(cmd)
-                    with open(p_blast) as f:
-                        formatted_results = f.read().splitlines()
+
+                p_blast = str(PurePath('tmp', 'snp_Stucki.blast'))
+                with open(P_FASTA, 'w') as f:
+                    f.write('>\n' + seq2)
+                cmd = "blastn -query " + P_FASTA + " -num_threads 12 -evalue " \
+                      "1e-5 -task blastn -db " + repitem + " -outfmt '10 sseq' " \
+                                                           "-out " + p_blast
+                system(cmd)
+                with open(p_blast) as f:
+                    formatted_results = f.read().splitlines()
                 # nb_seq1 = formatted_results.count(seq1) # TODO ???
                 # nb_seq2 = formatted_results.count(seq2)
                 nb_seq1 = to_nb_seq(seq1, formatted_results, 16, 20, 21, 25)
@@ -1365,8 +1231,11 @@ def collect_SRA(item):
             print(dico_afr[k].get('name'))
 
     # We display information regarding the SRA
-    for cle in dico_afr[item]:
-        print(f"{cle}: {dico_afr[item][cle]}")
+    for elt in dico_afr[item]:
+        print(f"{elt}: {dico_afr[item][elt]}")
+
+    # We empty the directory /tmp
+
 
 
 # ==============
@@ -1396,24 +1265,31 @@ args = mp.parse_args()
 # item represents the RSA reference
 valeur_option = args.sra
 
-# ==== INITILIZING THE SEQUENCE OF H37RV AND DICO_AFR =========================
+# ==== INITIALIZATION OF VARIABLES AND CONSTANTS ===========================
 # We create a string called H37RV containing the genome sequence of the strain
 # H37Rv.
-H37RV = fasta_to_seq()
+H37RV = to_h37rv()
 TAILLE_GEN = len(H37RV)
 # We define the value of half the length of the reads.
 DEMI_LONGUEUR = 20
 # We create a directory called 'sequences' which will contain the different
 # SRA directories.
-p = Path("sequences")
-p.mkdir(exist_ok=True, parents=True)
+P_SEQUENCES = Path("sequences")
+P_SEQUENCES.mkdir(exist_ok=True, parents=True)
+# We create a directory called 'tmp' which will contain temporary files
+P_TMP = Path('tmp')
+P_TMP.mkdir(exist_ok=True, parents=True)
 # We initialize dico_afr
 dico_afr = {}
-
 # We define the path to data/lineage.csv and a temporary csv file in a
 # cross-platform way
 P_CSV = str(PurePath('data', 'lineage.csv'))
 p_csv_tmp = str(PurePath('data', 'temp.csv'))
+P_FASTA = str(PurePath('tmp', 'snp.fasta'))
+
+# We check the host operating system.
+if name == 'posix':
+    pass
 
 # ==== WHEN THE SELECTED OPTION IS COLLECT ===================================
 if args.collect:

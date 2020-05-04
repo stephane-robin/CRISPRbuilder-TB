@@ -14,22 +14,18 @@ from datetime import datetime
 import argparse
 import csv
 from collections import namedtuple
+import time
 
-def fasta_to_seq():
-    """
-    This function creates a string called h containing the genome sequence of
-    the H37Rv strain without headers, extracted from 'data/NC_000962.3.fasta'
 
-    Returns:
-        h (str): genome sequence in a single line and without the headers
-    """
-    h = open('data/NC_000962.3.fasta').read()
-    h = ''.join(h.split('\n')[1:])
 
-    return h
 
-h37Rv = fasta_to_seq()
+debut = time.time()*1000
 
+fin = time.time()*1000
+print('time: ', fin - debut)
+
+
+"""
 def ff():
     demi_longueur = 20
     Lignee_renvoyee = {}
@@ -53,5 +49,6 @@ def ff():
     return Lignee_renvoyee
 
 print(ff())
+"""
 
 

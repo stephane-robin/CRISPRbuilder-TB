@@ -20,23 +20,25 @@ from pathlib import PurePath
 from pathlib import Path
 import pathlib
 import tempfile
+import time
 
-with tempfile.TemporaryDirectory() as fp:
-    p = str(PurePath(fp, 'nb.txt'))
-    #with open(p, 'w') as f_nb:
-        #pass
-    # TODO check  /tmp/nb.txt
-    # TODO system("cat " + p_shuffled + " | grep '>' | wc -l > " + p)
-    # TODO ??? why keep nb in a temp file /tmp/nb.txt ?
-    with open('essai.txt', 'r') as f_in, open(p, 'w') as f_out:
-        lignes = f_in.readlines()
-        cpt = 0
-        for elt in lignes:
-            cpt += elt.count('>')
-        f_out.write(str(cpt))
+item = 'SRR8368696'
+rep = str(PurePath('sequences', item))
+repitem = str(PurePath('sequences', item, item))
+p_shuffled = str(PurePath(rep, item + '_shuffled.fasta'))
+P_FASTA = str(PurePath('tmp', 'snp.fasta'))
+debut = time.time()*1000
+result = subprocess.run(["blastp", "-num_threads",
+                                                     "8", "-query", P_FASTA,
+                                                     "-evalue",
+                                                     "1e-5", "-task", "blastn",
+                                                     "-db", repitem, "-outfmt",
+                                                     "10 sseq"],
+                                                    stdout=subprocess.PIPE)
+fin = time.time()*1000
+print(fin-debut)
 
-    nb = eval(open(p).read().split('\n')[0])
-    print(nb)
+print(type(result))
 
 """
 with open('essai.txt', 'r') as f_in, open('essai2.txt', 'w') as f_out:
