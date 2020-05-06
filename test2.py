@@ -22,7 +22,5 @@ import pathlib
 import tempfile
 import time
 
-item = 'SRR8368696'
-repitem = str(PurePath('sequences', item, item))
-move('essai.txt', repitem)
-
+for k in listdir():
+    print(k)

@@ -10,8 +10,6 @@ from argparse import ArgumentParser
 from pathlib import Path # creates path
 from pathlib import PurePath
 
-import time
-
 
 # =======
 # DATASET
@@ -223,12 +221,12 @@ def to_h37rv():
         h (str): genome sequence in a single line and without the headers
     """
     p = str(PurePath('data', 'NC_000962.3.txt'))
-    with open(p, 'r') as fp:
-        h = fp.read()
+    with open(p, 'r') as f:
+        h = f.read()
     return h
 
 
-def to_reads(origine):
+def to_reads(origine, H37RV):
     """
     This function creates a dictionary called Lignee_renvoyee containing 2
     reads per lineage and their specific position, extracted from xlsx_lignee.
@@ -485,11 +483,10 @@ def add_spoligo_dico(type_sit, dico_afr, item, spol_sit):
     elif type_sit == 'SIT_silico':
         type_spoligo = 'spoligo_vitro'
 
-    spol = dico_afr[item].setdefault(type_spoligo, '')
-    # spol = ''.join(list(map(change, spol))) TODO ???
+    spol = dico_afr[item].get(type_spoligo)
 
     if spol in spol_sit:
-        dico_afr[item][type_sit] = spol_sit.get(spol, '')
+        dico_afr[item][type_sit] = spol_sit.get(spol)
     else:
         dico_afr[item][type_sit] = 'X'
 
@@ -497,15 +494,15 @@ def add_spoligo_dico(type_sit, dico_afr, item, spol_sit):
           f"database")
 
 
-def to_formatted_results(seq, repitem):
+def to_formatted_results(seq, repitem, nb):
     """
     This function compares a nucleotide query sequence against a nucleotide
     sequence database and returns a formatted result.
 
     Args:
-        seq (str): a genome sequence
-        rep (str): path to the SRA repertory
-        item (str): the SRA reference
+        seq(str): a genome sequence
+        repitem(str): REP/sequences/SRA/SRA path to the blast database
+        nb(int): 8 or 12
 
     Returns:
         (str): a formatted result of a sequence blast
@@ -557,8 +554,7 @@ def condition_spol_vitro(espaceur1, espaceur2, spoligo_vitro, nb, matches,
         # if 'espaceur'+spol.capitalize()+str(k) in matches:
 
         if min([matches.count(espaceur1 + str(k) + ','),
-                matches.count(espaceur2 + str(k) +
-                              ',')]) / \
+                matches.count(espaceur2 + str(k) + ',')]) / \
                 dico_afr[item].get('couverture') > 0.05:
             dico_afr[item][spoligo_vitro] += '\u25A0'
         else:
@@ -566,25 +562,41 @@ def condition_spol_vitro(espaceur1, espaceur2, spoligo_vitro, nb, matches,
 
 
 def collect_SRA(item):
+    """
+
+    Args:
+        item(str):
+
+    Returns:
+        (None)
+    """
+    # We create a string called H37RV containing the genome sequence of the strain
+    # H37Rv.
+    H37RV = to_h37rv()
+    TAILLE_GEN = len(H37RV)
+
+    # We initialize dico_afr.
+    dico_afr = {}
 
     # ==== CHECKING IF THE SRA IS ALREADY IN THE DATABASE ===================
 
-    # If the SRA is not in sequences, we create a directory named as the SRA in
-    # sequences
-    if item not in listdir('sequences'):
-        Path.cwd().joinpath('sequences', item).mkdir(exist_ok=True, parents=True)
+    # If the SRA is not in 'REP/sequences', we create a directory named after
+    # the SRA in 'REP/sequences'
+    if item not in listdir(P_SEQUENCES):
+        Path.cwd().joinpath('REP', 'sequences', item).mkdir(exist_ok=True,
+                                                            parents=True)
+        Path.cwd().joinpath('REP', 'sequences', item, item).mkdir(exist_ok=True,
+                                                                  parents=True)
         print(f"We're creating a directory {item}.")
-        #Path.cwd().joinpath('sequences', item, item).mkdir(exist_ok=True,
-                                                           #parents=True)
+
+    # We create paths to 'sequences/SRA' and 'sequences/SRA/SRA'
+    rep = str(PurePath('REP', 'sequences', item))
+    repitem = str(PurePath('REP', 'sequences', item, item))
+
     # If the SRA is not in dico_afr, we add it to dico_afr
     if item not in dico_afr:
         print(f"We're adding {item} to the database.")
         dico_afr[item] = {}
-    # We create paths to sequences/SRA, sequences/SRA/SRA and
-    # sequences/SRA_shuffled.fasta
-    rep = str(PurePath('sequences', item))
-    repitem = str(PurePath('sequences', item, item))
-    p_shuffled = str(PurePath(rep, item + '_shuffled.fasta'))
 
     # ==== DOWNLOADING FASTA FILES FOR THE SRA ===========================
 
@@ -594,15 +606,16 @@ def collect_SRA(item):
         print("We're downloading the files in fasta format")
 
         completed = subprocess.run(['parallel-fastq-dump', '-t', '8',
-                                    '--split-files', '--fasta', '-O', '',
+                                    '--split-files', '--fasta', '-O', 'REP',
                                     '-s', item])
         # if the download worked
         if completed.returncode == 0:
             print("fasta files successfully downloaded.")
-            for k in listdir():
+            for k in listdir('REP'):
                 if k.endswith('.fasta'):
-                    p = str(PurePath(rep, k))
-                    move(k, p)
+                    p = str(PurePath('REP', 'sequences', item, k))
+                    p_k = str(PurePath('REP', k))
+                    move(p_k, p)
         # if the download didn't work, we delete the SRA from dico_afr
         else:
             del dico_afr[item]
@@ -624,20 +637,24 @@ def collect_SRA(item):
     # reachable with p1 or p2.
     # We concatenate files SRA_1.fasta and SRA_2.fasta into a new file called
     # SRA_shuffled.fasta.
-    elif item + '_shuffled.fasta' not in listdir(rep):
+    p_shuffled = str(PurePath('REP', 'sequences', item, item +
+                              '_shuffled.fasta'))
+    if item + '_shuffled.fasta' not in listdir(rep):
 
         print("We're mixing both fasta files, which correspond to the two "
               "splits ends.")
 
-        p1 = str(PurePath(rep, item + '_1.fasta'))
-        p2 = str(PurePath(rep, item + '_2.fasta'))
-
         if name == 'posix':
             for fic in ['_1', '_2']:
-                system("sed -i 's/" + item + './' + item + fic + "./g' " + rep + item + fic + '.fasta')
-
-            system("cat " + p1 + " " + p2 + " > " + p_shuffled)
+                system("sed -i 's/" + item + './' + item + fic + "./g' "
+                        "REP/sequences/" + item + "/" + item + fic + '.fasta')
+            system("cat REP/sequences/" + item + "/" + item + "_1.fasta " +
+                   "REP/sequences/" + item + "/" + item + "_2.fasta > " +
+                   "REP/sequences/" + item + "/" + item + "_shuffled.fasta")
         else:
+            p1 = str(PurePath('REP', 'sequences', item, item + '_1.fasta'))
+            p2 = str(PurePath('REP', 'sequences', item, item + '_2.fasta'))
+
             for fic in ['_1', '_2']:
                 system("cat " + rep + item + fic + ".fasta | %{$_ -replace '" +
                        item + ".', '" + item + fic + ".'}")
@@ -649,14 +666,12 @@ def collect_SRA(item):
     # of '>' in /shuffled.fasta, keep it in /tmp/nb.txt and assign it to nb.
     if 'nb_reads' not in dico_afr[item] or dico_afr[item]['nb_reads'] == '':
         if name == 'posix':
-            p = str(PurePath('tmp', 'nb.txt'))
-            system("cat " + p_shuffled + " | grep '>' | wc -l > " + p)
+            system("cat REP/sequences/" + item + "/" + item + "_shuffled.fasta"
+                   " | grep '>' | wc -l > tmp/nb.txt")
         else:
             print('windows')
 
-        nb = eval(open(p).read().split('\n')[0])
-        #nb = open(rep+item+'_shuffled.fasta').read().count('>')
-        print("The number of reads is: ", nb)
+        nb = eval(open(P_TXT).read().split('\n')[0])
         dico_afr[item]['nb_reads'] = nb
 
     # ==== UPDATING LEN_READS IN DICO_AFR ====================================
@@ -664,8 +679,8 @@ def collect_SRA(item):
     # If there's no 'len_reads' reference in dico_afr[SRA], we evaluate
     # it from the SRA_shuffled.fasta file
     if 'len_reads' not in dico_afr[item]:
-        nb = len(''.join(open(p_shuffled).read(10000).split('>')[1].split('\n')[1:]))
-        print("The length of the reads is: ", nb)
+        nb = len(''.join(open(p_shuffled).read(10000).split('>')[1].split(
+            '\n')[1:]))
         dico_afr[item]['len_reads'] = nb
 
     # ==== UPDATING COVERAGE IN DICO_AFR ======================================
@@ -677,8 +692,7 @@ def collect_SRA(item):
         dico_afr[item]['couverture'] = round(dico_afr[item].get('nb_reads') *
                                              dico_afr[item].get('len_reads') /
                                              TAILLE_GEN, 2)
-        print(f"We evaluate the coverage to be: "
-              f" {dico_afr[item].get('couverture')}")
+
     # If a SRA in dico_afr has a low coverage, we delete this SRA from
     # dico_afr.
     if dico_afr[item].get('couverture') < 50:
@@ -726,8 +740,7 @@ def collect_SRA(item):
         if item in brynildsrud:
             for elt in brynildsrud[item]:
                 dico_afr[item][elt] = brynildsrud[item][elt]
-                print(f"{item} is in the database Brynildsrud\n"
-                      f"     - {elt}: {dico_afr[item][elt]}")
+                print(f"{item} is in the database Brynildsrud")
         else:
             print(f"{item} is not in the database Brynildsrud")
 
@@ -786,7 +799,7 @@ def collect_SRA(item):
                         matches.count('espaceur' + spol.capitalize() + str(k) +
                                       ',') for k in range(1, nb + 1)]
                 try:
-                    move(p_blast, rep)
+                    move(p_blast, repitem)
                 except:
                     print(p_blast, " is already in the SRA directory.")
                 #system('mv ' + p_blast + ' ' + rep)
@@ -839,11 +852,8 @@ def collect_SRA(item):
                 'espaceur_vitroOld' + str(k) + ','), matches.count(
                 'espaceur_vitroBOld' + str(k) + ',')) for k in range(1, nb + 1)]
 
-            p_vitro_blast = str(PurePath('tmp', item + '_vitro_new.blast'))
-            p_spoligo_vitro_new = str(PurePath('data',
-                                               'spoligo_vitro_new.fasta'))
-            with open(p_vitro_blast) as f:
-                matches = f.read()
+            with open(p_vitro_new_blast) as fp:
+                matches = fp.read()
                 nb = int(open(p_spoligo_vitro_new).read().count('>') / 2)
 
                 condition_spol_vitro('espaceur_vitro_new', 'espaceur_vitro_newB',
@@ -863,7 +873,6 @@ def collect_SRA(item):
             except:
                 print(p, " is already in the SRA directory.")
             # system('mv /tmp/' + item + '_*.blast ' + rep)
-            #system('mv tmp/' + item + '_*.blast ' + rep)
 
             print("     " + str(dico_afr[item]['spoligo_vitro_nb']))
             print("     " + str(dico_afr[item]['spoligo_vitro_new_nb']))
@@ -871,7 +880,6 @@ def collect_SRA(item):
         # We transform data from 1_3882_SORTED.xls into a dictionary called
         # spol_sit containing spoligotypes with their corresponding SITs.
         spol_sit = to_spol_sit()
-
         # When there's no 'SIT' reference for a SRA in dico_afr, or if this
         # reference is undefined, we check in spol_sit a corresponding
         # spoligotype and update dico_afr with this spoligotype.
@@ -889,7 +897,7 @@ def collect_SRA(item):
             print("We're adding the lineage according to the SNPs L6+animal")
             seq1 = 'ACGTCGATGGTCGCGACCTCCGCGGCATAGTCGAA'
             seq2 = "ACGTCGATGGTCGCGACTTCCGCGGCATAGTCGAA"
-            formatted_results = to_formatted_results(seq2, repitem)
+            formatted_results = to_formatted_results(seq2, repitem, 12)
             nb_seq1 = to_nb_seq(seq1, formatted_results, 13, 17, 18, 22)
             nb_seq2 = to_nb_seq(seq2, formatted_results, 13, 17, 18, 22)
 
@@ -900,9 +908,8 @@ def collect_SRA(item):
             else:
                 dico_afr[item]['lineage_L6+animal'] = 'X'
 
-            print(f"Lineage (L6+animal): {dico_afr[item]['lineage_L6+animal']}")
-
         # ==== TESTING PGG LINEAGE ======================================
+
         # If dico_afr has no information about 'lineage_PGG' regarding the
         # SRA, we select a read around position 2154724 before blasting it
         # another one around position 7585-1 before blasting it and updating
@@ -951,7 +958,7 @@ def collect_SRA(item):
             pos = 2154724
             seq1 = H37RV[pos - DEMI_LONGUEUR:pos + DEMI_LONGUEUR + 1]
             seq2 = seq1[:19] + 'A' + seq1[20:]
-            formatted_results = to_formatted_results(seq2, repitem)
+            formatted_results = to_formatted_results(seq2, repitem, 12)
             nb_seq1 = to_nb_seq(seq1, formatted_results, 15, 19, 20, 24)
             nb_seq2 = to_nb_seq(seq2, formatted_results, 15, 19, 20, 24)
 
@@ -961,12 +968,11 @@ def collect_SRA(item):
                 lignee.append('1')
             else:
                 lignee.append('X')
-            print("The lineage is being updated.")
 
             pos = 7585-1
             seq1 = H37RV[pos - DEMI_LONGUEUR:pos + DEMI_LONGUEUR + 1]
             seq2 = seq1[:20] + 'A' + seq1[21:]
-            formatted_results = to_formatted_results(seq2, repitem)
+            formatted_results = to_formatted_results(seq2, repitem, 12)
             nb_seq1 = to_nb_seq(seq1, formatted_results, 16, 20, 21, 25)
             nb_seq2 = to_nb_seq(seq2, formatted_results, 16, 20, 21, 25)
 
@@ -987,14 +993,11 @@ def collect_SRA(item):
             else:
                 dico_afr[item]['lineage_PGG'] = 'X'
 
-            print("Lineage (PGG): " + dico_afr[item]['lineage_PGG'] + ' (' +
-                  ", ".join(dico_afr[item]['lineage_PGG_cp']) + ')')
-
             # ==== TESTING LINEAGE COLL =======================================
+
             # If 'lineage_Coll' is undefined for the SRA in dico_afr, we parse a
             # file containing Coll lineage SNPs to compare with chosen reads and
             # update dico_afr.
-            # MARKER
             if 'lineage_Coll' not in dico_afr[item] or \
                     dico_afr[item]['lineage_Coll'] == '':
                 lignee = []
@@ -1005,9 +1008,7 @@ def collect_SRA(item):
                     for row in csv_reader:
                         if row[16] == 'Coll' and row[1] != '':
                             pos = int(row[1].strip()) - 1
-                            # TEST assert H37RV[pos] == row[3].strip().split(
-                            # '/')[0]
-                            # print(row[0].value, row[1].value-1, row[3].value.split('/'))
+                            assert H37RV[pos] == row[3].strip().split('/')[0]
                             seq1 = H37RV[pos - DEMI_LONGUEUR:pos +
                                                              DEMI_LONGUEUR + 1]
 
@@ -1020,23 +1021,11 @@ def collect_SRA(item):
                                 seq2 = seq1[:20] + row[3].strip().split('/')[
                                     0] + seq1[21:]
 
-                            with open(P_FASTA, 'w') as file:
-                                file.write('>\n' + seq2)
-                            result = subprocess.run(["blastn", "-num_threads",
-                                                     "8", "-query", P_FASTA,
-                                                     "-evalue",
-                                                     "1e-5", "-task", "blastn",
-                                                     "-db", repitem, "-outfmt",
-                                                     "10 sseq"],
-                                                    stdout=subprocess.PIPE)
-                            formatted_results = result.stdout.decode('utf8').\
-                                splitlines()
-                            # nb_seq1 = formated_results.count(seq1)
-                            # nb_seq2 = formated_results.count(seq2)
+                            formatted_results = to_formatted_results(seq2,
+                                                                     repitem, 8)
+
                             nb_seq1 = to_nb_seq(seq1, formatted_results, 16, 20,
                                                 21, 25)
-
-                            # nb_seq2 = formated_results.count(seq2)
                             nb_seq2 = to_nb_seq(seq2, formatted_results, 16, 20,
                                                 21, 25)
 
@@ -1047,10 +1036,9 @@ def collect_SRA(item):
                                     'lineage', '').replace('*', ''))
                     lignee = sorted(set(lignee))
                     dico_afr[item]['lineage_Coll'] = lignee
-                    print("Lineage Coll: " + ", ".join(dico_afr[item][
-                                                           'lineage_Coll']))
 
         # ==== TESTING PALI LINEAGE =============================
+
         """
         - we browse the dictionary of a lineage Pali, Shitikov or Stucki,
           and pick 2 reads (seq1 and seq2) per value of the dictionary,
@@ -1072,7 +1060,7 @@ def collect_SRA(item):
         # position before blasting them and updating the lineage in dico_afr[SRA]
         if 'lineage_Pali' not in dico_afr[item]:
             lignee = []
-            Lignee_SNP = to_reads('Pali')
+            Lignee_SNP = to_reads('Pali', H37RV)
             print("We're adding the lineage according to the SNPs Pali")
 
             for item2, pos0 in enumerate(Lignee_SNP):
@@ -1087,8 +1075,7 @@ def collect_SRA(item):
                 system(cmd)
                 with open(p_blast) as f:
                     formatted_results = f.read().splitlines()
-                # nb_seq1 = formatted_results.count(seq1) # TODO ???
-                # nb_seq2 = formatted_results.count(seq2)
+
                 nb_seq1 = to_nb_seq(seq1, formatted_results, 16, 20, 21, 25)
                 nb_seq2 = to_nb_seq(seq2, formatted_results, 16, 20, 21, 25)
 
@@ -1098,9 +1085,9 @@ def collect_SRA(item):
             lignee = [u for u in sorted(set(lignee))]
 
             dico_afr[item]['lineage_Pali'] = lignee
-            print("Lineage (Pali) :" + ", ".join(dico_afr[item]['lineage_Pali']))
 
         # ==== TESTING SHITIKOV LINEAGE =================================
+
         # If dico_afr has no information about 'lineage_Shitikov' regarding the
         # SRA, we extract data from Shitikov_L2_SNPs.xlsx into the dictionary
         # Lignee_Shitikov containing positions, reads and lineage numbers, we
@@ -1108,7 +1095,7 @@ def collect_SRA(item):
         # the lineage in dico_afr[SRA].
         if 'lineage_Shitikov' not in dico_afr[item]:
             lignee = []
-            Lignee_SNP = to_reads('Shiti')
+            Lignee_SNP = to_reads('Shiti', H37RV)
             print("We're adding the lineage according to the SNPs Shitikov")
 
             for item2, pos0 in enumerate(Lignee_SNP):
@@ -1124,8 +1111,6 @@ def collect_SRA(item):
                 system(cmd)
                 with open(p_blast) as f:
                     formatted_results = f.read().splitlines()
-                # nb_seq1 = formatted_results.count(seq1) # TODO ???
-                # nb_seq2 = formatted_results.count(seq2)
 
                 nb_seq1 = to_nb_seq(seq1, formatted_results, 16, 20, 21, 25)
                 nb_seq2 = to_nb_seq(seq2, formatted_results, 16, 20, 21, 25)
@@ -1135,18 +1120,17 @@ def collect_SRA(item):
 
             lignee = [u for u in sorted(set(lignee))]
             dico_afr[item]['lineage_Shitikov'] = lignee
-            print("Lineage (Shitikov) : " + ", ".join(dico_afr[item][
-                                                        'lineage_Shitikov']))
 
         # ==== TESTING STUCKI LINEAGE ====================================
-        # If dico_afr has no information about 'lineage_Shitikov' regarding the
+
+        # If dico_afr has no information about 'lineage-Stucki' regarding the
         # SRA, we extract data from Stucki_L4-SNPs.xlsx into the dictionary
         # Lignee_Stucki containing positions, reads and lineage numbers, we
         # select a read in a specific position before blasting it and updating
         # the lineage in dico_afr[SRA].
         if 'Lignee_Stucki' not in dico_afr[item]:
             lignee = []
-            Lignee_SNP = to_reads('Stucki')
+            Lignee_SNP = to_reads('Stucki', H37RV)
             print("We're adding the lineage according to the SNPs Stucki")
 
             for item2, pos0 in enumerate(Lignee_SNP):
@@ -1161,8 +1145,7 @@ def collect_SRA(item):
                 system(cmd)
                 with open(p_blast) as f:
                     formatted_results = f.read().splitlines()
-                # nb_seq1 = formatted_results.count(seq1) # TODO ???
-                # nb_seq2 = formatted_results.count(seq2)
+
                 nb_seq1 = to_nb_seq(seq1, formatted_results, 16, 20, 21, 25)
                 nb_seq2 = to_nb_seq(seq2, formatted_results, 16, 20, 21, 25)
 
@@ -1177,8 +1160,6 @@ def collect_SRA(item):
                 lignee.append('4.10')
 
             dico_afr[item]['Lignee_Stucki'] = lignee
-            print("Lineage (Stucki): " + ", ".join(dico_afr[item][
-                                                        'Lignee_Stucki']))
 
     # We check if the SRA is in the database Origines, and update the location
     # of the SRA in dico_afr[item]
@@ -1195,11 +1176,11 @@ def collect_SRA(item):
 
     if item in dico_afr:
         dico_afr[item].setdefault('name', '')
-        # On supprime d'éventuels métagénomes, etc.
 
         # If SRA is a metagenome, we delete it from dico_afr and delete the
         # repository in 'REP/sequences'.
-        if 'metagenome' in dico_afr[item]['name'] and item in listdir():
+        if 'metagenome' in dico_afr[item]['name'] and item in listdir(
+                P_SEQUENCES):
             print(f"The item {item} is a metagenome. We delete it from the "
                   "database.")
             del dico_afr[item]
@@ -1208,213 +1189,210 @@ def collect_SRA(item):
             except FileNotFoundError:
                 print("The file couldn't be found in the repository.")
 
-    for k in dico_afr:
-        if 'Mycobacterium' not in dico_afr[k].get('name') and len(dico_afr[k].
-                                    get('name')) > 0:
-            print(dico_afr[k].get('name'))
-
-    # We display information regarding the SRA
-    print('\n==== SUMMERY ====\n')
-    for elt in dico_afr[item]:
-        print(f"{elt}: {dico_afr[item][elt]}")
+    # We display information regarding the SRA if dico_afr wasn't deleted.
+    if dico_afr:
+        print('\n==== SUMMERY ====\n')
+        for elt in dico_afr[item]:
+            print(f"{elt}: {dico_afr[item][elt]}")
 
     # We empty the directory /tmp
-
 
 
 # ==============
 # MAIN PROCEDURE
 # ==============
 
-# ==== DEFINING THE CLI ===================================================
-# We ask the user for the option to choose
-mp = ArgumentParser(prog='CRISPRbuilder-TB', description="Collects and"
-    " annotates Mycobacterium tuberculosis data for CRISPR investigation.")
-mp.add_argument("sra", type=str, help="requires the reference of a SRA, "
-                "the path to a file of SRA references or 0. See doc.")
-mp.add_argument("--collect", action='store_true', help="collects the reference "
-                "of a SRA to get information about this SRA. See doc.")
-mp.add_argument("--list", action='store_true', help="collects the path to a "
-                "file of SRA references to get information about. See doc.")
-mp.add_argument("--add", action='store_true', help="collects data to add to the"
-                " file lineage.csv. Requires 0 as argument. See doc.")
-mp.add_argument("--remove", action='store_true', help="removes data from the "
-                "file lineage.csv. Requires 0 as argument. See doc.")
-mp.add_argument("--change", action='store_true', help="collects data to update "
-                "the file lineage.csv. Requires 0 as argument. See doc.")
-mp.add_argument("--print", action='store_true', help="prints the file "
-                "lineage.csv. Requires 0 as argument. See doc.")
-args = mp.parse_args()
 
-# item represents the RSA reference
-valeur_option = args.sra
-
-# ==== INITIALIZATION OF VARIABLES AND CONSTANTS ===========================
-
-# We create a string called H37RV containing the genome sequence of the strain
-# H37Rv.
-H37RV = to_h37rv()
-TAILLE_GEN = len(H37RV)
-# We define the value of half the length of the reads.
-DEMI_LONGUEUR = 20
-# We create a directory called 'sequences' which will contain the different
-# SRA directories.
-Path("sequences").mkdir(exist_ok=True, parents=True)
-# We create a directory called 'tmp' which will contain temporary files
-Path('tmp').mkdir(exist_ok=True, parents=True)
-# We initialize dico_afr
-dico_afr = {}
-# We define the path to data/lineage.csv and a temporary csv file in a
-# cross-platform way
+P_FASTA = str(PurePath('tmp', 'snp.fasta'))
+P_TXT = str(PurePath('tmp', 'nb.txt'))
+P_SEQUENCES = PurePath('REP', 'sequences')
+# We define the path to different files in the 'data' directory'.
 P_CSV = str(PurePath('data', 'lineage.csv'))
 p_csv_tmp = str(PurePath('data', 'temp.csv'))
-P_FASTA = str(PurePath('tmp', 'snp.fasta'))
+# We define the value of half the length of the reads we will work on.
+DEMI_LONGUEUR = 20
 
-# ==== WHEN THE SELECTED OPTION IS COLLECT ===================================
 
-debut = time.time()*1000
-if args.collect:
-    collect_SRA(valeur_option)
-fin = time.time()*1000
-print('duration: ', fin - debut)
+def main():
+    # ==== DEFINING THE CLI ===================================================
 
-# ==== WHEN THE SELECTED OPTION IS LIST =====================================
+    # We ask the user for the option to choose
+    mp = ArgumentParser(prog='CRISPRbuilder-TB', description="Collects and"
+        " annotates Mycobacterium tuberculosis data for CRISPR investigation.")
+    mp.add_argument("sra", type=str, help="requires the reference of a SRA, "
+                    "the path to a file of SRA references or 0. See doc.")
+    mp.add_argument("--collect", action='store_true', help="collects the reference "
+                    "of a SRA to get information about this SRA. See doc.")
+    mp.add_argument("--list", action='store_true', help="collects the path to a "
+                    "file of SRA references to get information about. See doc.")
+    mp.add_argument("--add", action='store_true', help="collects data to add to the"
+                    " file lineage.csv. Requires 0 as argument. See doc.")
+    mp.add_argument("--remove", action='store_true', help="removes data from the "
+                    "file lineage.csv. Requires 0 as argument. See doc.")
+    mp.add_argument("--change", action='store_true', help="collects data to update "
+                    "the file lineage.csv. Requires 0 as argument. See doc.")
+    mp.add_argument("--print", action='store_true', help="prints the file "
+                    "lineage.csv. Requires 0 as argument. See doc.")
+    args = mp.parse_args()
 
-# We read the content of essai.txt, transform it into a list without spaces
-# and \n symbols. We browse the list to apply collect_SRA().
-if args.list:
-    with open(valeur_option, 'r') as f:
-        chaine_SRA = f.read()
-        liste_SRA = chaine_SRA.strip().split()
-        liste_SRA = [elt.replace('\n', '') for elt in liste_SRA]
-    for item in liste_SRA:
-        collect_SRA(item.strip())
+    # item represents the RSA reference
+    valeur_option = args.sra
 
-# ==== WHEN THE SELECTED OPTION IS ADD =====================================
+    # ==== INITIALIZATION OF VARIABLES AND CONSTANTS ===========================
 
-# We collect data to append the file data/lineage.csv.
-if args.add:
-    reponse = input("You're about to add a new content to the file "
-                    "lineage.csv. Do you wish to proceed ? (y/n)")
-    if reponse =='y':
-        chaine_csv = input("Please fill in the various fields. If you don't "
-                           "know the value of a specific field, press enter."
-                           "\nLineage "
-                            "?\n").strip()
-        chaine_csv += ',' + input("Position ?\n").strip()
-        chaine_csv += ',' + input("Gene coord. ?\n").strip()
-        chaine_csv += ',' + input("Allele change ?\n").strip()
-        chaine_csv += ',' + input("Codon number ?\n").strip()
-        chaine_csv += ',' + input("Codon change ?\n").strip()
-        chaine_csv += ',' + input("Amino acid change ?\n").strip()
-        chaine_csv += ',' + input("Locus Id ?\n").strip()
-        chaine_csv += ',' + input("Gene name ?\n").strip()
-        chaine_csv += ',' + input("Gene type ?\n").strip()
-        chaine_csv += ',' + input("Type of mutation ?\n").strip()
-        chaine_csv += ',' + input("5' gene ?\n").strip()
-        chaine_csv += ',' + input("3' gene ?\n").strip()
-        chaine_csv += ',' + input("Strand ?\n").strip()
-        chaine_csv += ',' + input("Sublineage surname ?\n").strip()
-        chaine_csv += ',' + input("Essential ?\n").strip() + ',,'
+    # If it doesn't already exist, we create a directory called 'REP/sequences'
+    # which will contain the different SRA directories.
+    Path('REP').mkdir(exist_ok=True, parents=True)
+    Path.cwd().joinpath('REP', 'sequences').mkdir(exist_ok=True, parents=True)
 
-        chaine_csv = chaine_csv.strip()
-        liste_csv = chaine_csv.split(',')
+    # We create a directory called 'tmp' which will contain temporary files.
+    Path('tmp').mkdir(exist_ok=True, parents=True)
 
-        with open(P_CSV, 'a', newline='') as f:
-            c = writer(f, delimiter=',', quotechar='"',
-                           quoting=QUOTE_MINIMAL)
-            c.writerow(liste_csv)
-        print("The line has  added.")
-    else:
-        print("Your request was cancelled")
+    # ==== WHEN THE SELECTED OPTION IS COLLECT ===================================
 
-# ==== WHEN THE SELECTED OPTION IS PRINT =====================================
+    if args.collect:
+        collect_SRA(valeur_option)
 
-# We print the file data/lineage.csv
-if args.print:
-    print("Here is the content of the file data/lineage.csv:\n")
-    with open(P_CSV, 'r', newline='') as f:
-        csv_reader = reader(f, delimiter=',', quotechar='"')
-        for row in csv_reader:
-            print(', '.join(row))
+    # ==== WHEN THE SELECTED OPTION IS LIST =====================================
 
-# ==== WHEN THE SELECTED OPTION IS REMOVE =====================================
+    # We read the content of essai.txt, transform it into a list without spaces
+    # and \n symbols. We browse the list to apply collect_SRA().
+    if args.list:
+        with open(valeur_option, 'r') as f:
+            chaine_SRA = f.read()
+            liste_SRA = chaine_SRA.strip().split()
+            liste_SRA = [elt.replace('\n', '') for elt in liste_SRA]
+        for item in liste_SRA:
+            collect_SRA(item.strip())
 
-# We select the line to change, create a new file lineage2.csv to record all
-# the data from lineage.csv except for the selected line. Then we rename
-# lineage2.csv to lineage.csv.
-if args.remove:
-    reponse = input("You're about to remove a content from the file "
-                    "lineage.csv. Do you wish to proceed ? (y/n)")
-    if reponse == 'y':
-        ligne_lineage_csv = input("Which lineage would you like to delete ?\n")
-        ligne_pos_csv = input("Confirm the position in this lineage you would "
-                              "like to delete:\n")
-        with open(P_CSV, 'r', newline='') as csvin, \
-                open(p_csv_tmp, 'w', newline='') as csvout:
-            csv_reader = reader(csvin, delimiter=',', quotechar='"',
-                                    quoting=QUOTE_MINIMAL)
-            csv_writer = writer(csvout, delimiter=',', quotechar='"',
-                                    quoting=QUOTE_MINIMAL)
+    # ==== WHEN THE SELECTED OPTION IS ADD =====================================
+
+    # We collect data to append the file data/lineage.csv.
+    if args.add:
+        reponse = input("You're about to add a new content to the file "
+                        "lineage.csv. Do you wish to proceed ? (y/n)")
+        if reponse =='y':
+            chaine_csv = input("Please fill in the various fields. If you don't "
+                               "know the value of a specific field, press enter."
+                               "\nLineage "
+                                "?\n").strip()
+            chaine_csv += ',' + input("Position ?\n").strip()
+            chaine_csv += ',' + input("Gene coord. ?\n").strip()
+            chaine_csv += ',' + input("Allele change ?\n").strip()
+            chaine_csv += ',' + input("Codon number ?\n").strip()
+            chaine_csv += ',' + input("Codon change ?\n").strip()
+            chaine_csv += ',' + input("Amino acid change ?\n").strip()
+            chaine_csv += ',' + input("Locus Id ?\n").strip()
+            chaine_csv += ',' + input("Gene name ?\n").strip()
+            chaine_csv += ',' + input("Gene type ?\n").strip()
+            chaine_csv += ',' + input("Type of mutation ?\n").strip()
+            chaine_csv += ',' + input("5' gene ?\n").strip()
+            chaine_csv += ',' + input("3' gene ?\n").strip()
+            chaine_csv += ',' + input("Strand ?\n").strip()
+            chaine_csv += ',' + input("Sublineage surname ?\n").strip()
+            chaine_csv += ',' + input("Essential ?\n").strip() + ',,'
+
+            chaine_csv = chaine_csv.strip()
+            liste_csv = chaine_csv.split(',')
+
+            with open(P_CSV, 'a', newline='') as f:
+                c = writer(f, delimiter=',', quotechar='"',
+                               quoting=QUOTE_MINIMAL)
+                c.writerow(liste_csv)
+            print("The line has  added.")
+        else:
+            print("Your request was cancelled")
+
+    # ==== WHEN THE SELECTED OPTION IS PRINT =====================================
+
+    # We print the file data/lineage.csv
+    if args.print:
+        print("Here is the content of the file data/lineage.csv:\n")
+        with open(P_CSV, 'r', newline='') as f:
+            csv_reader = reader(f, delimiter=',', quotechar='"')
             for row in csv_reader:
-                if row[0].strip() != ligne_lineage_csv or \
-                        row[1].strip() != ligne_pos_csv:
-                    csv_writer.writerow(row)
-        remove(P_CSV)
-        rename(p_csv_tmp, P_CSV)
-        print("The line has been removed.")
-    else:
-        print("Your request was cancelled.")
+                print(', '.join(row))
 
-# ==== WHEN THE SELECTED OPTION IS CHANGE =====================================
+    # ==== WHEN THE SELECTED OPTION IS REMOVE =====================================
 
-# We collect data to update the file lineage.csv, select the line to change,
-# create a new file lineage2.csv to record all the data from lineage.csv except
-# for the selected line where we add the collected data. Then we rename
-# lineage2.csv to lineage.csv.
-if args.change:
-    reponse = input("You're about to change the content from the file "
-                    "lineage.csv. Do you wish to proceed ? (y/n)")
-    if reponse == 'y':
-        ligne_lineage_csv = input("Which lineage would you like to change ?\n")
-        ligne_pos_csv = input("Confirm the position in this lineage you would "
-                              "like to make change:\n")
-        chaine_csv = input("Please fill in the various fields. If you don't "
-                           "know the value of a specific field, press enter."
-                           "\nLineage "
-                           "?\n").strip()
-        chaine_csv += ',' + input("Position ?\n").strip()
-        chaine_csv += ',' + input("Gene coord. ?\n").strip()
-        chaine_csv += ',' + input("Allele change ?\n").strip()
-        chaine_csv += ',' + input("Codon number ?\n").strip()
-        chaine_csv += ',' + input("Codon change ?\n").strip()
-        chaine_csv += ',' + input("Amino acid change ?\n").strip()
-        chaine_csv += ',' + input("Locus Id ?\n").strip()
-        chaine_csv += ',' + input("Gene name ?\n").strip()
-        chaine_csv += ',' + input("Gene type ?\n").strip()
-        chaine_csv += ',' + input("Type of mutation ?\n").strip()
-        chaine_csv += ',' + input("5' gene ?\n").strip()
-        chaine_csv += ',' + input("3' gene ?\n").strip()
-        chaine_csv += ',' + input("Strand ?\n").strip()
-        chaine_csv += ',' + input("Sublineage surname ?\n").strip()
-        chaine_csv += ',' + input("Essential ?\n").strip() + ',,'
-        chaine_csv = chaine_csv.strip()
-        liste_csv = chaine_csv.split(',')
-
-        with open(P_CSV, 'r', newline='') as csvin, \
-                open(p_csv_tmp, 'w', newline='') as csvout:
-            csv_reader = reader(csvin, delimiter=',', quotechar='"',
+    # We select the line to change, create a new file lineage2.csv to record all
+    # the data from lineage.csv except for the selected line. Then we rename
+    # lineage2.csv to lineage.csv.
+    if args.remove:
+        reponse = input("You're about to remove a content from the file "
+                        "lineage.csv. Do you wish to proceed ? (y/n)")
+        if reponse == 'y':
+            ligne_lineage_csv = input("Which lineage would you like to delete ?\n")
+            ligne_pos_csv = input("Confirm the position in this lineage you would "
+                                  "like to delete:\n")
+            with open(P_CSV, 'r', newline='') as csvin, \
+                    open(p_csv_tmp, 'w', newline='') as csvout:
+                csv_reader = reader(csvin, delimiter=',', quotechar='"',
                                     quoting=QUOTE_MINIMAL)
-            csv_writer = writer(csvout, delimiter=',', quotechar='"',
+                csv_writer = writer(csvout, delimiter=',', quotechar='"',
                                     quoting=QUOTE_MINIMAL)
-            for row in csv_reader:
-                if row[0].strip() != ligne_lineage_csv or \
-                        row[1].strip() != ligne_pos_csv:
-                    csv_writer.writerow(row)
-                else:
-                    csv_writer.writerow(liste_csv)
-        remove(P_CSV)
-        rename(p_csv_tmp, P_CSV)
-        print("The line has been changed.")
-    else:
-        print("Your request was cancelled.")
+                for row in csv_reader:
+                    if row[0].strip() != ligne_lineage_csv or \
+                            row[1].strip() != ligne_pos_csv:
+                        csv_writer.writerow(row)
+            remove(P_CSV)
+            rename(p_csv_tmp, P_CSV)
+            print("The line has been removed.")
+        else:
+            print("Your request was cancelled.")
+
+    # ==== WHEN THE SELECTED OPTION IS CHANGE =====================================
+
+    # We collect data to update the file lineage.csv, select the line to change,
+    # create a new file lineage2.csv to record all the data from lineage.csv except
+    # for the selected line where we add the collected data. Then we rename
+    # lineage2.csv to lineage.csv.
+    if args.change:
+        reponse = input("You're about to change the content from the file "
+                        "lineage.csv. Do you wish to proceed ? (y/n)")
+        if reponse == 'y':
+            ligne_lineage_csv = input("Which lineage would you like to change ?\n")
+            ligne_pos_csv = input("Confirm the position in this lineage you would "
+                                  "like to make change:\n")
+            chaine_csv = input("Please fill in the various fields. If you don't "
+                               "know the value of a specific field, press enter."
+                               "\nLineage "
+                               "?\n").strip()
+            chaine_csv += ',' + input("Position ?\n").strip()
+            chaine_csv += ',' + input("Gene coord. ?\n").strip()
+            chaine_csv += ',' + input("Allele change ?\n").strip()
+            chaine_csv += ',' + input("Codon number ?\n").strip()
+            chaine_csv += ',' + input("Codon change ?\n").strip()
+            chaine_csv += ',' + input("Amino acid change ?\n").strip()
+            chaine_csv += ',' + input("Locus Id ?\n").strip()
+            chaine_csv += ',' + input("Gene name ?\n").strip()
+            chaine_csv += ',' + input("Gene type ?\n").strip()
+            chaine_csv += ',' + input("Type of mutation ?\n").strip()
+            chaine_csv += ',' + input("5' gene ?\n").strip()
+            chaine_csv += ',' + input("3' gene ?\n").strip()
+            chaine_csv += ',' + input("Strand ?\n").strip()
+            chaine_csv += ',' + input("Sublineage surname ?\n").strip()
+            chaine_csv += ',' + input("Essential ?\n").strip() + ',,'
+            chaine_csv = chaine_csv.strip()
+            liste_csv = chaine_csv.split(',')
+
+            with open(P_CSV, 'r', newline='') as csvin, \
+                    open(p_csv_tmp, 'w', newline='') as csvout:
+                csv_reader = reader(csvin, delimiter=',', quotechar='"',
+                                    quoting=QUOTE_MINIMAL)
+                csv_writer = writer(csvout, delimiter=',', quotechar='"',
+                                    quoting=QUOTE_MINIMAL)
+                for row in csv_reader:
+                    if row[0].strip() != ligne_lineage_csv or \
+                            row[1].strip() != ligne_pos_csv:
+                        csv_writer.writerow(row)
+                    else:
+                        csv_writer.writerow(liste_csv)
+            remove(P_CSV)
+            rename(p_csv_tmp, P_CSV)
+            print("The line has been changed.")
+        else:
+            print("Your request was cancelled.")
+
+if __name__ == "__main__":
+    main()
