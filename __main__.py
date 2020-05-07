@@ -10,7 +10,6 @@ from argparse import ArgumentParser
 from pathlib import Path # creates path
 from pathlib import PurePath
 
-import os
 
 # We define different useful paths
 P_REP = str(PurePath('CRISPRbuilder-TB', 'REP'))

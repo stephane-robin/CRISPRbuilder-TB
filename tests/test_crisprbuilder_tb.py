@@ -1,4 +1,4 @@
-from package_pymtc import __version__
+from crisprbuilder_tb import __version__
 
 
 def test_version():

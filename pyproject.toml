@@ -1,8 +1,8 @@
 [tool.poetry]
-name = "package_pymtc"
+name = "CRISPRbuilder-TB"
 version = "0.1.0"
 description = "Collect and annotate Mycobacterium tuberculosis WGS data for CRISPR investigations."
-authors = ["Stephane <robin.stephane@outlook.com>"]
+authors = ["stephane-robin <robin.stephane@outlook.com>"]
 license = "MIT"
 readme = "README.md"
 homepage = "https://github.com/stephane-robin/package_pymtc.git"
@@ -10,16 +10,13 @@ repository = "https://github.com/stephane-robin/package_pymtc.git"
 keywords = ["tuberculosis", "CRISPR"]
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = "3.6.5"
 xlrd = "^1.2.0"
-openpyxl = "^3.0.3"
 xmltodict = "^0.12.0"
-"subprocess.run" = "^0.0.8"
 biopython = "^1.76"
-datetime = "^4.3"
 
 [tool.poetry.dev-dependencies]
-pytest = "^5.2"
+pytest = "^4.6"
 
 [build-system]
 requires = ["poetry>=0.12"]
