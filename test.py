@@ -15,40 +15,85 @@ import argparse
 import csv
 from collections import namedtuple
 import time
+from pathlib import PurePath
 
 
+dico_afr = {}
+item = 'SRR8368689'
+dico_afr[item] = {}
+repitem = 'REP/sequences/' + item + '/' + item
+p_shuffled = str(PurePath('REP', 'sequences', item, item
+                              + '_shuffled.fasta'))
 
 
-debut = time.time()*1000
+print("We're creating a database for Blast")
+completed = subprocess.run(['makeblastdb', '-in', p_shuffled,
+                                        '-dbtype', 'nucl', '-title', item,
+                                        '-out', repitem])
+assert completed.returncode == 0
 
-fin = time.time()*1000
-print('time: ', fin - debut)
+
+print(f"The spoligotypes are being blasted")
+dico_afr[item]['spoligo'] = ''
+dico_afr[item]['spoligo_new'] = ''
+
+p_spoligo_old = str(PurePath('data',
+                                         'spoligo_old.fasta'))
+p_spoligo_new = str(PurePath('data',
+                                         'spoligo_new.fasta'))
+p_old_blast = str(PurePath('/tmp/' + item +
+                                       "_old.blast"))
+p_new_blast = str(PurePath('/tmp/' + item +
+                                       "_new.blast"))
+
+completed = subprocess.run("blastn -num_threads 12 -query " +
+                                       p_spoligo_old + " -evalue 1e-6 -task "
+                                       "blastn -db " + repitem + " -outfmt '10 "
+                                       "qseqid sseqid sstart send qlen length "
+                                       "score evalue' -out " + p_old_blast,
+                                       shell=True)
+assert completed.returncode == 0
+
+completed = subprocess.run("blastn -num_threads 12 -query " +
+                                       p_spoligo_new + " -evalue 1e-6 -task "
+                                       "blastn -db " + repitem + " -outfmt '10 "
+                                       "qseqid sseqid sstart send qlen length "
+                                       "score evalue' -out " + p_new_blast,
+                                       shell=True)
+assert completed.returncode == 0
+
+#print("We're writing the spoligotypes obtained in the csv file")
+
+for pos, spol in enumerate(['old', 'new']):
+    p_blast = str(PurePath('/tmp/' + item + '_' +
+                                       spol + '.blast'))
+    p_fasta = str(PurePath('data', 'spoligo_' +
+                                       spol + '.fasta'))
+
+    with open(p_blast) as f:
+        matches = f.read()
+        nb = open(p_fasta).read().count('>')
+        for k in range(1, nb + 1):
+            #if 'espaceur'+spol.capitalize()+str(k) in matches:
+            #if matches.count('espaceur'+spol.capitalize()+str(k)+',')/dico_afr[item]['couverture']>0.05:
+            if matches.count('espaceur' + spol.capitalize() + str(k)
+                                         + ',') >= 5:
+                dico_afr[item]['spoligo' + ['', '_new'][pos]] \
+                                    += '\u25A0'
+            else:
+                dico_afr[item]['spoligo' + ['', '_new'][pos]] \
+                                    += '\u25A1'
+
+    dico_afr[item]['spoligo' + ['', '_new'][pos] + '_nb'] = [
+                        matches.count('espaceur' + spol.capitalize() + str(k) +
+                                      ',') for k in range(1, nb + 1)]
 
 
-"""
-def ff():
-    demi_longueur = 20
-    Lignee_renvoyee = {}
+print("     " + dico_afr[item]['spoligo'])
+print("     " + str(dico_afr[item]['spoligo_nb']))
+print("     " + dico_afr[item]['spoligo_new'])
+print("     " + str(dico_afr[item]['spoligo_new_nb']))
 
-    with open('data/lineage.csv', 'rt') as f:
-        csv_reader = csv.reader(f, delimiter=',', quotechar='"')
-        next(csv_reader)
-        for row in csv_reader:
-            if row[1] != '':
-                lignee = row[0].strip()
-                pos0 = int(row[1].strip())
-                pos = pos0 - 1
-                source = row[3].strip()[0]
-                cible = row[3].strip()[2]
-                assert h37Rv[pos] == source
-                seq1 = h37Rv[pos - demi_longueur:pos + demi_longueur + 1]
-                seq2 = seq1[:demi_longueur] + cible + seq1[demi_longueur + 1:]
-                Lignee_renvoyee[pos] = (seq1, seq2, lignee)
 
-    print("We have selected specific reads to compare with different lineages")
-    return Lignee_renvoyee
-
-print(ff())
-"""
 
 

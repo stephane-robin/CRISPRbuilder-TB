@@ -22,5 +22,30 @@ import pathlib
 import tempfile
 import time
 
-for k in listdir():
-    print(k)
+item = 'SRR8368689'
+dico_afr = {}
+dico_afr[item] = {}
+rep = 'REP/sequences/'+item+'/'
+print("   - On blaste les spoligos")
+dico_afr[item]['spoligo'] = ''
+dico_afr[item]['spoligo_new'] = ''
+completed = subprocess.run("blastn -num_threads 12 -query data/spoligo_old.fasta -evalue 1e-6 -task blastn -db "+rep+item+" -outfmt '10 qseqid sseqid sstart send qlen length score evalue' -out /tmp/"+item+"_old.blast", shell = True)
+assert completed.returncode == 0
+completed = subprocess.run("blastn -num_threads 12 -query data/spoligo_new.fasta -evalue 1e-6 -task blastn -db "+rep+item+" -outfmt '10 qseqid sseqid sstart send qlen length score evalue' -out /tmp/"+item+"_new.blast", shell = True)
+assert completed.returncode == 0
+print("   - On écrit les spoligos obtenus dans le fichier csv")
+for pos, spol in enumerate(['old', 'new']):
+    with open('/tmp/'+item+'_'+spol+'.blast') as f:
+        matches = f.read()
+        nb = open('data/spoligo_'+spol+'.fasta').read().count('>')
+        for k in range(1,nb+1):
+            if matches.count('espaceur'+spol.capitalize()+str(k)+',')>=5:
+                dico_afr[item]['spoligo'+['','_new'][pos]] += '\u25A0'
+            else:
+                dico_afr[item]['spoligo'+['','_new'][pos]] += '\u25A1'
+    dico_afr[item]['spoligo'+['','_new'][pos]+'_nb'] = [matches.count('espaceur'+spol.capitalize()+str(k)+',') for k in range(1,nb+1)]
+
+print("     " + dico_afr[item]['spoligo'])
+print("     " + str(dico_afr[item]['spoligo_nb']))
+print("     " + dico_afr[item]['spoligo_new'])
+print("     " + str(dico_afr[item]['spoligo_new_nb']))
