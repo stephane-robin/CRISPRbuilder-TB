@@ -10,11 +10,11 @@
 
 The CRISPRbuilder-TB package is an open source software made available under generous terms. Please see the LICENSE file for further details.
 
-If you use CRISPRbuilder-TB in work contributing to a scientific publication, we ask that you cite the following application note: Université de Franche Comté TODO     
+If you use CRISPRbuilder-TB in work contributing to a scientific publication, we ask that you cite the following application note: Femto-ST Institute, UMR 6174 CNRS, University of Bourgogne Franche-Comté, France.
 
 
 ## What should CRIPSPRbuilder-TB be used for ?
------------------------------
+-----
 
 CRISPRbuilder-TB will help you collect and annotate Mycobacterium tuberculosis whole genome sequencing data for CRISPR investigations. Given a SRA reference, the package will provide information regarding:
 
@@ -56,7 +56,7 @@ CRISPRbuilder-TB will help you collect and annotate Mycobacterium tuberculosis w
 
 This package comes with a Command Line Interface, so it should be installed and executed using your conmmand prompt. For Linux, MacOS or Windows platforms, the installation requires the same instruction. Go the the directory you want the package to be stored to and write in your command prompt:
 
-`pip3 install CRISPRbuilder-TB`
+    pip3 install CRISPRbuilder-TB
 
 ## How to use the Command Line Interface ?
 -----------------
@@ -125,7 +125,7 @@ The command prompt will then display the content of the database **lineage.csv**
 
 <h3>Add a record to lineage.csv</h3>
 
-<pre style="background-color:#b8b894">python3 CRISPRbuilder-TB --add 0</pre>
+    python3 CRISPRbuilder-TB --add 0
 
 **Caution:** it is necessary to add the 0 after **--add**.
 
@@ -133,35 +133,35 @@ You will then be asked the values of the different fields (lineage, position, ge
 
 <h3>Remove a record from lineage.csv</h3>
 
-<pre style="background-color:#b8b894">python3 CRISPRbuilder-TB --remove 0</pre>
+    python3 CRISPRbuilder-TB --remove 0
 
 **Caution:** it is necessary to add the 0 after **--remove**.
 
 You will then be asked the reference of the line you wish to delete, which consists of the lineage and the position (see below).
 
-<pre style="background-color:#b8b894">lineage, Position, Gene coord., Allele change, Codon number, Codon change, Amino acid change, Locus Id, Gene name, Gene type, Type of mutation, 5' gene, 3' gene, Strand, Sublineage surname, Essential, Origin,
-4.1.1, 3798451, , C/G, , GGG/GGC, G/G, Rv3383c, idsB, non essential, syn, 3797437, 398489, -, X, , Stucki et al.,
-4.1.2, 3013784, , C/G, , GTC/CTC, V/L, Rv2697c, dut, ess, non-syn, 3013683, 3014147, -, Haarlem, , Stucki et al.,
-4.1.3, 4409231, , T/G, , GAG/GCG, E/A, Rv3921c, -, ess, 4280033, 4408969, 4410069, -, Ghana, , Stucki et al.,
-4.2, 2181026, , G/C, , CCC/CCG, P/P, Rv1928c, , non essential, syn, 2180450, 2181217, -, -, , Stucki et al., 
-4.3, 1480024, , G/T, , TTC/TTA, F/L, Rv1318c, , non essential, non-syn, 1479199, 1480824, -, LAM, , Stucki et al.,
-4.4, 3966059, , G/C, , ACG/AGG, T/R, Rv3529c, -, non essential, non-syn, 3965884, 3967038, -, -, , Stucki et al.,</pre>
+    lineage, Position, Gene coord., Allele change, Codon number, Codon change, Amino acid change, Locus Id, Gene name, Gene type, Type of mutation, 5' gene, 3' gene, Strand, Sublineage surname, Essential, Origin,
+    4.1.1, 3798451, , C/G, , GGG/GGC, G/G, Rv3383c, idsB, non essential, syn, 3797437, 398489, -, X, , Stucki et al.,
+    4.1.2, 3013784, , C/G, , GTC/CTC, V/L, Rv2697c, dut, ess, non-syn, 3013683, 3014147, -, Haarlem, , Stucki et al.,
+    4.1.3, 4409231, , T/G, , GAG/GCG, E/A, Rv3921c, -, ess, 4280033, 4408969, 4410069, -, Ghana, , Stucki et al.,
+    4.2, 2181026, , G/C, , CCC/CCG, P/P, Rv1928c, , non essential, syn, 2180450, 2181217, -, -, , Stucki et al., 
+    4.3, 1480024, , G/T, , TTC/TTA, F/L, Rv1318c, , non essential, non-syn, 1479199, 1480824, -, LAM, , Stucki et al.,
+    4.4, 3966059, , G/C, , ACG/AGG, T/R, Rv3529c, -, non essential, non-syn, 3965884, 3967038, -, -, , Stucki et al.,
 
 <h3>Change a record from lineage.csv</h3>
 
-<pre style="background-color:#b8b894">python3 CRISPRbuilder-TB --change 0</pre>
+    python3 CRISPRbuilder-TB --change 0
 
 **Caution:** it is necessary to add the 0 after **--change**.
 
 You will then be asked the reference of the line you wish to delete, which consists of the lineage and the position (see below).
 
-<pre style="background-color:#b8b894">lineage, Position, Gene coord., Allele change, Codon number, Codon change, Amino acid change, Locus Id, Gene name, Gene type, Type of mutation, 5' gene, 3' gene, Strand, Sublineage surname, Essential, Origin,
-4.1.1, 3798451, , C/G, , GGG/GGC, G/G, Rv3383c, idsB, non essential, syn, 3797437, 398489, -, X, , Stucki et al.,
-4.1.2, 3013784, , C/G, , GTC/CTC, V/L, Rv2697c, dut, ess, non-syn, 3013683, 3014147, -, Haarlem, , Stucki et al.,
-4.1.3, 4409231, , T/G, , GAG/GCG, E/A, Rv3921c, -, ess, 4280033, 4408969, 4410069, -, Ghana, , Stucki et al.,
-4.2, 2181026, , G/C, , CCC/CCG, P/P, Rv1928c, , non essential, syn, 2180450, 2181217, -, -, , Stucki et al., 
-4.3, 1480024, , G/T, , TTC/TTA, F/L, Rv1318c, , non essential, non-syn, 1479199, 1480824, -, LAM, , Stucki et al.,
-4.4, 3966059, , G/C, , ACG/AGG, T/R, Rv3529c, -, non essential, non-syn, 3965884, 3967038, -, -, , Stucki et al.,</pre>
+    lineage, Position, Gene coord., Allele change, Codon number, Codon change, Amino acid change, Locus Id, Gene name, Gene type, Type of mutation, 5' gene, 3' gene, Strand, Sublineage surname, Essential, Origin,
+    4.1.1, 3798451, , C/G, , GGG/GGC, G/G, Rv3383c, idsB, non essential, syn, 3797437, 398489, -, X, , Stucki et al.,
+    4.1.2, 3013784, , C/G, , GTC/CTC, V/L, Rv2697c, dut, ess, non-syn, 3013683, 3014147, -, Haarlem, , Stucki et al.,
+    4.1.3, 4409231, , T/G, , GAG/GCG, E/A, Rv3921c, -, ess, 4280033, 4408969, 4410069, -, Ghana, , Stucki et al.,
+    4.2, 2181026, , G/C, , CCC/CCG, P/P, Rv1928c, , non essential, syn, 2180450, 2181217, -, -, , Stucki et al., 
+    4.3, 1480024, , G/T, , TTC/TTA, F/L, Rv1318c, , non essential, non-syn, 1479199, 1480824, -, LAM, , Stucki et al.,
+    4.4, 3966059, , G/C, , ACG/AGG, T/R, Rv3529c, -, non essential, non-syn, 3965884, 3967038, -, -, , Stucki et al.,
 
 You will then be asked the values of the different fields: lineage, position, gene coordinates, allege change, codon number, codon change, amino acide change, locus ID, gene name, gene type, type of mutation, 5' gene, 3' gene, strand, sublineage surname, essential, origin of the study. In case you don't know the value of a particular field, just press enter.
 
@@ -169,16 +169,16 @@ You will then be asked the values of the different fields: lineage, position, ge
 ----------------------
 
 CRISPRbuilder-TB needs the following dependencies to work:
-<ul>
-    <li>python = "^3.7"</li>
-    <li>xlrd = "^1.2.0"</li>
-    <li>openpyxl = "^3.0.3"</li>
-    <li>xmltodict = "^0.12.0"</li>
-    <li>biopython = "^1.76"</li>
-    <li>datetime = "^4.3"</li>
-    <li>parallel-fastq-dump</li>
-    <li>balstn+</li>
-</ul>
+
+* python = "^3.7"
+* xlrd = "^1.2.0"
+* openpyxl = "^3.0.3"
+* xmltodict = "^0.12.0"
+* biopython = "^1.76"
+* datetime = "^4.3"
+* parallel-fastq-dump
+* balstn+
+
 These different versions are automatically downloaded when installing the CRISPRbuilder-TB package.
 
 The package structure is the following:
