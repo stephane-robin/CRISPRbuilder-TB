@@ -1,127 +1,133 @@
-<img src="femto.png" alt="femto" align="left"/>
+![Femto](femto.png)
 
-<h1 style="text-align:right">CRISPRbuilder-TB</h1>
 
-<p><br/><br/></p>
+
+
+# CRISPRbuilder-TB
+
+
+
 
 The CRISPRbuilder-TB package is an open source software made available under generous terms. Please see the LICENSE file for further details.
 
-If you use CRISPRbuilder-TB in work contributing to a scientific publication, we ask that you cite the following application note: Université de Franche Comté TODO<br/>
+If you use CRISPRbuilder-TB in work contributing to a scientific publication, we ask that you cite the following application note: Université de Franche Comté TODO     
+
 
 ## What should CRIPSPRbuilder-TB be used for ?
+-----------------------------
 
 CRISPRbuilder-TB will help you collect and annotate Mycobacterium tuberculosis whole genome sequencing data for CRISPR investigations. Given a SRA reference, the package will provide information regarding:
-<ul>
-    <li>the number of reads for the study</li>
-    <li>the length of those reads</li>
-    <li>the cowerage of the study</li>
-    <li>the source of publication for the SRA reference</li>
-    <li>the authors who discovered it</li>
-    <li>the study accession number,</li>
-    <li>the location of discovery,</li>
-    <li>the date of discovery,</li>
-    <li>the center that discovered the SRA,</li>
-    <li>the strain for the SRA,</li>
-    <li>the taxid,</li>
-    <li>the name of the SRA,</li>
-    <li>the reference of the study</li>
-    <li>the bioproject number</li>
-    <li>the spoligotypes,</li>
-    <li>the spoligotypes new version,</li>
-    <li>the spoligotype numbers,</li>
-    <li>the spoligotype new version numbers,</li>
-    <li>the spoligotypes vitro,</li>
-    <li>the spoligotypes vitro new version,</li>
-    <li>the spoligotypes vitro numbers,</li>
-    <li>the spoligotypes vitro new version numbers,</li>
-    <li>the Spoligotype International Type,</li>
-    <li>the Spoligotype International Type silico,</li>
-    <li>the affiliation to lineage L6+animal,</li>
-    <li>the affiliation to lineage Principal Genotyping Group-cp,</li>
-    <li>the affiliation to lineage Principal Genotyping Group,</li>
-    <li>the affiliation to lineage Coll,</li>
-    <li>the affiliation to lineage Pali,</li>
-    <li>the affiliation to lineage Shitikov</li>
-    <li>the affiliation to lineage Stucki</li>
-</ul>
 
-<h2 style="color:#009973">How to install the package ?</h2>
+* the number of reads for the study,
+* the length of those reads,
+* the cowerage of the study,
+* the source of publication for the SRA reference,
+* the authors who discovered it,
+* the study accession number,
+* the location of discovery,
+* the date of discovery,
+* the center that discovered the SRA,
+* the strain for the SRA,
+* the taxid,
+* the name of the SRA,
+* the reference of the study,
+* the bioproject number,
+* the spoligotypes,
+* the spoligotypes new version,
+* the spoligotype numbers,
+* the spoligotype new version numbers,
+* the spoligotypes vitro,
+* the spoligotypes vitro new version,
+* the spoligotypes vitro numbers,
+* the spoligotypes vitro new version numbers,
+* the Spoligotype International Type,
+* the Spoligotype International Type silico,
+* the affiliation to lineage L6+animal,
+* the affiliation to lineage Principal Genotyping Group-cp,
+* the affiliation to lineage Principal Genotyping Group,
+* the affiliation to lineage Coll,
+* the affiliation to lineage Pali,
+* the affiliation to lineage Shitikov,
+* the affiliation to lineage Stucki
+
+
+## How to install the package ?
+----------------
 
 This package comes with a Command Line Interface, so it should be installed and executed using your conmmand prompt. For Linux, MacOS or Windows platforms, the installation requires the same instruction. Go the the directory you want the package to be stored to and write in your command prompt:
 
-<pre style="background-color:#b8b894">pip3 install CRISPRbuilder-TB</pre>
+`pip3 install CRISPRbuilder-TB`
 
-<h2 style="color:#009973">How to use the Command Line Interface ?</h2>
+## How to use the Command Line Interface ?
+-----------------
 
-After installing the package, you can find help with the command prompt, listing the different available options, such as <strong>--collect, --list, --add, --print, --remove, --change,</strong> and their expected syntax. Stay in the directory containing CRISPRbuilder-TB and write in the command prompt:
+After installing the package, you can find help with the command prompt, listing the different available options, such as **--collect, --list, --add, --print, --remove, --change,** and their expected syntax. Stay in the directory containing CRISPRbuilder-TB and write in the command prompt:
 
-<pre style="background-color:#b8b894">python3 CRISPRbuilder-TB --help</pre>
+    python3 CRISPRbuilder-TB --help
 
 The help menu will display the following information:
 
-<pre style="background-color:#b8b894">
-usage: CRISPRbuilder-TB [-h] [--collect] [--list] [--add] [--remove] [--change] [--print] sra
+    usage: CRISPRbuilder-TB [-h] [--collect] [--list] [--add] [--remove] [--change] [--print] sra
 
-Collects and annotates Mycobacterium tuberculosis whole genome sequencing data for CRISPR investigation.
+    Collects and annotates Mycobacterium tuberculosis whole genome sequencing data for CRISPR investigation.
 
-positional arguments:
-  sra         requires the reference of a SRA, the path to a file of SRA references or 0. See doc.
+    positional arguments:
+      sra         requires the reference of a SRA, the path to a file of SRA references or 0. See doc.
 
-optional arguments:
-  -h, --help  show this help message and exit
-  --collect   collects the reference of a SRA to get information about this SRA. See doc.
-  --list      collects the path to a file of SRA references to get information about. See doc.
-  --add       collects data to add to the file data/lineage.csv. Requires 0 as argument. See doc.
-  --remove    removes data from the file data/lineage.csv. Requires 0 as argument. See doc.
-  --change    collects data to update the file data/lineage.csv. Requires 0 as argument. See doc.
-  --print     prints the file data/lineage.csv. Requires 0 as argument. See doc.
-</pre>
+    optional arguments:
+      -h, --help  show this help message and exit
+      --collect   collects the reference of a SRA to get information about this SRA. See doc.
+      --list      collects the path to a file of SRA references to get information about. See doc.
+      --add       collects data to add to the file data/lineage.csv. Requires 0 as argument. See doc.
+      --remove    removes data from the file data/lineage.csv. Requires 0 as argument. See doc.
+      --change    collects data to update the file data/lineage.csv. Requires 0 as argument. See doc.
+      --print     prints the file data/lineage.csv. Requires 0 as argument. See doc.
 
 <h3>Execute CRISPRbuilder-TB with a SRA reference</h3>
 
 You can run the package if you wish to find information regarding a specific SRA. From the directory containing the package, use the command prompt to write:
 
-<pre style="background-color:#b8b894">python3 CRISPRbuilder-TB --collect {SRA_reference}</pre>
+    python3 CRISPRbuilder-TB --collect {SRA_reference}
 
 This package uses the included version 3.6.4 of Python, which is why it is necessary to precise python3 in the command line, in case the default version on your computer would be 2.7.
 
-Caution: the instruction above won't work if you're already in the package.
+**Caution:** the instruction above won't work if you're already in the package.
 
-<strong>Exemple:</strong> to find information about SRR8368696
+**Exemple:** to find information about SRR8368696
 
-<pre style="background-color:#b8b894">python3 CRISPRbuilder-TB --collect SRR8368696</pre>
+    python3 CRISPRbuilder-TB --collect SRR8368696
 
-<h3>Execute CRISPRbuilder-TB with a list of SRA references</h3>
+### Execute CRISPRbuilder-TB with a list of SRA references
 
 To run the package with a list of SRA references, this list must be composed of one SRA reference per line in a .txt format file. Then, if you wish to find information regarding a list of specific SRAs, stay in the directory containing the package and use the command prompt to write:
 
-<pre style="background-color:#b8b894">python3 CRISPRbuilder-TB --list {path_to_the_file}</pre>
+    python3 CRISPRbuilder-TB --list {path_to_the_file}
 
-<strong>Exemple:</strong> to find information about the different SRA included in the file <strong>my_file.txt</strong> from the <strong>Documents</strong> directory.
+**Exemple:** to find information about the different SRA included in the file **my_file.txt** from the **Documents** directory.
 
-<pre style="background-color:#b8b894">python3 CRISPRbuilder-TB --list /Documents/my_file.txt</pre>
+    python3 CRISPRbuilder-TB --list /Documents/my_file.txt
 
 <h3>Print the database lineage.csv</h3>
 
-<pre style="background-color:#b8b894">python3 CRISPRbuilder-TB --print 0</pre>
+    python3 CRISPRbuilder-TB --print 0
 
-Caution: it is necessary to add the 0 after <strong>--print</strong>.
+**Caution:** it is necessary to add the 0 after `--print`.
 
-The command prompt will then display the content of the database <strong>lineage.csv</strong>:
+The command prompt will then display the content of the database **lineage.csv**:
 
-<pre style="background-color:#b8b894">lineage, Position, Gene coord., Allele change, Codon number, Codon change, Amino acid change, Locus Id, Gene name, Gene type, Type of mutation, 5' gene, 3' gene, Strand, Sublineage surname, Essential, Origin,
-4.1.1, 3798451, , C/G, , GGG/GGC, G/G, Rv3383c, idsB, non essential, syn, 3797437, 398489, -, X, , Stucki et al.,
-4.1.2, 3013784, , C/G, , GTC/CTC, V/L, Rv2697c, dut, ess, non-syn, 3013683, 3014147, -, Haarlem, , Stucki et al.,
-4.1.3, 4409231, , T/G, , GAG/GCG, E/A, Rv3921c, -, ess, 4280033, 4408969, 4410069, -, Ghana, , Stucki et al.,
-4.2, 2181026, , G/C, , CCC/CCG, P/P, Rv1928c, , non essential, syn, 2180450, 2181217, -, -, , Stucki et al., 
-4.3, 1480024, , G/T, , TTC/TTA, F/L, Rv1318c, , non essential, non-syn, 1479199, 1480824, -, LAM, , Stucki et al.,
-4.4, 3966059, , G/C, , ACG/AGG, T/R, Rv3529c, -, non essential, non-syn, 3965884, 3967038, -, -, , Stucki et al.,</pre>
+    lineage, Position, Gene coord., Allele change, Codon number, Codon change, Amino acid change, Locus Id, Gene name, Gene type, Type of mutation, 5' gene, 3' gene, Strand, Sublineage surname, Essential, Origin,
+    4.1.1, 3798451, , C/G, , GGG/GGC, G/G, Rv3383c, idsB, non essential, syn, 3797437, 398489, -, X, , Stucki et al.,
+    4.1.2, 3013784, , C/G, , GTC/CTC, V/L, Rv2697c, dut, ess, non-syn, 3013683, 3014147, -, Haarlem, , Stucki et al.,
+    4.1.3, 4409231, , T/G, , GAG/GCG, E/A, Rv3921c, -, ess, 4280033, 4408969, 4410069, -, Ghana, , Stucki et al.,
+    4.2, 2181026, , G/C, , CCC/CCG, P/P, Rv1928c, , non essential, syn, 2180450, 2181217, -, -, , Stucki et al., 
+    4.3, 1480024, , G/T, , TTC/TTA, F/L, Rv1318c, , non essential, non-syn, 1479199, 1480824, -, LAM, , Stucki et al.,
+    4.4, 3966059, , G/C, , ACG/AGG, T/R, Rv3529c, -, non essential, non-syn, 3965884, 3967038, -, -, , Stucki et al.,
 
 <h3>Add a record to lineage.csv</h3>
 
 <pre style="background-color:#b8b894">python3 CRISPRbuilder-TB --add 0</pre>
 
-<strong>Caution:</strong> it is necessary to add the 0 after <strong>--add</strong>.
+**Caution:** it is necessary to add the 0 after **--add**.
 
 You will then be asked the values of the different fields (lineage, position, gene coordinates, allege change, codon number, codon change, amino acide change, locus ID, gene name, gene type, type of mutation, 5' gene, 3' gene, strand, sublineage surname, essential, origin of the study). In case you don't know the value of a particular field, just press enter.
 
@@ -129,7 +135,7 @@ You will then be asked the values of the different fields (lineage, position, ge
 
 <pre style="background-color:#b8b894">python3 CRISPRbuilder-TB --remove 0</pre>
 
-<strong>Caution:</strong> it is necessary to add the 0 after <strong>--remove</strong>.
+**Caution:** it is necessary to add the 0 after **--remove**.
 
 You will then be asked the reference of the line you wish to delete, which consists of the lineage and the position (see below).
 
@@ -145,7 +151,7 @@ You will then be asked the reference of the line you wish to delete, which consi
 
 <pre style="background-color:#b8b894">python3 CRISPRbuilder-TB --change 0</pre>
 
-<strong>Caution:</strong> it is necessary to add the 0 after <strong>--change</strong>.
+**Caution:** it is necessary to add the 0 after **--change**.
 
 You will then be asked the reference of the line you wish to delete, which consists of the lineage and the position (see below).
 
@@ -159,7 +165,8 @@ You will then be asked the reference of the line you wish to delete, which consi
 
 You will then be asked the values of the different fields: lineage, position, gene coordinates, allege change, codon number, codon change, amino acide change, locus ID, gene name, gene type, type of mutation, 5' gene, 3' gene, strand, sublineage surname, essential, origin of the study. In case you don't know the value of a particular field, just press enter.
 
-<h2 style="color:#009973">Composition of the package and dependencies</h2>
+## Composition of the package and dependencies
+----------------------
 
 CRISPRbuilder-TB needs the following dependencies to work:
 <ul>
@@ -178,14 +185,16 @@ The package structure is the following:
 
 <img src="tree.png" alt="tree" align="center"/>
 
-The <strong>\_\_main\_\_.py</strong> file contains the actual code for the package.<br/>
-    The <strong>data</strong> directory contains the necessary database to compare with the SRA reference when the code is executed.<br/>
-    The <strong>REP/sequences</strong> directory contains the different result database for each execution of the code. That's typically where you can find fasta format files regarding a specific SRA you've asked for.<br/>
-    The <strong>doc</strong> directory contains the necessary documentation to explain how this package works. It includes a <strong>README.md</strong> file explaining how to install the package for those who just need the essential, the copiright conditions for this package with the <strong>LICENSE</strong> file and the present notebook.
+The **\_\_main\_\_.py** file contains the actual code for the package.<br/>
+The **data** directory contains the necessary database to compare with the SRA reference when the code is executed.<br/>
+The **REP/sequences** directory contains the different result database for each execution of the code. That's typically where you can find fasta format files regarding a specific SRA you've asked for.<br/>
+The **doc** directory contains the necessary documentation to explain how this package works. It includes a **README.md** file explaining how to install the package for those who just need the essential, the copiright conditions for this package with the **LICENSE** file and the present notebook.
 
-<h2 style="color:#009973">Retrieving the genome information dictionary</h2>
+## Retrieving the genome information dictionary
+--------------------------
 
-<h2 style="color:#009973">Breaking down the code</h2>
+## Breaking down the code
+------------------
 
 Supposing you're looking for information regarding ERR2704808. After writing python3 CRISPRbuilder-TB --collect ERR2704808 in the shell, a directory called ERR2704808 will be created in REP/sequences and the item ERR2704808 will be added to the database. Then the files in fasta format will be downloaded in REP/sequences/ERR2704808 as in the following code:
 
