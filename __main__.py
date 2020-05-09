@@ -1251,7 +1251,8 @@ def main():
 
     # We ask the user for the option to choose
     mp = ArgumentParser(prog='CRISPRbuilder-TB', description="Collects and"
-        " annotates Mycobacterium tuberculosis data for CRISPR investigation.")
+        " annotates Mycobacterium tuberculosis whole genome sequencing data for "
+        "CRISPR investigation.")
     mp.add_argument("sra", type=str, help="requires the reference of a SRA, "
                     "the path to a file of SRA references or 0. See doc.")
     mp.add_argument("--collect", action='store_true', help="collects the reference "
