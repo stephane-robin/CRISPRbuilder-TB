@@ -722,7 +722,7 @@ def collect_SRA(item):
         print(f"The coverage is too low. {item} is being removed from the "
               "database")
     else:
-        # ==== CREATING A DATABASE FOR BLAST ================================
+        # ==== IF THE COWERAGE IS GOOD ENOUGH ================================
 
         # If the SRA in dico_afr has a good coverage, we create a database
         # for Blast
