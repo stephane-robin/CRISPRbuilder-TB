@@ -14,7 +14,6 @@ If you use CRISPRbuilder-TB in work contributing to a scientific publication, we
 
 
 ## Purpose of this package
------
 
 CRISPRbuilder-TB will help you collect and annotate Mycobacterium tuberculosis whole genome sequencing data for CRISPR investigations. Given a Sequence Read Archive reference, the package will provide the genome information dictionary comprising the following elements:
 
@@ -51,16 +50,14 @@ CRISPRbuilder-TB will help you collect and annotate Mycobacterium tuberculosis w
 * the affiliation to lineage Stucki
 
 ## How to install the package ?
-----------------
 
 This package comes with a Command Line Interface, so it should be installed and executed using your conmmand prompt. For Linux, MacOS or Windows platforms, the installation requires the same instruction. Go the the directory you want the package to be stored to and write in your command prompt:
 
     pip3 install CRISPRbuilder-TB
 
 ## How to use the Command Line Interface ?
------------------
 
-After installing the package, you can find help with the command prompt, listing the different available options, such as **--collect, --list, --add, --print, --remove, --change,** and their expected syntax. Stay in the directory containing CRISPRbuilder-TB and write in the command prompt:
+After installing the package, you can find help with the command prompt, listing the different available options, such as `--collect`, `--list`, `--add`, `--print`, `--remove`, `--change`, and their expected syntax. Stay in the directory containing the installed package and write in the command prompt:
 
     python3 CRISPRbuilder-TB --help
 
@@ -82,37 +79,39 @@ The help menu will display the following information:
       --change    collects data to update the file data/lineage.csv. Requires 0 as argument. See doc.
       --print     prints the file data/lineage.csv. Requires 0 as argument. See doc.
 
-<h3>Execute CRISPRbuilder-TB with a SRA reference</h3>
+### Executing CRISPRbuilder-TB with a SRA reference
 
-You can run the package if you wish to find information regarding a specific SRA. From the directory containing the package, use the command prompt to write:
+You can run the package if you wish to find information regarding a specific SRA. From the directory containing the package, write in the command prompt:
 
     python3 CRISPRbuilder-TB --collect {SRA_reference}
 
-This package uses the included version 3.6.4 of Python, which is why it is necessary to precise python3 in the command line, in case the default version on your computer would be 2.7.
+This package uses version 3.6.4 of Python, which is why it is necessary to precise python3 in the command line, in case the default version on your computer is different.
 
-**Caution:** the instruction above won't work if you're already in the package.
+**Caution:** the instruction above won't work if you're already in the package CRISPRbuilder-TB.
 
-**Exemple:** to find information about SRR8368696
+**Exemple:** to find information about SRR8368696, write:
 
     python3 CRISPRbuilder-TB --collect SRR8368696
 
-### Execute CRISPRbuilder-TB with a list of SRA references
+### Executing CRISPRbuilder-TB with a list of SRA references
 
-To run the package with a list of SRA references, this list must be composed of one SRA reference per line in a .txt format file. Then, if you wish to find information regarding a list of specific SRAs, stay in the directory containing the package and use the command prompt to write:
+To run the package with a list of SRA references, this list must be composed of one SRA reference per line in a txt format file. Then, if you wish to find information regarding a list of specific SRAs, stay in the directory containing the package and write in the command prompt:
 
     python3 CRISPRbuilder-TB --list {path_to_the_file}
 
-**Exemple:** to find information about the different SRA included in the file **my_file.txt** from the **Documents** directory.
+**Exemple:** to find information about the different SRAs included in the file **my_file.txt** from the **Documents** directory, write:
 
     python3 CRISPRbuilder-TB --list /Documents/my_file.txt
 
-<h3>Print the database lineage.csv</h3>
+### Printing the database lineage.csv
+
+If you want to consult the **lineage.csv** database, stay in the directory containing the package and write in the command prompt:
 
     python3 CRISPRbuilder-TB --print 0
 
 **Caution:** it is necessary to add the 0 after `--print`.
 
-The command prompt will then display the content of the database **lineage.csv**:
+The program will then display the content of the database **lineage.csv** whose extract can be read below:
 
     lineage, Position, Gene coord., Allele change, Codon number, Codon change, Amino acid change, Locus Id, Gene name, Gene type, Type of mutation, 5' gene, 3' gene, Strand, Sublineage surname, Essential, Origin,
     4.1.1, 3798451, , C/G, , GGG/GGC, G/G, Rv3383c, idsB, non essential, syn, 3797437, 398489, -, X, , Stucki et al.,
@@ -122,7 +121,9 @@ The command prompt will then display the content of the database **lineage.csv**
     4.3, 1480024, , G/T, , TTC/TTA, F/L, Rv1318c, , non essential, non-syn, 1479199, 1480824, -, LAM, , Stucki et al.,
     4.4, 3966059, , G/C, , ACG/AGG, T/R, Rv3529c, -, non essential, non-syn, 3965884, 3967038, -, -, , Stucki et al.,
 
-<h3>Add a record to lineage.csv</h3>
+### Adding a record to lineage.csv
+
+If you want to add a record to the **lineage.csv** database, stay in the directory containing the package and write in the command line:
 
     python3 CRISPRbuilder-TB --add 0
 
@@ -130,13 +131,15 @@ The command prompt will then display the content of the database **lineage.csv**
 
 You will then be asked the values of the different fields (lineage, position, gene coordinates, allege change, codon number, codon change, amino acide change, locus ID, gene name, gene type, type of mutation, 5' gene, 3' gene, strand, sublineage surname, essential, origin of the study). In case you don't know the value of a particular field, just press enter.
 
-<h3>Remove a record from lineage.csv</h3>
+### Removing a record from lineage.csv
+
+If you want to remove a record from the **lineage.csv** database, stay in the directory containing the package and write in the command line:
 
     python3 CRISPRbuilder-TB --remove 0
 
 **Caution:** it is necessary to add the 0 after `--remove`.
 
-You will then be asked the reference of the line you wish to delete, which consists of the lineage and the position (see below).
+After your confirmation for removal, you will be asked the reference of the line you wish to delete, which consists of the lineage and the position (see below). If you don't know this reference, you can always print the **lineage.csv** database beforehand to find it.
 
     lineage, Position, Gene coord., Allele change, Codon number, Codon change, Amino acid change, Locus Id, Gene name, Gene type, Type of mutation, 5' gene, 3' gene, Strand, Sublineage surname, Essential, Origin,
     4.1.1, 3798451, , C/G, , GGG/GGC, G/G, Rv3383c, idsB, non essential, syn, 3797437, 398489, -, X, , Stucki et al.,
@@ -146,13 +149,25 @@ You will then be asked the reference of the line you wish to delete, which consi
     4.3, 1480024, , G/T, , TTC/TTA, F/L, Rv1318c, , non essential, non-syn, 1479199, 1480824, -, LAM, , Stucki et al.,
     4.4, 3966059, , G/C, , ACG/AGG, T/R, Rv3529c, -, non essential, non-syn, 3965884, 3967038, -, -, , Stucki et al.,
 
-<h3>Change a record from lineage.csv</h3>
+The execution of the code will end with:
+
+    The line has been removed.
+
+or
+
+    Your request was cancelled.
+
+in case the SRA reference is not correct.
+
+### Changing a record from lineage.csv
+
+If you want to change a record from the **lineage.csv** database, stay in the directory containing the package and write in the command line: 
 
     python3 CRISPRbuilder-TB --change 0
 
 **Caution:** it is necessary to add the 0 after `--change`.
 
-You will then be asked the reference of the line you wish to delete, which consists of the lineage and the position (see below).
+After confirmation for change, you will be asked the reference of the line you wish to delete, which consists of the lineage and the position (see below). If you don't know the reference, you can always print the **lineage.csv** database beforehand to find it.
 
     lineage, Position, Gene coord., Allele change, Codon number, Codon change, Amino acid change, Locus Id, Gene name, Gene type, Type of mutation, 5' gene, 3' gene, Strand, Sublineage surname, Essential, Origin,
     4.1.1, 3798451, , C/G, , GGG/GGC, G/G, Rv3383c, idsB, non essential, syn, 3797437, 398489, -, X, , Stucki et al.,
@@ -164,12 +179,19 @@ You will then be asked the reference of the line you wish to delete, which consi
 
 You will then be asked the values of the different fields: lineage, position, gene coordinates, allege change, codon number, codon change, amino acide change, locus ID, gene name, gene type, type of mutation, 5' gene, 3' gene, strand, sublineage surname, essential, origin of the study. In case you don't know the value of a particular field, just press enter.
 
+The execution of the code will end with:
+
+    The line has been changed.
+
+or
+
+    Your request was cancelled.
+
 ## Composition of the package and dependencies
-----------------------
 
 CRISPRbuilder-TB needs the following dependencies to work:
 
-* python = "^3.7"
+* python = "^3.6.4"
 * xlrd = "^1.2.0"
 * openpyxl = "^3.0.3"
 * xmltodict = "^0.12.0"
@@ -190,7 +212,6 @@ The **REP/sequences** directory contains the different result database for each 
 The **doc** directory contains the necessary documentation to explain how this package works. It includes a **README.md** file explaining how to install the package for those who just need the essential, the copiright conditions for this package with the **LICENSE** file and the present notebook.
 
 ## Retrieving the genome information dictionary
---------------------------
 
 Let's assume you're looking for information regarding ERR2704808. After writing `python3 CRISPRbuilder-TB --collect ERR2704808` in the command prompt, a directory called ERR2704808 will be created in **REP/sequences** and the item ERR2704808 will be added to the database. the following message will be displayed:
 
