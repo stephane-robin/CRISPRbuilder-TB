@@ -12,54 +12,34 @@ The CRISPRbuilder-TB package is an open source software made available under gen
 
 If you use CRISPRbuilder-TB in work contributing to a scientific publication, we ask that you cite the following application note: Femto-ST Institute, UMR 6174 CNRS, University of Bourgogne Franche-Comté, France.
 
+This package originated in the work of [[1]](#id1) and [[2]](#id2).
+
 
 ## Purpose of this package
 
 CRISPRbuilder-TB will help you collect and annotate Mycobacterium tuberculosis whole genome sequencing data for CRISPR investigations. Given a Sequence Read Archive reference, the package will provide the genome information dictionary comprising the following elements:
 
-* the number of reads for the study,
-* the length of those reads,
-* the cowerage of the study,
-* the source of publication for the SRA reference,
-* the authors who discovered it,
-* the study accession number,
-* the location of discovery,
-* the date of discovery,
-* the center that discovered the SRA,
-* the strain for the SRA,
-* the taxid,
-* the name of the SRA,
-* the reference of the study,
-* the bioproject number,
-* the spoligotypes,
-* the spoligotypes new version,
-* the spoligotype numbers,
-* the spoligotype new version numbers,
-* the spoligotypes vitro,
-* the spoligotypes vitro new version,
-* the spoligotypes vitro numbers,
-* the spoligotypes vitro new version numbers,
-* the Spoligotype International Type,
-* the Spoligotype International Type silico,
-* the affiliation to lineage L6+animal,
-* the affiliation to lineage Principal Genotyping Group-cp,
-* the affiliation to lineage Principal Genotyping Group,
-* the affiliation to lineage Coll,
-* the affiliation to lineage Pali,
-* the affiliation to lineage Shitikov,
-* the affiliation to lineage Stucki
+* the reads - number of reads for the study, length of those reads, coverage of the study,
+
+* the study - source of publication for the SRA reference, authors who discovered it, location of discovery, date of discovery, center that discovered the SRA, reference of the study, study accession number,
+
+* identity - name of the SRA reference, strain for the SRA, taxid, bioproject number,
+
+* spoligotypes - description, numbers, new version numbers, vitro description, vitro numbers, vitro new version description, vitro new version numbers, Spoligotype International Type, Spoligotype International Type silico,
+
+* lineages - Coll et al. 2014 (for all lineages) [[Coll]](#id3), Stucki et al. 2016 (for Lineage 4) [[Stucki]](#id4), Palittapongarnpim et al. 2018 (for Lineage 1) [[Pali]](#id5), Shitikov et al. 2017 (for Lineage 2) [[Shitikov]](#id6).
 
 ## How to install the package ?
 
 This package comes with a Command Line Interface, so it should be installed and executed using your conmmand prompt. For Linux, MacOS or Windows platforms, the installation requires the same instruction. Go the the directory you want the package to be stored to and write in your command prompt:
 
-    pip3 install CRISPRbuilder-TB
+    pip install CRISPRbuilder-TB
 
 ## How to use the Command Line Interface ?
 
 After installing the package, you can find help with the command prompt, listing the different available options, such as `--collect`, `--list`, `--add`, `--print`, `--remove`, `--change`, and their expected syntax. Stay in the directory containing the installed package and write in the command prompt:
 
-    python3 CRISPRbuilder-TB --help
+    python CRISPRbuilder-TB --help
 
 The help menu will display the following information:
 
@@ -83,7 +63,7 @@ The help menu will display the following information:
 
 You can run the package if you wish to find information regarding a specific SRA. From the directory containing the package, write in the command prompt:
 
-    python3 CRISPRbuilder-TB --collect {SRA_reference}
+    python CRISPRbuilder-TB --collect {SRA_reference}
 
 This package uses version 3.6.4 of Python, which is why it is necessary to precise python3 in the command line, in case the default version on your computer is different.
 
@@ -91,23 +71,23 @@ This package uses version 3.6.4 of Python, which is why it is necessary to preci
 
 **Exemple:** to find information about SRR8368696, write:
 
-    python3 CRISPRbuilder-TB --collect SRR8368696
+    python CRISPRbuilder-TB --collect SRR8368696
 
 ### Executing CRISPRbuilder-TB with a list of SRA references
 
 To run the package with a list of SRA references, this list must be composed of one SRA reference per line in a txt format file. Then, if you wish to find information regarding a list of specific SRAs, stay in the directory containing the package and write in the command prompt:
 
-    python3 CRISPRbuilder-TB --list {path_to_the_file}
+    python CRISPRbuilder-TB --list {path_to_the_file}
 
 **Exemple:** to find information about the different SRAs included in the file **my_file.txt** from the **Documents** directory, write:
 
-    python3 CRISPRbuilder-TB --list /Documents/my_file.txt
+    python CRISPRbuilder-TB --list /Documents/my_file.txt
 
 ### Printing the database lineage.csv
 
 If you want to consult the **lineage.csv** database, stay in the directory containing the package and write in the command prompt:
 
-    python3 CRISPRbuilder-TB --print 0
+    python CRISPRbuilder-TB --print 0
 
 **Caution:** it is necessary to add the 0 after `--print`.
 
@@ -125,7 +105,7 @@ The program will then display the content of the database **lineage.csv** whose 
 
 If you want to add a record to the **lineage.csv** database, stay in the directory containing the package and write in the command line:
 
-    python3 CRISPRbuilder-TB --add 0
+    python CRISPRbuilder-TB --add 0
 
 **Caution:** it is necessary to add the 0 after `--add`.
 
@@ -135,7 +115,7 @@ You will then be asked the values of the different fields (lineage, position, ge
 
 If you want to remove a record from the **lineage.csv** database, stay in the directory containing the package and write in the command line:
 
-    python3 CRISPRbuilder-TB --remove 0
+    python CRISPRbuilder-TB --remove 0
 
 **Caution:** it is necessary to add the 0 after `--remove`.
 
@@ -157,7 +137,7 @@ in case the SRA reference is not correct.
 
 If you want to change a record from the **lineage.csv** database, stay in the directory containing the package and write in the command line: 
 
-    python3 CRISPRbuilder-TB --change 0
+    python CRISPRbuilder-TB --change 0
 
 **Caution:** it is necessary to add the 0 after `--change`.
 
@@ -188,7 +168,7 @@ CRISPRbuilder-TB needs the following dependencies to work:
 * parallel-fastq-dump
 * balstn+
 
-These different versions are automatically downloaded when installing the CRISPRbuilder-TB package.
+These different versions are automatically downloaded when installing CRISPRbuilder-TB. Please note that this package doesn't support Python 2.
 
 The package structure is the following:
 
@@ -196,7 +176,7 @@ The package structure is the following:
 
 The **\_\_main\_\_.py** file contains the actual code for the package.<br/>
 The **data** directory contains the necessary database to compare with the SRA reference when the code is executed.<br/>
-The **REP/sequences** directory contains the different result database for each execution of the code. That's typically where you can find fasta format files regarding a specific SRA you've asked for.<br/>
+The **REP/sequences** directory contains the different result database for each execution of the code. For example, you can find a directory ERR2704808 containing the fasta files ERR2704808_1.fasta, ERR2704808_2.fasta and ERR2704808_shuffled.fasta along with the files ERR2704808.00.nhr, ERR2704808.00.nin, ERR2704808.00.nsq, ERR2704808.nal and the directory ERR2704808 containing the blast database. That's typically where you can find the files ERR2704808_old.blast and ERR2704808_new.blast.
 The **doc** directory contains the necessary documentation to explain how this package works. It includes a **README.md** file explaining how to install the package for those who just need the essential, the copyright conditions for this package with the **LICENSE** file and the present documentation.
 
 ## Retrieving the genome information dictionary
@@ -266,7 +246,7 @@ Ignore the message and let the program run. It might take a while, but you'll ev
     fasta files successfully downloaded.
     We're mixing both fasta files, which correspond to the two splits ends.
 
-The cowerage will be calculated and if it is too low the procedure will be cancelled:
+The coverage will be calculated and if it is too low the procedure will be cancelled:
 
 
 ```python
@@ -496,6 +476,44 @@ which will produce the following result:
     name: Mycobacterium tuberculosis variant africanum
     study: ena-STUDY-DST/NRF Centre of Excellence for Biomedical TB research, SAMRC Centre for TB Research-10-03-2018-12:26:21:907-341
     bioproject: PRJEB25506
+
+## References
+
+<a id="id1">1.</a>    Guyeux C, Sola C, Noûs C, Refrégier G. CRISPRbuilder-TB:
+“CRISPR-Builder for tuberculosis”. Exhaustive reconstruction of the CRISPR locus in Mycobacterium tuberculosis complex using SRA. PLoS computational biology. 2020;submitted(PCOMPBIOL-S-20-00832-2).
+
+<a id="id2">2.</a>    Guyeux C, Sola C, Refrégier G. Exhaustive reconstruction of the CRISPR locus in M. tuberculosis complex using short reads BioRxiv. 2019a. doi: https://doi.org/10.1101/844746.
+
+<a id="id3">3.</a> Coll F, Preston M, Guerra-Assuncao JA, Hill-Cawthorn G, Harris D, Perdigao J, et al. PolyTB: A genomic variation map for Mycobacterium
+tuberculosis. Tuberculosis (Edinb). 2014;94(3):346-54(3):346-54. doi: 10.1016/j.tube.2014.02.005. PubMed PMID: 24637013.
+
+<a id="id4">4.</a> Stucki D, Brites D, Jeljeli L, Coscolla M, Liu Q, Trauner A, et al.
+Mycobacterium tuberculosis lineage 4 comprises globally distributed and
+geographically restricted sublineages. Nature genetics.
+2016;48(12):1535-43. doi: 10.1038/ng.3704. PubMed PMID: 27798628.
+
+<a id="id5">5.</a> Palittapongarnpim P, Ajawatanawong P, Viratyosin W, Smittipat N,
+Disratthakit A, Mahasirimongkol S, et al. Evidence for Host-Bacterial
+Co-evolution via Genome Sequence Analysis of 480 Thai Mycobacterium
+tuberculosis Lineage 1 Isolates. Scientific reports. 2018;8(1):11597.
+Epub 2018/08/04. doi: 10.1038/s41598-018-29986-3. PubMed PMID: 30072734;
+PubMed Central PMCID: PMCPMC6072702.
+
+<a id="id6">6.</a> Shitikov E, Kolchenko S, Mokrousov I, Bespyatykh J, Ischenko D, Ilina E,
+et al. Evolutionary pathway analysis and unified classification of East
+Asian lineage of Mycobacterium tuberculosis. Scientific reports.
+2017;7(1):9227. doi: 10.1038/s41598-017-10018-5. PubMed PMID: 28835627;
+PubMed Central PMCID: PMCPMC5569047.
+
+<a id="id7">7.</a> Kamerbeek J, Schouls L, Kolk A, van Agterveld M, van Soolingen D,
+Kuijper S, et al. Simultaneous detection and strain differentiation of
+Mycobacterium tuberculosis for diagnosis and epidemiology. J Clin
+Microbiol. 1997;35(4):907-14. PubMed PMID: 9157152.
+
+<a id="id8">8.</a> van Embden JDA, van Gorkom T, Kremer K, Jansen R, van der Zeijst BAM,
+Schouls LM. Genetic variation and evolutionary origin of the Direct
+repeat locus of Mycobacterium tuberculosis complex bacteria. J
+Bacteriol. 2000;182:2393-401.
 
 
 ```python
