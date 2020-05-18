@@ -181,12 +181,12 @@ The **doc** directory contains the necessary documentation to explain how this p
 
 ## Retrieving the genome information dictionary
 
-Let's assume you're looking for information regarding ERR2704808. After writing `python3 CRISPRbuilder-TB --collect ERR2704808` in the command prompt, a directory called ERR2704808 will be created in **REP/sequences** and the item ERR2704808 will be added to the database. the following message will be displayed:
+Let's assume you're looking for information regarding ERR2704808. After writing `python3 CRISPRbuilder-TB --collect ERR2704808` in the command prompt, a directory called **ERR2704808** will be created in **REP/sequences** and the item ERR2704808 will be added to the database. The following message will be displayed:
 
     We're creating a directory ERR2704808.
     We're adding ERR2704808 to the database.
 
-Then the files in fasta format will be downloaded in **REP/sequences/ERR2704808** as in the following code:
+Then the files in fasta format will be downloaded to **REP/sequences/ERR2704808** as in the following code:
 
 
 ```python
@@ -205,7 +205,7 @@ if len([u for u in listdir(rep) if 'fasta' in u]) == 0:
                 move(p_k, p)
 ```
 
-The ERR2704808_1.fasta and ERR2704808_2.fasta files will be mixed in a new ERR2704808_shuffled.fasta file as in the following code:
+If ERR2704808_shuffled.fasta is not in the **ERR2704808** directory, then the ERR2704808_1.fasta and ERR2704808_2.fasta files will be mixed in a new ERR2704808_shuffled.fasta file in the **ERR2704808** directory, as in the following code:
 
 
 ```python
@@ -227,7 +227,21 @@ if 'nb_reads' not in dico_afr[item] or dico_afr[item]['nb_reads'] == '':
     nb = eval(open(P_TXT).read().split('\n')[0])
 ```
 
-The following information will be displayed:
+The length of the reads will be evaluated from ERR2704808_shuffled.fasta as in the following code:
+
+
+```python
+if 'len_reads' not in dico_afr[item]:
+    nb = len(''.join(open(p_shuffled).read(10000).split('>')[1].split('\n')[1:]))
+    dico_afr[item]['len_reads'] = nb
+```
+
+which eventually will be displayed by:
+
+    nb_reads: 14304698
+    len_reads: 108
+
+When starting the download, the following information will be displayed:
 
     SRR ids: ['ERR2704808']
     extra args: ['--split-files', '--fasta']
@@ -262,7 +276,7 @@ which will be displayed by:
 
     couverture: 350.2        
 
-Then, a database for blast called ERR2704808 will be created in **REP/sequences/ERR2704808/ERR2704808**, as in the code:
+Then, a database for blast will be created in **REP/sequences/ERR2704808/ERR2704808**, as in the code:
 
 
 ```python
@@ -295,7 +309,7 @@ else:
     print(f"{item} is not in the database Brynildsrud")
 ```
 
-If the SRA doesn't belong to the dataset Brynildsrud, the following message will appear:
+If ERR2704808 doesn't belong to the dataset Brynildsrud, the following message will appear:
 
     ERR2704808 is not in the database Brynildsrud
 
@@ -336,7 +350,7 @@ You will read the message:
     The spoligotypes are being blasted
     The spoligo-vitro are being blasted
 
-The different files ERR2704808_*.blast will then be moved to the SRA directory.
+The different files ERR2704808_\*.blast will then be moved to **REP/sequences/ERR2704808**
 
 As a result, the programm will display the following information:
 
@@ -428,19 +442,6 @@ which will produce the following result:
     lineage_Pali: ['1']
     lineage_Shitikov: []
     Lignee_Stucki: ['4.10']
-
-The length of the reads will also be updated, as in the following code:
-
-
-```python
-if 'len_reads' not in dico_afr[item]:
-    len_nb = len(''.join(open(p_shuffled).read(10000).split('>')[1].split('\n')[1:]))
-```
-
-which will be displayed by:
-
-    nb_reads: 14304698
-    len_reads: 108
 
 Some general information will be retrieved from the dataset Origines or directly from NCBI, according to the code:
 
