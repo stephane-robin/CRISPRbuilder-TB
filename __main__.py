@@ -12,20 +12,13 @@ from pathlib import PurePath
 
 
 # We define different useful paths
-# CRISPRbuilder-TB/REP
-P_REP = str(PurePath('REP'))
-# CRISPRbuilder-TB/REP/sequences
-P_SEQUENCES = str(PurePath('REP', 'sequences'))
-# CRISPRbuilder-TB/data/lineage.csv
-P_CSV = str(PurePath('data', 'lineage.csv'))
-# CRISPRbuilder-TB/data/temp.csv
-P_CSV_TMP = str(PurePath('data', 'temp.csv'))
-# CRISPRbuilder-TB/tmp/snp.fasta'))
-P_FASTA = str(PurePath('tmp', 'snp.fasta'))
-# CRISPRbuilder-TB/tmp/nb.txt
-P_TXT_POSIX = 'tmp/nb.txt'
+P_REP = str(PurePath('CRISPRbuilder-TB', 'REP'))
+P_SEQUENCES = str(PurePath('CRISPRbuilder-TB', 'REP', 'sequences'))
+P_CSV = str(PurePath('CRISPRbuilder-TB', 'data', 'lineage.csv'))
+P_CSV_TMP = str(PurePath('CRISPRbuilder-TB', 'data', 'temp.csv'))
+P_FASTA = str(PurePath('CRISPRbuilder-TB', 'tmp', 'snp.fasta'))
+P_TXT_POSIX = 'CRISPRbuilder-TB/tmp/nb.txt'
 P_TXT_WIN = 'C:\Windows\Temp\\nb.txt'
-# P_TXT = str(PurePath('tmp', 'nb.txt'))
 
 # We define the value of half the length of the reads we will work on.
 DEMI_LONGUEUR = 20
@@ -186,8 +179,7 @@ def to_brynildsrud():
     """
     brynildsrud = {}
     source, author, study, location, date = '', '', '', '', ''
-    # CRISPRbuilder-TB/data/Brynildsrud_Dataset_S1.xls
-    p = str(PurePath('data', 'Brynildsrud_Dataset_S1.xls'))
+    p = str(PurePath('CRISPRbuilder-TB', 'data', 'Brynildsrud_Dataset_S1.xls'))
     wwb = open_workbook(p)
     wws = wwb.sheet_by_index(0)
 
@@ -240,8 +232,7 @@ def to_h37rv():
     Returns:
         h (str): genome sequence in a single line and without the headers
     """
-    # CRISPRbuilder-TB/data/NC_000962.3.txt
-    p = str(PurePath('data', 'NC_000962.3.txt'))
+    p = str(PurePath('CRISPRbuilder-TB', 'data', 'NC_000962.3.txt'))
     with open(p, 'r') as f:
         h = f.read()
     return h
@@ -464,8 +455,7 @@ def to_spol_sit():
           column from ws as values to the dictionary spol_sit (after
           replacing 'n' into a black square and 'o' into a white square).
     """
-    # CRISPRbuilder-TB/data/1_3882_SORTED.xls
-    p = str(PurePath('data', '1_3882_SORTED.xls'))
+    p = str(PurePath('CRISPRbuilder-TB', 'data', '1_3882_SORTED.xls'))
     wb = open_workbook(p)
     ws = wb.sheet_by_index(0)
     spol_sit = {}
@@ -575,8 +565,6 @@ def condition_spol_vitro(espaceur1, espaceur2, spoligo_vitro, nb, matches,
         (None)
     """
     for k in range(1, nb + 1):
-        # if 'espaceur'+spol.capitalize()+str(k) in matches:
-
         if min([matches.count(espaceur1 + str(k) + ','),
                 matches.count(espaceur2 + str(k) + ',')]) / \
                 dico_afr[item].get('couverture') > 0.05:
@@ -587,8 +575,9 @@ def condition_spol_vitro(espaceur1, espaceur2, spoligo_vitro, nb, matches,
 
 def collect_SRA(item):
     """
-    When the user specifies a SRA reference called 'item', collect_SRA() fills in
-    dico_afr[item] and prints its elements.
+    When the user specifies a SRA reference called {item}, collect_SRA(item)
+    provides the genome information dictionary by filling in dico_afr[item] and
+    printing its elements.
 
     Args:
         item(str): a SRA reference
@@ -596,41 +585,43 @@ def collect_SRA(item):
     Returns:
         (None)
     """
-    # We create a string called H37RV containing the genome sequence of the strain
-    # H37Rv.
+    # We create a string called H37RV containing the genome sequence of the
+    # strain H37Rv.
     H37RV = to_h37rv()
     TAILLE_GEN = len(H37RV)
 
-    # We initialize dico_afr.
+    # We initialize the genome information dictionary dico_afr.
     dico_afr = {}
+
+    # We create a tmp folder
+    Path.cwd().joinpath('CRISPRbuilder-TB', 'tmp').mkdir(exist_ok=True,
+                                                      parents=True)
 
     # ==== CHECKING IF THE SRA IS ALREADY IN THE DATABASE ===================
 
-    # If the SRA is not in 'REP/sequences', we create a directory named after
-    # the SRA in 'REP/sequences'
+    # If {item} is not in 'REP/sequences', we create a directory called
+    # 'REP/sequences/{item}'
     if item not in listdir(P_SEQUENCES):
-        Path.cwd().joinpath('REP', 'sequences',
+        Path.cwd().joinpath('CRISPRbuilder-TB', 'REP', 'sequences',
                             item).mkdir(exist_ok=True, parents=True)
-        Path.cwd().joinpath('REP', 'sequences', item,
+        Path.cwd().joinpath('CRISPRbuilder-TB', 'REP', 'sequences', item,
                             item).mkdir(exist_ok=True, parents=True)
         print(f"We're creating a directory {item}.")
 
-    # We create paths to 'sequences/SRA' and 'sequences/SRA/SRA'
-    # CRISPRbuilder/REP/sequences/{item}
-    rep = str(PurePath('REP', 'sequences', item))
-    # CRISPRbuilder/REP/sequences/{item}/{item}
-    repitem = str(PurePath('REP', 'sequences', item, item))
+    # We create paths to 'REP/sequences/{item}' and 'REP/sequences/{item}/{item}'
+    rep = str(PurePath('CRISPRbuilder-TB', 'REP', 'sequences', item))
+    repitem = str(PurePath('CRISPRbuilder-TB', 'REP', 'sequences', item, item))
 
-    # If the SRA is not in dico_afr, we add it to dico_afr
+    # If {item} is not in dico_afr, we add it to dico_afr
     if item not in dico_afr:
         print(f"We're adding {item} to the database.")
         dico_afr[item] = {}
 
     # ==== DOWNLOADING FASTA FILES FOR THE SRA ===========================
 
-    # If the SRA directory contains no file in fasta format, we download
-    # directly from NCBI into REP the fasta files regarding this SRA. Then we
-    # tranfer these files to REP/sequences/{item}.
+    # If the REP/sequences/{item} directory contains no file in fasta format,
+    # we download directly from NCBI into REP the fasta files regarding this SRA.
+    # Then we tranfer these files to REP/sequences/{item}.
     if len([u for u in listdir(rep) if 'fasta' in u]) == 0:
         print("We're downloading the files in fasta format")
 
@@ -642,44 +633,42 @@ def collect_SRA(item):
             print("fasta files successfully downloaded.")
             for k in listdir(P_REP):
                 if k.endswith('.fasta'):
-                    # CRISPRbuilder-TB/REP/sequences/{item}/{k}
-                    p = str(PurePath('REP', 'sequences', item, k))
-                    # CRISPRbilder-TB/REP/{k}
-                    p_k = str(PurePath('REP', k))
+                    p = str(PurePath('CRISPRbuilder-TB', 'REP', 'sequences',
+                                     item, k))
+                    p_k = str(PurePath('CRISPRbuilder-TB', 'REP', k))
                     move(p_k, p)
         # if the download didn't work, we delete the SRA from dico_afr
         else:
             del dico_afr[item]
             print("Failed to download fasta files.")
 
-    # If {item}_1.fasta or {item}_2.fasta is not in the {item} directory, we
-    # delete the SRA from dico_afr and remove the directory SRA.
+    # If {item}_1.fasta or {item}_2.fasta is not in the REP/sequences/{item}
+    # directory, we delete {item} from dico_afr and remove the
+    # REP/sequences/{item} directory.
     if (item + '_1.fasta' not in listdir(rep) or
-            item + '_2.fasta' not in listdir(rep)):  # or (item+'_1.fasta' not in listdir(rep) and
-        # item+'_3.fasta' not in listdir(rep):
+            item + '_2.fasta' not in listdir(rep)):
         del dico_afr[item]
         rmtree(rep)
         print("The fasta files don't have the proper format. The operation "
               "wasn't successful.")
 
-    # If {item}_shuffled.fasta is not in the {item} directory, we change "item +
-    # '.'" into "item + '_1.'" or "item + '_2.'" in the files
-    # REP/sequences/{item}/{item}_1.fasta and REP/sequences/{item}/{item}_2.fasta
-    # Then we concatenate the files {item}_1.fasta and {item}_2.fasta into a
-    # new file called {item}_shuffled.fasta.
-    # CRISPRbuilder-TB/REP/sequences/{item}/{item}_shuffled.fasta
-    p_shuffled = str(PurePath('REP', 'sequences', item, item
+    # If {item}_shuffled.fasta is not in the REP/sequences/{item} directory,
+    # we change "item + '.'" into "item + '_1.'" or "item + '_2.'" in the files
+    # REP/sequences/{item}/{item}_1.fasta and
+    # REP/sequences/{item}/{item}_2.fasta. Then we concatenate those files
+    # into a new file called REP/sequences/{item}/{item}_shuffled.fasta.
+    p_shuffled = str(PurePath('CRISPRbuilder-TB', 'REP', 'sequences', item, item
                               + '_shuffled.fasta'))
     if item + '_shuffled.fasta' not in listdir(rep):
 
         print("We're mixing both fasta files, which correspond to the two "
               "splits ends.")
 
-        # CRIPRbuilder-TB/REP/sequences/{item}/{item}_1.fasta
-        p_fasta_1 = str(PurePath('REP', 'sequences', item, item + '_1.fasta'))
-        # CRISPRbuilder-TB/REP/sequences/{item}/{item}_2.fasta
-        p_fasta_2 = str(PurePath('REP', 'sequences', item, item + '_2.fasta'))
-        # TODO effacer contenu tmp
+        p_fasta_1 = str(PurePath('CRISPRbuilder-TB', 'REP', 'sequences', item,
+                                 item + '_1.fasta'))
+        p_fasta_2 = str(PurePath('CRISPRbuilder-TB', 'REP', 'sequences', item,
+                                 item + '_2.fasta'))
+
         if name == 'posix':
             system("sed -i 's/" + item + './' + item + "_1./g' " + p_fasta_1)
             system("sed -i 's/" + item + './' + item + "_2./g' " + p_fasta_2)
@@ -693,8 +682,9 @@ def collect_SRA(item):
 
     # ==== UPDATING NB_READS IN DICO_AFR ================================
 
-    # If there's no nb_reads reference in dico_afr[SRA], we count the number
-    # of '>' in /shuffled.fasta, keep it in /tmp/nb.txt and assign it to nb.
+    # If there's no nb_reads reference in dico_afr[{item}], we count the number
+    # of '>' in REP/sequences/{item}/shuffled.fasta, keep it in tmp/nb.txt
+    # and assign it to nb.
     if 'nb_reads' not in dico_afr[item] or dico_afr[item]['nb_reads'] == '':
         if name == 'posix':
             system("cat " + p_shuffled + " | grep '>' | wc -l > " + P_TXT_POSIX)
@@ -707,8 +697,8 @@ def collect_SRA(item):
 
     # ==== UPDATING LEN_READS IN DICO_AFR ====================================
 
-    # If there's no 'len_reads' reference in dico_afr[SRA], we evaluate
-    # it from the SRA_shuffled.fasta file
+    # If there's no 'len_reads' reference in dico_afr[{item}], we evaluate
+    # it from the REP/sequences/{item}/{item}_shuffled.fasta file
     if 'len_reads' not in dico_afr[item]:
         nb = len(''.join(open(p_shuffled).read(10000).split('>')[1].split(
             '\n')[1:]))
@@ -716,7 +706,7 @@ def collect_SRA(item):
 
     # ==== UPDATING COVERAGE IN DICO_AFR ======================================
 
-    # If there's no 'couverture' reference in dico_afr[SRA], we evaluate it
+    # If there's no 'couverture' reference in dico_afr[{item}], we evaluate it
     # before assigning the result to dico_afr.
     if 'couverture' not in dico_afr[item] or \
             dico_afr[item].get('couverture') == '':
@@ -724,8 +714,7 @@ def collect_SRA(item):
                                              dico_afr[item].get('len_reads') /
                                              TAILLE_GEN, 2)
 
-    # If a SRA in dico_afr has a low coverage, we delete this SRA from
-    # dico_afr.
+    # If {item} in dico_afr has a low coverage, we delete {item} from dico_afr.
     if dico_afr[item].get('couverture') < 50:
         del dico_afr[item]
         print(f"The coverage is too low. {item} is being removed from the "
@@ -733,8 +722,8 @@ def collect_SRA(item):
     else:
         # ==== IF THE COWERAGE IS GOOD ENOUGH ================================
 
-        # If the SRA in dico_afr has a good coverage, we create a database
-        # for Blast
+        # If {item} in dico_afr has a good coverage, we create in
+        # REP/sequences/{item} a database for Blast called {item}
         if item+'.nal' not in listdir(rep) and item+'.nin' not in listdir(rep):
             print("We're creating a database for Blast")
             completed = subprocess.run(['makeblastdb', '-in', p_shuffled,
@@ -744,9 +733,9 @@ def collect_SRA(item):
 
         # === UPDATING SOURCE, AUTHOR, ACCESSION NBER, LOCATION IN DICO_AFR ===
 
-        # If there's no 'source' reference in dico_afr[SRA], we browse
-        # the list 'Origines'. if the SRA is in the 'run accessions' section,
-        # we update dico_afr[SRA].
+        # If there's no 'source' reference in dico_afr[{item}], we browse
+        # the list 'Origines'. if {item} is in the 'run accessions' section,
+        # we update dico_afr[{item}].
         if 'Source' not in dico_afr[item]:
             for u in Origines:
                 if item in u['run accessions']:
@@ -756,7 +745,7 @@ def collect_SRA(item):
 
         # ==== UPDATING DICO_AFR FROM NCBI ===============================
 
-        # If there's no 'taxid' reference in dico_afr[SRA],we collect data
+        # If there's no 'taxid' reference in dico_afr[{item}],we collect data
         # from NCBI to update dico_afr
         if 'taxid' not in dico_afr[item]:
             dicobis = get_info(item)
@@ -765,7 +754,7 @@ def collect_SRA(item):
 
         # ==== UPDATING DICO_AFR WITH THE DATASET BRYNILDSRUD ================
 
-        # We check the presence of the SRA in the file
+        # We check the presence of {item} in the file
         # 'data/Brynildsrud_Dataset_S1.xls' to update dico_afr.
         brynildsrud = to_brynildsrud()
         if item in brynildsrud:
@@ -777,7 +766,7 @@ def collect_SRA(item):
 
         # ==== UPDATING THE SPOLIGOTYPES IN DICO_AFR ========================
 
-        # If 'spoligo' for the SRA is not in dico_afr or is undefined,
+        # If 'spoligo' for {item} is not in dico_afr or is undefined,
         # then
 
         if 'spoligo' not in dico_afr[item] or dico_afr[item]['spoligo'] == '':
@@ -785,14 +774,14 @@ def collect_SRA(item):
             dico_afr[item]['spoligo'] = ''
             dico_afr[item]['spoligo_new'] = ''
 
-            # CRISPRbuilder-TB/data/spoligo_old.fasta
-            p_spoligo_old = str(PurePath('data', 'spoligo_old.fasta'))
-            # CRISPRbuilder-TB/data/spoligo_new.fasta
-            p_spoligo_new = str(PurePath('data', 'spoligo_new.fasta'))
-            # CRISPRbuilder-TB/tmp/{item}_old.blast
-            p_old_blast = str(PurePath('tmp', item + "_old.blast"))
-            # CRISPRbuilder-TB/tmp/{item}_new.blast
-            p_new_blast = str(PurePath('tmp' + item + "_new.blast"))
+            p_spoligo_old = str(PurePath('CRISPRbuilder-TB', 'data',
+                                         'spoligo_old.fasta'))
+            p_spoligo_new = str(PurePath('CRISPRbuilder-TB', 'data',
+                                         'spoligo_new.fasta'))
+            p_old_blast = str(PurePath('CRISPRbuilder-TB', 'tmp', item +
+                                       "_old.blast"))
+            p_new_blast = str(PurePath('CRISPRbuilder-TB', 'tmp', item +
+                                       "_new.blast"))
 
             completed = subprocess.run("blastn -num_threads 12 -query " +
                                        p_spoligo_old + " -evalue 1e-6 -task "
@@ -810,20 +799,16 @@ def collect_SRA(item):
                                        shell=True)
             assert completed.returncode == 0
 
-            #print("We're writing the spoligotypes obtained in the csv file")
-
             for pos, spol in enumerate(['old', 'new']):
-                # CRISPRbuilder-TB/tmp/{item}_{spol}.blast
-                p_blast = str(PurePath('tmp', item + '_' + spol + '.blast'))
-                # CRISPRbuilder-TB/data/spoligo_{spol}.fasta
-                p_fasta = str(PurePath('data', 'spoligo_' + spol + '.fasta'))
+                p_blast = str(PurePath('CRISPRbuilder-TB', 'tmp', item + '_' +
+                                       spol + '.blast'))
+                p_fasta = str(PurePath('CRISPRbuilder-TB', 'data', 'spoligo_' +
+                                       spol + '.fasta'))
 
                 with open(p_blast) as f:
                     matches = f.read()
                     nb = open(p_fasta).read().count('>')
                     for k in range(1, nb + 1):
-                        #if 'espaceur'+spol.capitalize()+str(k) in matches:
-                        #if matches.count('espaceur'+spol.capitalize()+str(k)+',')/dico_afr[item]['couverture']>0.05:
                         if matches.count('espaceur' + spol.capitalize() + str(k)
                                          + ',') >= 5:
                             dico_afr[item]['spoligo' + ['', '_new'][pos]] \
@@ -836,32 +821,30 @@ def collect_SRA(item):
                         matches.count('espaceur' + spol.capitalize() + str(k) +
                                       ',') for k in range(1, nb + 1)]
                 try:
-                    move(p_blast, repitem)
+                    move(p_blast, rep)
                 except:
                     print(p_blast, " is already in the SRA directory.")
-                #system('mv ' + p_blast + ' ' + rep)
 
             print("     " + dico_afr[item]['spoligo'])
             print("     " + str(dico_afr[item]['spoligo_nb']))
             print("     " + dico_afr[item]['spoligo_new'])
             print("     " + str(dico_afr[item]['spoligo_new_nb']))
 
-        # If 'spoligio_vitro' is undefined for the SRA in dico_afr, we blast
+        # If 'spoligio_vitro' is undefined for {item} in dico_afr, we blast
         # the spoligo_vitro, and update both lineage.csv and dico_afr.
         if 'spoligo_vitro' not in dico_afr[item]:
             print(f"The spoligo-vitro are being blasted")
             dico_afr[item]['spoligo_vitro'] = ''
             dico_afr[item]['spoligo_vitro_new'] = ''
 
-            # CRISPRbuilder-TB/data/spoligo_vitro.fasta
-            p_spoligo_vitro = str(PurePath('data', 'spoligo_vitro.fasta'))
-            # CRISPRbuilder-TB/data/spoligo_vitro_new.fasta
-            p_spoligo_vitro_new = str(PurePath('data',
+            p_spoligo_vitro = str(PurePath('CRISPRbuilder-TB', 'data',
+                                           'spoligo_vitro.fasta'))
+            p_spoligo_vitro_new = str(PurePath('CRISPRbuilder-TB', 'data',
                                                'spoligo_vitro_new.fasta'))
-            # CRISPRbuilder-TB/tmp/{item}_vitro.blast
-            p_vitro_blast = str(PurePath('tmp', item + '_vitro.blast'))
-            # CRISPRbuilder-TB/tmp/{item}_vitro_new.blast
-            p_vitro_new_blast = str(PurePath('tmp', item + '_vitro_new.blast'))
+            p_vitro_blast = str(PurePath('CRISPRbuilder-TB', 'tmp', item +
+                                         '_vitro.blast'))
+            p_vitro_new_blast = str(PurePath('CRISPRbuilder-TB', 'tmp', item +
+                                             '_vitro_new.blast'))
 
             completed = subprocess.run("blastn -num_threads 8 -query " +
                                        p_spoligo_vitro + " -evalue 1e-6 -task "
@@ -878,8 +861,6 @@ def collect_SRA(item):
                                        "length score evalue' -out " +
                                        p_vitro_new_blast, shell=True)
             assert completed.returncode == 0
-
-            #print("We write the spoligo_vitro obtained in the csv file")
 
             with open(p_vitro_blast) as f:
                 matches = f.read()
@@ -908,8 +889,7 @@ def collect_SRA(item):
             print("     " + dico_afr[item]['spoligo_vitro'])
             print("     " + dico_afr[item]['spoligo_vitro_new'])
 
-            # CRISPRbuilder-TB/tmp/{item}_*.blast
-            p = str(PurePath('tmp', item + '_*.blast'))
+            p = str(PurePath('CRISPRbuilder-TB', 'tmp', item + '_*.blast'))
             try:
                 move(p, rep)
             except:
@@ -922,19 +902,21 @@ def collect_SRA(item):
         # We transform data from 1_3882_SORTED.xls into a dictionary called
         # spol_sit containing spoligotypes with their corresponding SITs.
         spol_sit = to_spol_sit()
-        # When there's no 'SIT' reference for a SRA in dico_afr, or if this
+
+        # When there's no 'SIT' reference for {item} in dico_afr, or if this
         # reference is undefined, we check in spol_sit a corresponding
         # spoligotype and update dico_afr with this spoligotype.
         if 'SIT' not in dico_afr[item] or dico_afr[item]['SIT'] == '':
             add_spoligo_dico('SIT', dico_afr, item, spol_sit)
 
-        # We proceed the same with the 'SIT_silico' reference as previously
+        # We proceed the same way with the 'SIT_silico' reference as previously
         # with the 'SIT' reference.
         if 'SIT_silico' not in dico_afr[item]:
             add_spoligo_dico('SIT_silico', dico_afr, item, spol_sit)
 
         # ==== TESTING LINEAGE L6+ANIMAL =================================
-        # if an item in dico_afr doesn't have a L6+animal lineage, then TODO
+
+        # if {item} in dico_afr doesn't have a L6+animal lineage, then
         if 'lineage_L6+animal' not in dico_afr[item]:
             print("We're adding the lineage according to the SNPs L6+animal")
             seq1 = 'ACGTCGATGGTCGCGACCTCCGCGGCATAGTCGAA'
@@ -952,14 +934,13 @@ def collect_SRA(item):
 
         # ==== TESTING PGG LINEAGE ======================================
 
-        # If dico_afr has no information about 'lineage_PGG' regarding the
-        # SRA, we select a read around position 2154724 before blasting it
-        # another one around position 7585-1 before blasting it and updating
-        # the lineage in dico_afr[SRA].
+        # If dico_afr has no information about 'lineage_PGG' regarding {item},
+        # we select a read around position 2154724 using DEMI-LONGUEUR, change
+        # some parts of the read and blast it. We select another read around
+        # position 7585-1 using DEMI-LONGUEUR, change some parts of the reads
+        # and blast it. Then the lineage is updated in dico_afr[{item}]. The
+        # result is analysed to update the lineage in dico_afr[{item}].
         """
-        This function selects a read around the position pos (using DEMI_LONGUEUR),
-        transforms the read before blasting it. The result is analysed to update
-        the lineage.
         Note:
         - we select a read 'seq1' around a specific position 'pos' and define
           its length by twice 'DEMI_LONGUEUR',
@@ -1037,7 +1018,7 @@ def collect_SRA(item):
 
             # ==== TESTING LINEAGE COLL =======================================
 
-            # If 'lineage_Coll' is undefined for the SRA in dico_afr, we parse a
+            # If 'lineage_Coll' is undefined for {item} in dico_afr, we parse a
             # file containing Coll lineage SNPs to compare with chosen reads and
             # update dico_afr.
             if 'lineage_Coll' not in dico_afr[item] or \
@@ -1071,8 +1052,6 @@ def collect_SRA(item):
                             nb_seq2 = to_nb_seq(seq2, formatted_results, 16, 20,
                                                 21, 25)
 
-                            # print(row[0].value.replace('lineage', '').replace('*',''),nb_seq1,nb_seq2)
-
                             if nb_seq2 > nb_seq1:
                                 lignee.append(row[0].strip().replace(
                                     'lineage', '').replace('*', ''))
@@ -1095,8 +1074,8 @@ def collect_SRA(item):
         - we sort the elements of 'lignee' and add them to dico_afr[item][
           'lineage...']
         """
-        # If dico_afr has no information about 'lineage_Pali' regarding the
-        # SRA, we extract data from Palittapon_SNPs.xlsx into the dictionary
+        # If dico_afr has no information about 'lineage_Pali' regarding {item}
+        # we extract data from Palittapon_SNPs.xlsx into the dictionary
         # Lignee_Pali containing positions, reads and lineage numbers, we
         # select several reads seq1 and several reads seq2 in a specific
         # position before blasting them and updating the lineage in dico_afr[SRA]
@@ -1107,8 +1086,8 @@ def collect_SRA(item):
 
             for item2, pos0 in enumerate(Lignee_SNP):
                 seq1, seq2 = Lignee_SNP[pos0][:2]
-                # CRISPRbuilder-TB/tmp/snp_Pali.blast
-                p_blast = str(PurePath('tmp', 'snp_Pali.blast'))
+                p_blast = str(PurePath('CRISPRbuilder-TB', 'tmp',
+                                       'snp_Pali.blast'))
                 with open(P_FASTA, 'w') as f:
                     f.write('>\n' + seq2)
                 cmd = "blastn -query " + P_FASTA + " -num_threads 12 -evalue " \
@@ -1121,7 +1100,7 @@ def collect_SRA(item):
                 nb_seq1 = to_nb_seq(seq1, formatted_results, 16, 20, 21, 25)
                 nb_seq2 = to_nb_seq(seq2, formatted_results, 16, 20, 21, 25)
 
-                if nb_seq2 > nb_seq1:  # or (nb_seq2>0 and nb_seq1==0): # TODO ???
+                if nb_seq2 > nb_seq1:
                     lignee.append(Lignee_SNP[pos0][2])
 
             lignee = [u for u in sorted(set(lignee))]
@@ -1142,8 +1121,8 @@ def collect_SRA(item):
 
             for item2, pos0 in enumerate(Lignee_SNP):
                 seq1, seq2 = Lignee_SNP[pos0][:2]
-                # CRISPRbuilder-TB/tmp/snp_Shitikov.blast
-                p_blast = str(PurePath('tmp', 'snp_Shitikov.blast'))
+                p_blast = str(PurePath('CRISPRbuilder-TB', 'tmp',
+                                       'snp_Shitikov.blast'))
                 with open(P_FASTA, 'w') as f:
                     f.write('>\n' + seq2)
                 cmd = "blastn -query " + P_FASTA + " -num_threads 12 -evalue " \
@@ -1156,7 +1135,7 @@ def collect_SRA(item):
                 nb_seq1 = to_nb_seq(seq1, formatted_results, 16, 20, 21, 25)
                 nb_seq2 = to_nb_seq(seq2, formatted_results, 16, 20, 21, 25)
 
-                if nb_seq2 > nb_seq1:  # or (nb_seq2>0 and nb_seq1==0): # TODO ???
+                if nb_seq2 > nb_seq1:
                     lignee.append(Lignee_SNP[pos0][2])
 
             lignee = [u for u in sorted(set(lignee))]
@@ -1176,8 +1155,8 @@ def collect_SRA(item):
 
             for item2, pos0 in enumerate(Lignee_SNP):
                 seq1, seq2 = Lignee_SNP[pos0][:2]
-                # CRISPRbuilder-TB/tmp/snp_Stucki.blast
-                p_blast = str(PurePath('tmp', 'snp_Stucki.blast'))
+                p_blast = str(PurePath('CRISPRbuilder-TB', 'tmp',
+                                       'snp_Stucki.blast'))
                 with open(P_FASTA, 'w') as f:
                     f.write('>\n' + seq2)
                 cmd = "blastn -query " + P_FASTA + " -num_threads 12 -evalue " \
@@ -1190,7 +1169,7 @@ def collect_SRA(item):
                 nb_seq1 = to_nb_seq(seq1, formatted_results, 16, 20, 21, 25)
                 nb_seq2 = to_nb_seq(seq2, formatted_results, 16, 20, 21, 25)
 
-                if nb_seq2 > nb_seq1:  # or (nb_seq2>0 and nb_seq1==0): # TODO ???
+                if nb_seq2 > nb_seq1:
                     lignee.append(Lignee_SNP[pos0][2])
 
             lignee = [u for u in sorted(set(lignee))]
@@ -1202,8 +1181,8 @@ def collect_SRA(item):
 
             dico_afr[item]['Lignee_Stucki'] = lignee
 
-    # We check if the SRA is in the database Origines, and update the location
-    # of the SRA in dico_afr[item]
+    # We check if {item} is in the database Origines, and update the location
+    # of {item} in dico_afr[item]
     booleen_origines = False
     for k in Origines:
         if item in k['run accessions']:
@@ -1218,7 +1197,7 @@ def collect_SRA(item):
     if item in dico_afr:
         dico_afr[item].setdefault('name', '')
 
-        # If SRA is a metagenome, we delete it from dico_afr and delete the
+        # If {item} is a metagenome, we delete it from dico_afr and delete the
         # repository in 'REP/sequences'.
         if 'metagenome' in dico_afr[item]['name'] and item in listdir(
                 P_SEQUENCES):
@@ -1230,13 +1209,17 @@ def collect_SRA(item):
             except FileNotFoundError:
                 print("The file couldn't be found in the repository.")
 
-    # We display information regarding the SRA if dico_afr wasn't deleted.
+    # We display information regarding {item} if dico_afr wasn't deleted.
     if dico_afr:
         print('\n==== SUMMERY ====\n')
         for elt in dico_afr[item]:
             print(f"{elt}: {dico_afr[item][elt]}")
 
-    # We empty the directory /tmp
+    # We empty the directory tmp
+    if name == 'posix':
+        system('rm -rf CRISPRbuilder-TB/tmp')
+    else:
+        print('windows')
 
 
 # ==============
@@ -1262,33 +1245,40 @@ def main():
         " annotates Mycobacterium tuberculosis whole genome sequencing data for "
         "CRISPR investigation.")
     mp.add_argument("sra", type=str, help="requires the reference of a SRA, "
-                    "the path to a file of SRA references or 0. See doc.")
-    mp.add_argument("--collect", action='store_true', help="collects the reference "
-                    "of a SRA to get information about this SRA. See doc.")
+                    "the path to a file of SRA references or 0. See "
+                    "documentation crisprbuilder-tb.md.")
+    mp.add_argument("--collect", action='store_true', help="collects the "
+                    "reference of a SRA to get information about this SRA. See "
+                    "documentation crisprbuilder-tb.md.")
     mp.add_argument("--list", action='store_true', help="collects the path to a "
-                    "file of SRA references to get information about. See doc.")
-    mp.add_argument("--add", action='store_true', help="collects data to add to the"
-                    " file lineage.csv. Requires 0 as argument. See doc.")
-    mp.add_argument("--remove", action='store_true', help="removes data from the "
-                    "file lineage.csv. Requires 0 as argument. See doc.")
-    mp.add_argument("--change", action='store_true', help="collects data to update "
-                    "the file lineage.csv. Requires 0 as argument. See doc.")
+                    "file of SRA references to get information about. See "
+                    "documentation crisprbuilder-tb.md.")
+    mp.add_argument("--add", action='store_true', help="collects data to add to "
+                    "the file lineage.csv. Requires 0 as argument. See "
+                    "documentation crisprbuilder-tb.md.")
+    mp.add_argument("--remove", action='store_true', help="removes data from the"
+                    " file lineage.csv. Requires 0 as argument. See "
+                    "documentation crisprbuilder.tb.md.")
+    mp.add_argument("--change", action='store_true', help="collects data to "
+                    "update the file lineage.csv. Requires 0 as argument. See "
+                    "documentation crisprbuilder-tb.md.")
     mp.add_argument("--print", action='store_true', help="prints the file "
-                    "lineage.csv. Requires 0 as argument. See doc.")
+                    "lineage.csv. Requires 0 as argument. See documentation "
+                                                         "crisprbuilder-tb.md.")
     args = mp.parse_args()
 
     # item represents the RSA reference
     valeur_option = args.sra
 
-    # ==== WHEN THE SELECTED OPTION IS COLLECT ===================================
+    # ==== WHEN THE SELECTED OPTION IS COLLECT ===============================
 
     if args.collect:
         collect_SRA(valeur_option)
 
     # ==== WHEN THE SELECTED OPTION IS LIST =====================================
 
-    # We read the content of essai.txt, transform it into a list without spaces
-    # and \n symbols. We browse the list to apply collect_SRA().
+    # We read the content of the file valeur_option, transform it into a list
+    # without spaces and \n symbols. We browse the list to apply collect_SRA().
     if args.list:
         with open(valeur_option, 'r') as f:
             chaine_SRA = f.read()
@@ -1335,7 +1325,7 @@ def main():
         else:
             print("Your request was cancelled")
 
-    # ==== WHEN THE SELECTED OPTION IS PRINT =====================================
+    # ==== WHEN THE SELECTED OPTION IS PRINT ==================================
 
     # We print the file data/lineage.csv
     if args.print:
@@ -1345,7 +1335,7 @@ def main():
             for row in csv_reader:
                 print(', '.join(row))
 
-    # ==== WHEN THE SELECTED OPTION IS REMOVE =====================================
+    # ==== WHEN THE SELECTED OPTION IS REMOVE =================================
 
     # We select the line to change, create a new file lineage2.csv to record all
     # the data from lineage.csv except for the selected line. Then we rename
@@ -1354,9 +1344,10 @@ def main():
         reponse = input("You're about to remove a content from the file "
                         "lineage.csv. Do you wish to proceed ? (y/n)")
         if reponse == 'y':
-            ligne_lineage_csv = input("Which lineage would you like to delete ?\n")
-            ligne_pos_csv = input("Confirm the position in this lineage you would "
-                                  "like to delete:\n")
+            ligne_lineage_csv = input("Which lineage would you like to delete "
+                                      "?\n")
+            ligne_pos_csv = input("Confirm the position in this lineage you "
+                                  "would like to delete:\n")
             with open(P_CSV, 'r', newline='') as csvin, \
                     open(P_CSV_TMP, 'w', newline='') as csvout:
                 csv_reader = reader(csvin, delimiter=',', quotechar='"',
@@ -1373,19 +1364,20 @@ def main():
         else:
             print("Your request was cancelled.")
 
-    # ==== WHEN THE SELECTED OPTION IS CHANGE =====================================
+    # ==== WHEN THE SELECTED OPTION IS CHANGE =================================
 
     # We collect data to update the file lineage.csv, select the line to change,
-    # create a new file lineage2.csv to record all the data from lineage.csv except
-    # for the selected line where we add the collected data. Then we rename
-    # lineage2.csv to lineage.csv.
+    # create a new file lineage2.csv to record all the data from lineage.csv
+    # except for the selected line where we add the collected data. Then we
+    # rename lineage2.csv to lineage.csv.
     if args.change:
         reponse = input("You're about to change the content from the file "
                         "lineage.csv. Do you wish to proceed ? (y/n)")
         if reponse == 'y':
-            ligne_lineage_csv = input("Which lineage would you like to change ?\n")
-            ligne_pos_csv = input("Confirm the position in this lineage you would "
-                                  "like to make change:\n")
+            ligne_lineage_csv = input("Which lineage would you like to change "
+                                      "?\n")
+            ligne_pos_csv = input("Confirm the position in this lineage you "
+                                  "would like to make change:\n")
             chaine_csv = input("Please fill in the various fields. If you don't "
                                "know the value of a specific field, press enter."
                                "\nLineage "
