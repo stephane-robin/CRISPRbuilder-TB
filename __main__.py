@@ -573,6 +573,53 @@ def condition_spol_vitro(espaceur1, espaceur2, spoligo_vitro, nb, matches,
             dico_afr[item][spoligo_vitro] += '\u25A1'
 
 
+def concat(p1, p2, p_shuffled):
+    """
+    This function concatenates two files given by their paths p1 and p2 into a
+    third file that is created and accessible through the path p_shuffled. It
+    is used only for Windows systems to replace the linux command lines.
+
+    Args:
+        p1(str): path for the 1st file
+        p2(str): path for the 2nd file
+        p_shuffled(str): path for the concatenated file
+
+    Returns:
+        (None)
+    """
+    with open(p1, 'r') as f1, open(p2, 'r') as f2, \
+            open(p_shuffled, 'w') as f_shuffled:
+        lignes1 = f1.readlines()
+        for elt in lignes1:
+            f_shuffled.write(elt)
+        lignes2 = f2.readlines()
+        for elt in lignes2:
+            f_shuffled.write(elt)
+
+
+def change_elt_file(path, suffixe, item):
+    """
+    This function changes "item + '.'" into "item + suffixe + '.'" in a file
+    reachable with path.
+
+    Args:
+        path(str): path for the file to change
+        suffixe(str): _1 or _2
+        item(str): a SRA reference
+
+    Returns:
+        (None)
+    """
+    with open(path, 'r') as f_in, \
+            open('tp.fasta', 'w') as f_out:
+        lignes = f_in.readlines()
+        for elt in lignes:
+            ligneFinale = elt.replace(item + '.', item + suffixe + '.')
+            f_out.write(ligneFinale)
+    remove(path)
+    rename('tp.fasta', path)
+
+
 def collect_SRA(item):
     """
     When the user specifies a SRA reference called {item}, collect_SRA(item)
@@ -674,11 +721,9 @@ def collect_SRA(item):
             system("sed -i 's/" + item + './' + item + "_2./g' " + p_fasta_2)
             system("cat " + p_fasta_1 + " " + p_fasta_2 + " > " + p_shuffled)
         else:
-            for fic in ['_1', '_2']:
-                system("cat " + rep + item + fic + ".fasta | %{$_ -replace '" +
-                       item + ".', '" + item + fic + ".'}")
-            system("get-content " + p_fasta_1 + ", " + p_fasta_2 + " | out-file "
-                                                                 "" + p_shuffled)
+            change_elt_file(p_fasta_1, '_1', item)
+            change_elt_file(p_fasta_2, '_2', item)
+            concat(p_fasta_1, p_fasta_2, p_shuffled)
 
     # ==== UPDATING NB_READS IN DICO_AFR ================================
 
@@ -690,7 +735,12 @@ def collect_SRA(item):
             system("cat " + p_shuffled + " | grep '>' | wc -l > " + P_TXT_POSIX)
             nb = eval(open(P_TXT_POSIX).read().split('\n')[0])
         else:
-            print('windows')
+            with open(p_shuffled, 'r') as f_in, open(P_TXT_WIN, 'w') as f_out:
+                lignes = f_in.readlines()
+                cpt = 0
+                for elt in lignes:
+                    cpt += elt.count('>')
+                    f_out.write(str(cpt))
             nb = eval(open(P_TXT_WIN).read().split('\n')[0])
 
         dico_afr[item]['nb_reads'] = nb
@@ -1219,7 +1269,7 @@ def collect_SRA(item):
     if name == 'posix':
         system('rm -rf CRISPRbuilder-TB/tmp')
     else:
-        print('windows')
+        remove('C:\Windows\Temp')
 
 
 # ==============
