@@ -15,11 +15,10 @@
 
 >CRISPRbuilder-TB needs the following dependencies to work:
 
-* python = "^3.5"
-* xlrd = "^1.2.0"
-* xmltodict = "^0.12.0"
-* biopython = "^1.76"
-* parallel-fastq-dump = "^0.6.5"
+* python >= "3.4"
+* xlrd >= "1.2.0"
+* xmltodict >= "0.12.0"
+* biopython >= "1.76"
 
 >These different versions are automatically downloaded when installing the CRISPRbuilder-TB package.    
 
