@@ -1,12 +1,12 @@
 [tool.poetry]
-name = "CRISPRbuilder-TB"
+name = "crisprbuilder_tb"
 version = "0.1.5"
 description = "Collect and annotate Mycobacterium tuberculosis WGS data for CRISPR investigations."
 authors = ["stephane-robin <robin.stephane@outlook.com>"]
 license = "MIT"
 readme = "README.md"
-homepage = "https://github.com/stephane-robin/CRISPRbuilder-TB.git"
-repository = "https://github.com/stephane-robin/CRISPRbuilder-TB.git"
+homepage = "https://github.com/stephane-robin/crisprbuilder_tb.git"
+repository = "https://github.com/stephane-robin/crisprbuilder_tb.git"
 keywords = ["tuberculosis", "CRISPR"]
 
 [tool.poetry.dependencies]

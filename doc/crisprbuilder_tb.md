@@ -3,21 +3,21 @@
 
 
 
-# Documentation for CRISPRbuilder-TB
+# Documentation for crisprbuilder_tb
 
 
 
 
-The CRISPRbuilder-TB package is an open source software made available under generous terms. Please see the LICENSE file for further details.
+The crisprbuilder_tb package is an open source software made available under generous terms. Please see the LICENSE file for further details.
 
-If you use CRISPRbuilder-TB in work contributing to a scientific publication, we ask that you cite the following application note: Femto-ST Institute, UMR 6174 CNRS, University of Bourgogne Franche-Comté, France.
+If you use crisprbuilder_tb in work contributing to a scientific publication, we ask that you cite the following application note: Femto-ST Institute, UMR 6174 CNRS, University of Bourgogne Franche-Comté, France.
 
 This package originated in the work of [[1]](#id1) and [[2]](#id2).
 
 
 ## Purpose of this package
 
-CRISPRbuilder-TB will help you collect and annotate Mycobacterium tuberculosis whole genome sequencing data for CRISPR investigations. Given a Sequence Read Archive reference, the package will provide the genome information dictionary comprising the following elements:
+crisprbuilder_tb will help you collect and annotate Mycobacterium tuberculosis whole genome sequencing data for CRISPR investigations. Given a Sequence Read Archive reference, the package will provide the genome information dictionary comprising the following elements:
 
 * the reads - number of reads for the study, length of those reads, coverage of the study,
 
@@ -33,17 +33,17 @@ CRISPRbuilder-TB will help you collect and annotate Mycobacterium tuberculosis w
 
 This package comes with a Command Line Interface, so it should be installed and executed using your conmmand prompt. For Linux, MacOS or Windows platforms, the installation requires the same instruction. Go the the directory you want the package to be stored to and write in your command prompt:
 
-    pip install CRISPRbuilder-TB
+    pip install crisprbuilder_tb
 
 ## How to use the Command Line Interface ?
 
 After installing the package, you can find help with the command prompt, listing the different available options, such as `--collect`, `--list`, `--add`, `--print`, `--remove`, `--change`, and their expected syntax. Stay in the directory containing the installed package and write in the command prompt:
 
-    python CRISPRbuilder-TB --help
+    python crisprbuilder_tb --help
 
 The help menu will display the following information:
 
-    usage: CRISPRbuilder-TB [-h] [--collect] [--list] [--add] [--remove] [--change] [--print] sra
+    usage: crisprbuilder_tb [-h] [--collect] [--list] [--add] [--remove] [--change] [--print] sra
 
     Collects and annotates Mycobacterium tuberculosis whole genome sequencing data for CRISPR investigation.
 
@@ -59,35 +59,35 @@ The help menu will display the following information:
       --change    collects data to update the file data/lineage.csv. Requires 0 as argument. See doc.
       --print     prints the file data/lineage.csv. Requires 0 as argument. See doc.
 
-### Executing CRISPRbuilder-TB with a SRA reference
+### Executing crisprbuilder_tb with a SRA reference
 
 You can run the package if you wish to find information regarding a specific SRA. From the directory containing the package, write in the command prompt:
 
-    python CRISPRbuilder-TB --collect {SRA_reference}
+    python crisprbuilder_tb --collect {SRA_reference}
 
 This package uses version 3.6.4 of Python, which is why it is necessary to precise python3 in the command line, in case the default version on your computer is different.
 
-**Caution:** the instruction above won't work if you're already in the package CRISPRbuilder-TB.
+**Caution:** the instruction above won't work if you're already in the package crisprbuilder_tb.
 
 **Exemple:** to find information about SRR8368696, write:
 
-    python CRISPRbuilder-TB --collect SRR8368696
+    python crisprbuilder_tb --collect SRR8368696
 
-### Executing CRISPRbuilder-TB with a list of SRA references
+### Executing crisprbuilder_tb with a list of SRA references
 
 To run the package with a list of SRA references, this list must be composed of one SRA reference per line in a txt format file. Then, if you wish to find information regarding a list of specific SRAs, stay in the directory containing the package and write in the command prompt:
 
-    python CRISPRbuilder-TB --list {path_to_the_file}
+    python crisprbuilder_tb --list {path_to_the_file}
 
 **Exemple:** to find information about the different SRAs included in the file **my_file.txt** from the **Documents** directory, write:
 
-    python CRISPRbuilder-TB --list /Documents/my_file.txt
+    python crisprbuilder_tb --list /Documents/my_file.txt
 
 ### Printing the database lineage.csv
 
 If you want to consult the **lineage.csv** database, stay in the directory containing the package and write in the command prompt:
 
-    python CRISPRbuilder-TB --print 0
+    python crisprbuilder_tb --print 0
 
 **Caution:** it is necessary to add the 0 after `--print`.
 
@@ -105,7 +105,7 @@ The program will then display the content of the database **lineage.csv** whose 
 
 If you want to add a record to the **lineage.csv** database, stay in the directory containing the package and write in the command line:
 
-    python CRISPRbuilder-TB --add 0
+    python crisprbuilder_tb --add 0
 
 **Caution:** it is necessary to add the 0 after `--add`.
 
@@ -115,7 +115,7 @@ You will then be asked the values of the different fields (lineage, position, ge
 
 If you want to remove a record from the **lineage.csv** database, stay in the directory containing the package and write in the command line:
 
-    python CRISPRbuilder-TB --remove 0
+    python crisprbuilder_tb --remove 0
 
 **Caution:** it is necessary to add the 0 after `--remove`.
 
@@ -137,7 +137,7 @@ in case the SRA reference is not correct.
 
 If you want to change a record from the **lineage.csv** database, stay in the directory containing the package and write in the command line: 
 
-    python CRISPRbuilder-TB --change 0
+    python crisprbuilder_tb --change 0
 
 **Caution:** it is necessary to add the 0 after `--change`.
 
@@ -168,7 +168,7 @@ CRISPRbuilder-TB needs the following dependencies to work:
 * parallel-fastq-dump
 * balstn+
 
-These different versions are automatically downloaded when installing CRISPRbuilder-TB. Please note that this package doesn't support Python 2.
+These different versions are automatically downloaded when installing crisprbuilder_tb. Please note that this package doesn't support Python 2.
 
 The package structure is the following:
 
