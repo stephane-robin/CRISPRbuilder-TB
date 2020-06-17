@@ -16,9 +16,9 @@ from Bio import Entrez  # provides code to access NCBI over the Web
 # =========
 
 # We define different useful paths
-P_CSV = str(PurePath('CRISPRbuilder-TB', 'data', 'lineage.csv'))
-P_CSV_TMP = str(PurePath('CRISPRbuilder-TB', 'data', 'temp.csv'))
-P_FASTA = str(PurePath('CRISPRbuilder-TB', 'tmp', 'snp.fasta'))
+P_CSV = str(PurePath('crisprbuilder_tb', 'data', 'lineage.csv'))
+P_CSV_TMP = str(PurePath('crisprbuilder_tb', 'data', 'temp.csv'))
+P_FASTA = str(PurePath('crisprbuilder_tb', 'tmp', 'snp.fasta'))
 
 # We define the value of half the length of the reads we will work on.
 DEMI_LONGUEUR = 20
@@ -49,7 +49,7 @@ def to_brynildsrud():
     """
     brynildsrud = {}
     source, author, study, location, date = '', '', '', '', ''
-    p_brynildsrud = str(PurePath('CRISPRbuilder-TB', 'data',
+    p_brynildsrud = str(PurePath('crisprbuilder_tb', 'data',
                                  'Brynildsrud_Dataset_S1.xls'))
     wwb = open_workbook(p_brynildsrud)
     wws = wwb.sheet_by_index(0)
@@ -104,7 +104,7 @@ def to_h37rv():
         p_nc_reader (str): genome sequence in a single line and without the
         headers
     """
-    p_nc = str(PurePath('CRISPRbuilder-TB', 'data', 'NC_000962.3.txt'))
+    p_nc = str(PurePath('crisprbuilder_tb', 'data', 'NC_000962.3.txt'))
     with open(p_nc, 'r') as file:
         p_nc_reader = file.read()
     return p_nc_reader
@@ -301,7 +301,7 @@ def to_spol_sit():
           column from ws as values to the dictionary spol_sit (after
           replacing 'n' into a black square and 'o' into a white square).
     """
-    p_sorted = str(PurePath('CRISPRbuilder-TB', 'data', '1_3882_SORTED.xls'))
+    p_sorted = str(PurePath('crisprbuilder_tb', 'data', '1_3882_SORTED.xls'))
     wwb = open_workbook(p_sorted)
     wws = wwb.sheet_by_index(0)
     spol_sit = {}

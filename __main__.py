@@ -19,9 +19,9 @@ import support
 # =========
 
 # We define different useful paths
-P_REP = str(PurePath('CRISPRbuilder-TB', 'REP'))
-P_SEQUENCES = str(PurePath('CRISPRbuilder-TB', 'REP', 'sequences'))
-P_TXT_POSIX = 'CRISPRbuilder-TB/tmp/nb.txt'
+P_REP = str(PurePath('crisprbuilder_tb', 'REP'))
+P_SEQUENCES = str(PurePath('crisprbuilder_tb', 'REP', 'sequences'))
+P_TXT_POSIX = 'crisprbuilder_tb/tmp/nb.txt'
 P_TXT_WIN = 'C:\\Windows\\Temp\\nb.txt'
 
 TAILLE_GEN = len(support.H37RV)
@@ -47,7 +47,7 @@ def collect_sra(item):
     dico_afr = {}
 
     # We create a tmp folder
-    Path.cwd().joinpath('CRISPRbuilder-TB', 'tmp').mkdir(exist_ok=True,
+    Path.cwd().joinpath('crisprbuilder_tb', 'tmp').mkdir(exist_ok=True,
                                                          parents=True)
 
     # ==== CHECKING IF THE SRA IS ALREADY IN THE DATABASE ===================
@@ -55,15 +55,15 @@ def collect_sra(item):
     # If {item} is not in 'REP/sequences', we create a directory called
     # 'REP/sequences/{item}'
     if item not in listdir(P_SEQUENCES):
-        Path.cwd().joinpath('CRISPRbuilder-TB', 'REP', 'sequences',
+        Path.cwd().joinpath('crisprbuilder_tb', 'REP', 'sequences',
                             item).mkdir(exist_ok=True, parents=True)
-        Path.cwd().joinpath('CRISPRbuilder-TB', 'REP', 'sequences', item,
+        Path.cwd().joinpath('crisprbuilder_tb', 'REP', 'sequences', item,
                             item).mkdir(exist_ok=True, parents=True)
         print(f"We're creating a directory {item}.")
 
     # We create paths to 'REP/sequences/{item}' and 'REP/sequences/{item}/{item}'
-    rep = str(PurePath('CRISPRbuilder-TB', 'REP', 'sequences', item))
-    repitem = str(PurePath('CRISPRbuilder-TB', 'REP', 'sequences', item, item))
+    rep = str(PurePath('crisprbuilder_tb', 'REP', 'sequences', item))
+    repitem = str(PurePath('crisprbuilder_tb', 'REP', 'sequences', item, item))
 
     # If {item} is not in dico_afr, we add it to dico_afr
     if item not in dico_afr:
@@ -86,9 +86,9 @@ def collect_sra(item):
             print("fasta files successfully downloaded.")
             for k in listdir(P_REP):
                 if k.endswith('.fasta'):
-                    p_item_k = str(PurePath('CRISPRbuilder-TB', 'REP',
+                    p_item_k = str(PurePath('crisprbuilder_tb', 'REP',
                                             'sequences', item, k))
-                    p_k = str(PurePath('CRISPRbuilder-TB', 'REP', k))
+                    p_k = str(PurePath('crisprbuilder_tb', 'REP', k))
                     try:
                         move(p_k, p_item_k)
                     except FileNotFoundError:
@@ -114,16 +114,16 @@ def collect_sra(item):
     # REP/sequences/{item}/{item}_1.fasta and
     # REP/sequences/{item}/{item}_2.fasta. Then we concatenate those files
     # into a new file called REP/sequences/{item}/{item}_shuffled.fasta.
-    p_shuffled = str(PurePath('CRISPRbuilder-TB', 'REP', 'sequences', item, item
+    p_shuffled = str(PurePath('crisprbuilder_tb', 'REP', 'sequences', item, item
                               + '_shuffled.fasta'))
     if item + '_shuffled.fasta' not in listdir(rep):
 
         print("We're mixing both fasta files, which correspond to the two "
               "splits ends.")
 
-        p_fasta_1 = str(PurePath('CRISPRbuilder-TB', 'REP', 'sequences', item,
+        p_fasta_1 = str(PurePath('crisprbuilder_tb', 'REP', 'sequences', item,
                                  item + '_1.fasta'))
-        p_fasta_2 = str(PurePath('CRISPRbuilder-TB', 'REP', 'sequences', item,
+        p_fasta_2 = str(PurePath('crisprbuilder_tb', 'REP', 'sequences', item,
                                  item + '_2.fasta'))
 
         if name == 'posix':
@@ -234,13 +234,13 @@ def collect_sra(item):
             dico_afr[item]['spoligo'] = ''
             dico_afr[item]['spoligo_new'] = ''
 
-            p_spoligo_old = str(PurePath('CRISPRbuilder-TB', 'data',
+            p_spoligo_old = str(PurePath('crisprbuilder_tb', 'data',
                                          'spoligo_old.fasta'))
-            p_spoligo_new = str(PurePath('CRISPRbuilder-TB', 'data',
+            p_spoligo_new = str(PurePath('crisprbuilder_tb', 'data',
                                          'spoligo_new.fasta'))
-            p_old_blast = str(PurePath('CRISPRbuilder-TB', 'tmp', item +
+            p_old_blast = str(PurePath('crisprbuilder_tb', 'tmp', item +
                                        "_old.blast"))
-            p_new_blast = str(PurePath('CRISPRbuilder-TB', 'tmp', item +
+            p_new_blast = str(PurePath('crisprbuilder_tb', 'tmp', item +
                                        "_new.blast"))
 
             completed = subprocess.run("blastn -num_threads 12 -query " +
@@ -260,9 +260,9 @@ def collect_sra(item):
             assert completed.returncode == 0
 
             for pos, spol in enumerate(['old', 'new']):
-                p_blast = str(PurePath('CRISPRbuilder-TB', 'tmp', item + '_' +
+                p_blast = str(PurePath('crisprbuilder_tb', 'tmp', item + '_' +
                                        spol + '.blast'))
-                p_fasta = str(PurePath('CRISPRbuilder-TB', 'data', 'spoligo_' +
+                p_fasta = str(PurePath('crisprbuilder_tb', 'data', 'spoligo_' +
                                        spol + '.fasta'))
 
                 with open(p_blast) as file:
@@ -297,13 +297,13 @@ def collect_sra(item):
             dico_afr[item]['spoligo_vitro'] = ''
             dico_afr[item]['spoligo_vitro_new'] = ''
 
-            p_spoligo_vitro = str(PurePath('CRISPRbuilder-TB', 'data',
+            p_spoligo_vitro = str(PurePath('crisprbuilder_tb', 'data',
                                            'spoligo_vitro.fasta'))
-            p_spoligo_vitro_new = str(PurePath('CRISPRbuilder-TB', 'data',
+            p_spoligo_vitro_new = str(PurePath('crisprbuilder_tb', 'data',
                                                'spoligo_vitro_new.fasta'))
-            p_vitro_blast = str(PurePath('CRISPRbuilder-TB', 'tmp', item +
+            p_vitro_blast = str(PurePath('crisprbuilder_tb', 'tmp', item +
                                          '_vitro.blast'))
-            p_vitro_new_blast = str(PurePath('CRISPRbuilder-TB', 'tmp', item +
+            p_vitro_new_blast = str(PurePath('crisprbuilder_tb', 'tmp', item +
                                              '_vitro_new.blast'))
 
             completed = subprocess.run("blastn -num_threads 8 -query " +
@@ -355,7 +355,7 @@ def collect_sra(item):
             print("     " + dico_afr[item]['spoligo_vitro'])
             print("     " + dico_afr[item]['spoligo_vitro_new'])
 
-            p_any_blast = str(PurePath('CRISPRbuilder-TB', 'tmp', item +
+            p_any_blast = str(PurePath('crisprbuilder_tb', 'tmp', item +
                                        '_*.blast'))
             try:
                 move(p_any_blast, rep)
@@ -556,7 +556,7 @@ def collect_sra(item):
 
             for item2, pos0 in enumerate(lignee_snp):
                 seq1, seq2 = lignee_snp[pos0][:2]
-                p_blast = str(PurePath('CRISPRbuilder-TB', 'tmp',
+                p_blast = str(PurePath('crisprbuilder_tb', 'tmp',
                                        'snp_Pali.blast'))
                 with open(support.P_FASTA, 'w') as f_fasta:
                     f_fasta.write('>\n' + seq2)
@@ -593,7 +593,7 @@ def collect_sra(item):
 
             for item2, pos0 in enumerate(lignee_snp):
                 seq1, seq2 = lignee_snp[pos0][:2]
-                p_blast = str(PurePath('CRISPRbuilder-TB', 'tmp',
+                p_blast = str(PurePath('crisprbuilder_tb', 'tmp',
                                        'snp_Shitikov.blast'))
                 with open(support.P_FASTA, 'w') as f_fasta:
                     f_fasta.write('>\n' + seq2)
@@ -629,7 +629,7 @@ def collect_sra(item):
 
             for item2, pos0 in enumerate(lignee_snp):
                 seq1, seq2 = lignee_snp[pos0][:2]
-                p_blast = str(PurePath('CRISPRbuilder-TB', 'tmp',
+                p_blast = str(PurePath('crisprbuilder_tb', 'tmp',
                                        'snp_Stucki.blast'))
                 with open(support.P_FASTA, 'w') as f_fasta:
                     f_fasta.write('>\n' + seq2)
@@ -693,7 +693,7 @@ def collect_sra(item):
 
     # We empty the directory tmp
     if name == 'posix':
-        system('rm -rf CRISPRbuilder-TB/tmp')
+        system('rm -rf crisprbuilder_tb/tmp')
     else:
         remove('C:\\Windows\\Temp')
 
@@ -717,31 +717,31 @@ def main():
     # ==== DEFINING THE OPTIONS TO CHOOSE =====================================
 
     # We ask the user for the option to choose
-    mp_cli = ArgumentParser(prog='CRISPRbuilder-TB',
+    mp_cli = ArgumentParser(prog='crisprbuilder_tb',
                             description="Collects and annotates Mycobacterium "
                                         "tuberculosis whole genome sequencing "
                                         "data for CRISPR investigation.")
     mp_cli.add_argument("sra", type=str, help="requires the reference of a SRA, "
                         "the path to a file of SRA references or 0. See "
-                        "documentation crisprbuilder-tb.md.")
+                        "documentation crisprbuilder_tb.md.")
     mp_cli.add_argument("--collect", action='store_true', help="collects the "
                         "reference of a SRA to get information about this SRA. "
-                        "See documentation crisprbuilder-tb.md.")
+                        "See documentation crisprbuilder_tb.md.")
     mp_cli.add_argument("--list", action='store_true', help="collects the path "
                         "to a file of SRA references to get information about. "
-                        "See documentation crisprbuilder-tb.md.")
+                        "See documentation crisprbuilder_tb.md.")
     mp_cli.add_argument("--add", action='store_true', help="collects data to "
                         "add to the file lineage.csv. Requires 0 as argument. "
-                        "See documentation crisprbuilder-tb.md.")
+                        "See documentation crisprbuilder_tb.md.")
     mp_cli.add_argument("--remove", action='store_true', help="removes data "
                         "from the file lineage.csv. Requires 0 as argument. See "
-                        "documentation crisprbuilder.tb.md.")
+                        "documentation crisprbuilder_tb.md.")
     mp_cli.add_argument("--change", action='store_true', help="collects data to "
                         "update the file lineage.csv. Requires 0 as argument. "
-                        "See documentation crisprbuilder-tb.md.")
+                        "See documentation crisprbuilder_tb.md.")
     mp_cli.add_argument("--print", action='store_true', help="prints the file "
                         "lineage.csv. Requires 0 as argument. See documentation "
-                        "crisprbuilder-tb.md.")
+                        "crisprbuilder_tb.md.")
     args = mp_cli.parse_args()
 
     # item represents the RSA reference
