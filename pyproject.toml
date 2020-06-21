@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "crisprbuilder_tb"
-version = "0.1.5"
+version = "0.1.8"
 description = "Collect and annotate Mycobacterium tuberculosis WGS data for CRISPR investigations."
 authors = ["stephane-robin <robin.stephane@outlook.com>"]
 license = "MIT"

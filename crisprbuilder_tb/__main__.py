@@ -10,8 +10,8 @@ import subprocess  # allows to connect to input/output/error pipes of processes
 from argparse import ArgumentParser
 from shutil import rmtree, move
 from csv import reader, writer, QUOTE_MINIMAL
-import sources
-import support
+import crisprbuilder_tb.sources as sources
+import crisprbuilder_tb.support as support
 
 
 # =========
