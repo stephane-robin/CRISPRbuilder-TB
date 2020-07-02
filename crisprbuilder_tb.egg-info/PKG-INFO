@@ -1,15 +1,15 @@
 Metadata-Version: 1.0
 Name: crisprbuilder-tb
-Version: 0.1.25
+Version: 0.1.26
 Summary: Collect and annotate Mycobacterium tuberculosis WGS data for CRISPR investigations.
 Home-page: https://github.com/stephane-robin/crisprbuilder_tb.git
 Author: stephane-robin
 Author-email: robin.stephane@outlook.com
 License: UNKNOWN
-Description: # crisprbuilder_tb
+Description: # CRISPRbuilder_TB
         ------------------
         
-        >This **README.md** gives you the gist of the crisprbuilder_tb package. Please refer to **crisprbuilder-tb.md** included in the package for more detailed explanation.    
+        >This **README.md** gives you the gist of the CRISPRbuilder_TB package. Please refer to **crisprbuilder_tb.md** included in the package for more detailed explanation.    
         
         
         ## Purpose of this package
@@ -21,14 +21,14 @@ Description: # crisprbuilder_tb
         ## Requirements
         ---------------
         
-        >crisprbuilder_tb needs the following dependencies to work:
+        >CRISPRbuilder_TB needs the following dependencies to work:
         
         * python >= "3.4"
         * xlrd >= "1.2.0"
         * xmltodict >= "0.12.0"
         * biopython >= "1.76"
         
-        >These different versions are automatically downloaded when installing the crisprbuilder_tb package.    
+        >These different versions are automatically downloaded when installing the CRISPRbuilder_TB package.    
         
         
         ## Installation
@@ -40,7 +40,7 @@ Description: # crisprbuilder_tb
         ## How to use this package
         --------------------------
         
-        >The most often common instruction for this package is: `python3 crisprbuilder_tb --collect {SRA_reference}`.
+        >The most often common instruction for this package is: `python -m crisprbuilder_tb --collect {SRA_reference}`.
         
         See the attached **criprbuilder-tb.md** for a comprehensive explanation.    
         
@@ -48,5 +48,6 @@ Description: # crisprbuilder_tb
         ## History
         ----------
         
+        First version of this package, which is 1.0.0 was published on July 2020.
         
 Platform: UNKNOWN

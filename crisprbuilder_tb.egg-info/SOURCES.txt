@@ -1,4 +1,5 @@
 README.md
+setup.py
 crisprbuilder_tb/__init__.py
 crisprbuilder_tb/__main__.py
 crisprbuilder_tb/bdd.py
@@ -21,8 +22,8 @@ crisprbuilder_tb/doc/LICENSE
 crisprbuilder_tb/doc/crisprbuilder_tb.ipynb
 crisprbuilder_tb/doc/crisprbuilder_tb.md
 crisprbuilder_tb/doc/femto.png
+crisprbuilder_tb/doc/rep_crispr.png
 crisprbuilder_tb/doc/selection.png
-crisprbuilder_tb/doc/tree.png
 crisprbuilder_tb/doc/.ipynb_checkpoints/M2_projet-checkpoint.ipynb
 crisprbuilder_tb/doc/.ipynb_checkpoints/crisprbuilder-tb-checkpoint.ipynb
 crisprbuilder_tb/doc/.ipynb_checkpoints/crisprbuilder_tb-checkpoint.ipynb
