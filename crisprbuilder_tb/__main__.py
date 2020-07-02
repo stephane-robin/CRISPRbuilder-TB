@@ -60,13 +60,14 @@ def collect_sra(item):
     if item not in listdir(P_SEQUENCES):
         Path.cwd().joinpath(crisprbuilder_tb.__path__[0], 'REP', 'sequences',
                             item).mkdir(exist_ok=True, parents=True)
-        Path.cwd().joinpath(crisprbuilder_tb.__path__[0], 'REP', 'sequences', item,
-                            item).mkdir(exist_ok=True, parents=True)
+        Path.cwd().joinpath(crisprbuilder_tb.__path__[0], 'REP', 'sequences',
+                            item, item).mkdir(exist_ok=True, parents=True)
         print(f"We're creating a directory {item}.")
 
     # We create paths to 'REP/sequences/{item}' and 'REP/sequences/{item}/{item}'
     rep = str(PurePath(crisprbuilder_tb.__path__[0], 'REP', 'sequences', item))
-    repitem = str(PurePath(crisprbuilder_tb.__path__[0], 'REP', 'sequences', item, item))
+    repitem = str(PurePath(crisprbuilder_tb.__path__[0], 'REP', 'sequences',
+                           item, item))
 
     # If {item} is not in dico_afr, we add it to dico_afr
     if item not in dico_afr:
@@ -120,17 +121,17 @@ def collect_sra(item):
     # REP/sequences/{item}/{item}_1.fasta and
     # REP/sequences/{item}/{item}_2.fasta. Then we concatenate those files
     # into a new file called REP/sequences/{item}/{item}_shuffled.fasta.
-    p_shuffled = str(PurePath(crisprbuilder_tb.__path__[0], 'REP', 'sequences', item, item
-                              + '_shuffled.fasta'))
+    p_shuffled = str(PurePath(crisprbuilder_tb.__path__[0], 'REP', 'sequences',
+                              item, item + '_shuffled.fasta'))
     if item + '_shuffled.fasta' not in listdir(rep):
 
         print("We're mixing both fasta files, which correspond to the two "
               "splits ends.")
 
-        p_fasta_1 = str(PurePath(crisprbuilder_tb.__path__[0], 'REP', 'sequences', item,
-                                 item + '_1.fasta'))
-        p_fasta_2 = str(PurePath(crisprbuilder_tb.__path__[0], 'REP', 'sequences', item,
-                                 item + '_2.fasta'))
+        p_fasta_1 = str(PurePath(crisprbuilder_tb.__path__[0], 'REP',
+                                 'sequences', item, item + '_1.fasta'))
+        p_fasta_2 = str(PurePath(crisprbuilder_tb.__path__[0], 'REP',
+                                 'sequences', item, item + '_2.fasta'))
 
         if name == 'posix':
             system("sed -i 's/" + item + './' + item + "_1./g' " + p_fasta_1)
@@ -248,10 +249,10 @@ def collect_sra(item):
                                          'spoligo_old.fasta'))
             p_spoligo_new = str(PurePath(crisprbuilder_tb.__path__[0], 'data',
                                          'spoligo_new.fasta'))
-            p_old_blast = str(PurePath(crisprbuilder_tb.__path__[0], 'tmp', item +
-                                       "_old.blast"))
-            p_new_blast = str(PurePath(crisprbuilder_tb.__path__[0], 'tmp', item +
-                                       "_new.blast"))
+            p_old_blast = str(PurePath(crisprbuilder_tb.__path__[0], 'tmp', item
+                                       + "_old.blast"))
+            p_new_blast = str(PurePath(crisprbuilder_tb.__path__[0], 'tmp', item
+                                       + "_new.blast"))
 
             try:
                 completed = subprocess.run("blastn -num_threads 12 -query " +
@@ -278,10 +279,10 @@ def collect_sra(item):
                 print("We can't proceed blasting file.")
 
             for pos, spol in enumerate(['old', 'new']):
-                p_blast = str(PurePath(crisprbuilder_tb.__path__[0], 'tmp', item + '_' +
-                                       spol + '.blast'))
-                p_fasta = str(PurePath(crisprbuilder_tb.__path__[0], 'data', 'spoligo_' +
-                                       spol + '.fasta'))
+                p_blast = str(PurePath(crisprbuilder_tb.__path__[0], 'tmp', item
+                                       + '_' + spol + '.blast'))
+                p_fasta = str(PurePath(crisprbuilder_tb.__path__[0], 'data',
+                                       'spoligo_' + spol + '.fasta'))
 
                 with open(p_blast) as file:
                     matches = file.read()
@@ -317,12 +318,13 @@ def collect_sra(item):
 
             p_spoligo_vitro = str(PurePath(crisprbuilder_tb.__path__[0], 'data',
                                            'spoligo_vitro.fasta'))
-            p_spoligo_vitro_new = str(PurePath(crisprbuilder_tb.__path__[0], 'data',
+            p_spoligo_vitro_new = str(PurePath(crisprbuilder_tb.__path__[0],
+                                               'data',
                                                'spoligo_vitro_new.fasta'))
-            p_vitro_blast = str(PurePath(crisprbuilder_tb.__path__[0], 'tmp', item +
-                                         '_vitro.blast'))
-            p_vitro_new_blast = str(PurePath(crisprbuilder_tb.__path__[0], 'tmp', item +
-                                             '_vitro_new.blast'))
+            p_vitro_blast = str(PurePath(crisprbuilder_tb.__path__[0], 'tmp',
+                                         item + '_vitro.blast'))
+            p_vitro_new_blast = str(PurePath(crisprbuilder_tb.__path__[0], 'tmp',
+                                             item + '_vitro_new.blast'))
 
             try:
                 completed = subprocess.run("blastn -num_threads 8 -query " +
@@ -384,8 +386,8 @@ def collect_sra(item):
             print("     " + dico_afr[item]['spoligo_vitro'])
             print("     " + dico_afr[item]['spoligo_vitro_new'])
 
-            p_any_blast = str(PurePath(crisprbuilder_tb.__path__[0], 'tmp', item +
-                                       '_*.blast'))
+            p_any_blast = str(PurePath(crisprbuilder_tb.__path__[0], 'tmp', item
+                                       + '_*.blast'))
             try:
                 move(p_any_blast, rep)
             except FileNotFoundError:
@@ -588,8 +590,8 @@ def collect_sra(item):
                                        'snp_Pali.blast'))
                 with open(fonctions.P_FASTA, 'w') as f_fasta:
                     f_fasta.write('>\n' + seq2)
-                cmd = "blastn -query " + fonctions.P_FASTA + " -num_threads 12 " \
-                      "-evalue 1e-5 -task blastn -db " + repitem + \
+                cmd = "blastn -query " + fonctions.P_FASTA + " -num_threads 12" \
+                      " -evalue 1e-5 -task blastn -db " + repitem + \
                       " -outfmt '10 sseq' -out " + p_blast
                 system(cmd)
                 with open(p_blast) as f_blast:
@@ -625,8 +627,8 @@ def collect_sra(item):
                                        'snp_Shitikov.blast'))
                 with open(fonctions.P_FASTA, 'w') as f_fasta:
                     f_fasta.write('>\n' + seq2)
-                cmd = "blastn -query " + fonctions.P_FASTA + " -num_threads 12 " \
-                      "-evalue 1e-5 -task blastn -db " + repitem + \
+                cmd = "blastn -query " + fonctions.P_FASTA + " -num_threads 12" \
+                      " -evalue 1e-5 -task blastn -db " + repitem + \
                       " -outfmt '10 sseq' -out " + p_blast
                 system(cmd)
                 with open(p_blast) as f_blast:
@@ -661,8 +663,8 @@ def collect_sra(item):
                                        'snp_Stucki.blast'))
                 with open(fonctions.P_FASTA, 'w') as f_fasta:
                     f_fasta.write('>\n' + seq2)
-                cmd = "blastn -query " + fonctions.P_FASTA + " -num_threads 12 " \
-                      "-evalue 1e-5 -task blastn -db " + repitem + \
+                cmd = "blastn -query " + fonctions.P_FASTA + " -num_threads 12" \
+                      " -evalue 1e-5 -task blastn -db " + repitem + \
                       " -outfmt '10 sseq' -out " + p_blast
                 system(cmd)
                 with open(p_blast) as f_blast:

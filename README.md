@@ -1,7 +1,7 @@
-# crisprbuilder_tb
+# CRISPRbuilder_TB
 ------------------
 
->This **README.md** gives you the gist of the crisprbuilder_tb package. Please refer to **crisprbuilder-tb.md** included in the package for more detailed explanation.    
+>This **README.md** gives you the gist of the CRISPRbuilder_TB package. Please refer to **crisprbuilder_tb.md** included in the package for more detailed explanation.    
 
 
 ## Purpose of this package
@@ -13,14 +13,14 @@
 ## Requirements
 ---------------
 
->crisprbuilder_tb needs the following dependencies to work:
+>CRISPRbuilder_TB needs the following dependencies to work:
 
 * python >= "3.4"
 * xlrd >= "1.2.0"
 * xmltodict >= "0.12.0"
 * biopython >= "1.76"
 
->These different versions are automatically downloaded when installing the crisprbuilder_tb package.    
+>These different versions are automatically downloaded when installing the CRISPRbuilder_TB package.    
 
 
 ## Installation
@@ -32,7 +32,7 @@
 ## How to use this package
 --------------------------
 
->The most often common instruction for this package is: `python3 crisprbuilder_tb --collect {SRA_reference}`.
+>The most often common instruction for this package is: `python -m crisprbuilder_tb --collect {SRA_reference}`.
 
 See the attached **criprbuilder-tb.md** for a comprehensive explanation.    
 
@@ -40,3 +40,4 @@ See the attached **criprbuilder-tb.md** for a comprehensive explanation.
 ## History
 ----------
 
+First version of this package, which is 1.0.0 was published on July 2020.

@@ -3,21 +3,21 @@
 
 
 
-# Documentation for crisprbuilder_tb
+# Documentation for CRISPRbuilder_TB
 
 
 
 
-The crisprbuilder_tb package is an open source software made available under generous terms. Please see the LICENSE file for further details.
+The CRISPRbuilder_TB package is an open source software made available under generous terms. Please see the LICENSE file for further details.
 
-If you use crisprbuilder_tb in work contributing to a scientific publication, we ask that you cite the following application note: Femto-ST Institute, UMR 6174 CNRS, University of Bourgogne Franche-Comté, France.
+If you use CRISPRbuilder_TB in work contributing to a scientific publication, we ask that you cite the following application note: Femto-ST Institute, UMR 6174 CNRS, University of Bourgogne Franche-Comté, France.
 
 This package originated in the work of [[1]](#id1) and [[2]](#id2).
 
 
 ## Purpose of this package
 
-crisprbuilder_tb will help you collect and annotate Mycobacterium tuberculosis whole genome sequencing data for CRISPR investigations. Given a Sequence Read Archive reference, the package will provide the genome information dictionary comprising the following elements:
+CRISPRbuilder_TB will help you collect and annotate Mycobacterium tuberculosis whole genome sequencing data for CRISPR investigations. Given a Sequence Read Archive reference, the package will provide the genome information dictionary comprising the following elements:
 
 * the reads - number of reads for the study, length of those reads, coverage of the study,
 
@@ -31,15 +31,18 @@ crisprbuilder_tb will help you collect and annotate Mycobacterium tuberculosis w
 
 ## How to install the package ?
 
-This package comes with a Command Line Interface, so it should be installed and executed using your conmmand prompt. For Linux, MacOS or Windows platforms, the installation requires the same instruction. Go the the directory you want the package to be stored to and write in your command prompt:
+This package comes with a Command Line Interface, so it should be installed and executed using your command prompt. For Linux, MacOS or Windows platforms, the installation requires the same instruction. Go the the directory you want the package to be stored to and write in your command prompt:
 
     pip install crisprbuilder_tb
+
+Please note that `cripsrbuilder_tb` is written without capital letters.
+Make sure your system is set to Python 3 in your current directory before using the `pip` instruction. The default version on your computer might be different.
 
 ## How to use the Command Line Interface ?
 
 After installing the package, you can find help with the command prompt, listing the different available options, such as `--collect`, `--list`, `--add`, `--print`, `--remove`, `--change`, and their expected syntax. Stay in the directory containing the installed package and write in the command prompt:
 
-    python crisprbuilder_tb --help
+    python -m crisprbuilder_tb --help
 
 The help menu will display the following information:
 
@@ -59,35 +62,36 @@ The help menu will display the following information:
       --change    collects data to update the file data/lineage.csv. Requires 0 as argument. See doc.
       --print     prints the file data/lineage.csv. Requires 0 as argument. See doc.
 
-### Executing crisprbuilder_tb with a SRA reference
+### Executing CRISPRbuilder_TB with a SRA reference
 
-You can run the package if you wish to find information regarding a specific SRA. From the directory containing the package, write in the command prompt:
+You can run the package if you wish to find information regarding a specific SRA. From your current directory, write in the command prompt:
 
-    python crisprbuilder_tb --collect {SRA_reference}
+    python -m crisprbuilder_tb --collect {SRA_reference}
 
-This package uses version 3.6.4 of Python, which is why it is necessary to precise python3 in the command line, in case the default version on your computer is different.
+Please note the importance of "-m" to run crisprbuilder_tb as a package. 
+CRISPRbuilder_TB uses version 3 of Python, so make sure your system is set to Python 3 in your current directory before using the `python`instruction. The default version on your computer might be different.
 
-**Caution:** the instruction above won't work if you're already in the package crisprbuilder_tb.
+**Caution:** it is not recommanded to find the location of the package and go to the directory containing CRISPRbuilder_TB in order to execute it. If you are doing so, the instruction above won't work.
 
 **Exemple:** to find information about SRR8368696, write:
 
-    python crisprbuilder_tb --collect SRR8368696
+    python -m crisprbuilder_tb --collect SRR8368696
 
-### Executing crisprbuilder_tb with a list of SRA references
+### Executing CRISPRbuilder_TB with a list of SRA references
 
 To run the package with a list of SRA references, this list must be composed of one SRA reference per line in a txt format file. Then, if you wish to find information regarding a list of specific SRAs, stay in the directory containing the package and write in the command prompt:
 
-    python crisprbuilder_tb --list {path_to_the_file}
+    python -m crisprbuilder_tb --list {path_to_the_file}
 
 **Exemple:** to find information about the different SRAs included in the file **my_file.txt** from the **Documents** directory, write:
 
-    python crisprbuilder_tb --list /Documents/my_file.txt
+    python -m crisprbuilder_tb --list /Documents/my_file.txt
 
 ### Printing the database lineage.csv
 
 If you want to consult the **lineage.csv** database, stay in the directory containing the package and write in the command prompt:
 
-    python crisprbuilder_tb --print 0
+    python -m crisprbuilder_tb --print 0
 
 **Caution:** it is necessary to add the 0 after `--print`.
 
@@ -105,7 +109,7 @@ The program will then display the content of the database **lineage.csv** whose 
 
 If you want to add a record to the **lineage.csv** database, stay in the directory containing the package and write in the command line:
 
-    python crisprbuilder_tb --add 0
+    python -m crisprbuilder_tb --add 0
 
 **Caution:** it is necessary to add the 0 after `--add`.
 
@@ -115,7 +119,7 @@ You will then be asked the values of the different fields (lineage, position, ge
 
 If you want to remove a record from the **lineage.csv** database, stay in the directory containing the package and write in the command line:
 
-    python crisprbuilder_tb --remove 0
+    python -m crisprbuilder_tb --remove 0
 
 **Caution:** it is necessary to add the 0 after `--remove`.
 
@@ -137,7 +141,7 @@ in case the SRA reference is not correct.
 
 If you want to change a record from the **lineage.csv** database, stay in the directory containing the package and write in the command line: 
 
-    python crisprbuilder_tb --change 0
+    python -m crisprbuilder_tb --change 0
 
 **Caution:** it is necessary to add the 0 after `--change`.
 
@@ -157,7 +161,7 @@ or
 
 ## Composition of the package and dependencies
 
-CRISPRbuilder-TB needs the following dependencies to work:
+CRISPRbuilder_TB needs the following dependencies to work:
 
 * python = "^3.6.4"
 * xlrd = "^1.2.0"
@@ -168,20 +172,21 @@ CRISPRbuilder-TB needs the following dependencies to work:
 * parallel-fastq-dump
 * balstn+
 
-These different versions are automatically downloaded when installing crisprbuilder_tb. Please note that this package doesn't support Python 2.
+These different versions are automatically downloaded when installing CRISPRbuilder_TB. Please note that this package doesn't support Python 2.
 
 The package structure is the following:
 
-![tree](tree.png)
+* The **\_\_main\_\_.py** and **fonctions.py** files contain the actual code for the package,
+* the **bdd.py** file contains the Origines dictionary,
+* The **data** directory contains the necessary database to compare with the SRA reference when the code is executed,
+* The **REP/sequences** directory contains the different result database for each execution of the code. For example, you can find a directory ERR2704808 containing the fasta files ERR2704808_1.fasta, ERR2704808_2.fasta and ERR2704808_shuffled.fasta along with the files ERR2704808.00.nhr, ERR2704808.00.nin, ERR2704808.00.nsq, ERR2704808.nal and the directory ERR2704808 containing the blast database. That's typically where you can find the files ERR2704808_old.blast and ERR2704808_new.blast.
+* The **doc** directory contains the necessary documentation to explain how this package works. It includes a **README.md** file explaining how to install the package for those who just need the essential, the copyright conditions for this package with the **LICENSE** file and the present documentation.
 
-The **\_\_main\_\_.py** file contains the actual code for the package.<br/>
-The **data** directory contains the necessary database to compare with the SRA reference when the code is executed.<br/>
-The **REP/sequences** directory contains the different result database for each execution of the code. For example, you can find a directory ERR2704808 containing the fasta files ERR2704808_1.fasta, ERR2704808_2.fasta and ERR2704808_shuffled.fasta along with the files ERR2704808.00.nhr, ERR2704808.00.nin, ERR2704808.00.nsq, ERR2704808.nal and the directory ERR2704808 containing the blast database. That's typically where you can find the files ERR2704808_old.blast and ERR2704808_new.blast.
-The **doc** directory contains the necessary documentation to explain how this package works. It includes a **README.md** file explaining how to install the package for those who just need the essential, the copyright conditions for this package with the **LICENSE** file and the present documentation.
+![tree](rep_crispr.png)
 
 ## Retrieving the genome information dictionary
 
-Let's assume you're looking for information regarding ERR2704808. After writing `python3 CRISPRbuilder-TB --collect ERR2704808` in the command prompt, a directory called **ERR2704808** will be created in **REP/sequences** and the item ERR2704808 will be added to the database. The following message will be displayed:
+Let's assume you're looking for information regarding ERR2704808. After writing `python3 -m crisprbuilder_tb --collect ERR2704808` in the command prompt, a directory called **ERR2704808** will be created in **REP/sequences** and the item ERR2704808 will be added to the database. The following message will be displayed:
 
     We're creating a directory ERR2704808.
     We're adding ERR2704808 to the database.
@@ -193,38 +198,73 @@ Then the files in fasta format will be downloaded to **REP/sequences/ERR2704808*
 if len([u for u in listdir(rep) if 'fasta' in u]) == 0:
     print("We're downloading the files in fasta format")
 
-    completed = subprocess.run(['parallel-fastq-dump', '-t', '8', '--split-files', '--fasta', '-O', P_REP, '-s', item])
-        
-    # if the download worked
-    if completed.returncode == 0:
+    try:
+        completed = subprocess.run(['parallel-fastq-dump', '-t', '8',
+                                    '--split-files', '--fasta', '-O', P_REP,
+                                    '-s', item], check=True)
+        completed.check_returncode()
+        # if the download worked
         print("fasta files successfully downloaded.")
         for k in listdir(P_REP):
             if k.endswith('.fasta'):
-                p = str(PurePath('REP', 'sequences', item, k))
-                p_k = str(PurePath('REP', k))
-                move(p_k, p)
+                p_item_k = str(PurePath(crisprbuilder_tb.__path__[0], 'REP',
+                                        'sequences', item, k))
+                p_k = str(PurePath(crisprbuilder_tb.__path__[0], 'REP', k))
+                try:
+                    move(p_k, p_item_k)
+                except FileNotFoundError:
+                    print("We can't transfer the fasta files in the proper "
+                          "repository.")
+    except subprocess.CalledProcessError:
+        # if the download didn't work, we delete the SRA from dico_afr
+        del dico_afr[item]
+        print("Failed to download fasta files.")
 ```
 
 If ERR2704808_shuffled.fasta is not in the **ERR2704808** directory, then the ERR2704808_1.fasta and ERR2704808_2.fasta files will be mixed in a new ERR2704808_shuffled.fasta file in the **ERR2704808** directory, as in the following code:
 
 
 ```python
-print("We're mixing both fasta files, which correspond to the two splits ends.")
+p_shuffled = str(PurePath(crisprbuilder_tb.__path__[0], 'REP', 'sequences',
+                          item, item + '_shuffled.fasta'))
+    if item + '_shuffled.fasta' not in listdir(rep):
 
-if name == 'posix':
-    for fic in ['_1', '_2']:
-        system("sed -i 's/" + item + './' + item + fic + "./g' REP/sequences/" + item + "/" + item + fic + '.fasta')
-    system("cat REP/sequences/" + item + "/" + item + "_1.fasta " + "REP/sequences/" + item + "/" + item + "_2.fasta > REP/sequences/" + item + "/" + item + "_shuffled.fasta")
+        print("We're mixing both fasta files, which correspond to the two "
+              "splits ends.")
+
+        p_fasta_1 = str(PurePath(crisprbuilder_tb.__path__[0], 'REP',
+                                 'sequences', item, item + '_1.fasta'))
+        p_fasta_2 = str(PurePath(crisprbuilder_tb.__path__[0], 'REP',
+                                 'sequences', item, item + '_2.fasta'))
+
+        if name == 'posix':
+            system("sed -i 's/" + item + './' + item + "_1./g' " + p_fasta_1)
+            system("sed -i 's/" + item + './' + item + "_2./g' " + p_fasta_2)
+            system("cat " + p_fasta_1 + " " + p_fasta_2 + " > " + p_shuffled)
+        else:
+            fonctions.change_elt_file(p_fasta_1, '_1', item)
+            fonctions.change_elt_file(p_fasta_2, '_2', item)
+            fonctions.concat(p_fasta_1, p_fasta_2, p_shuffled)
 ```
 
-The number of reads represented by '>' in ERR2704808_shuffled.fasta will be counted and assigned to nb, as in the following code:
+The number of reads represented by '>' in ERR2704808_shuffled.fasta will be counted and assigned to nb_reads, as in the following code:
 
 
 ```python
 if 'nb_reads' not in dico_afr[item] or dico_afr[item]['nb_reads'] == '':
     if name == 'posix':
-        system("cat REP/sequences/" + item + "/" + item + "_shuffled.fasta | grep '>' | wc -l > /tmp/nb.txt")
-    nb = eval(open(P_TXT).read().split('\n')[0])
+        system("cat " + p_shuffled + " | grep '>' | wc -l > " + P_TXT_POSIX)
+        nb_reads = eval(open(P_TXT_POSIX).read().split('\n')[0])
+    else:
+        with open(p_shuffled, 'r') as f_in, open(P_TXT_WIN, 'w') as f_out:
+            lignes = f_in.readlines()
+            cpt = 0
+            for elt in lignes:
+                cpt += elt.count('>')
+                f_out.write(str(cpt))
+        nb_reads = eval(open(P_TXT_WIN).read().split('\n')[0])
+
+    dico_afr[item]['nb_reads'] = nb_reads
 ```
 
 The length of the reads will be evaluated from ERR2704808_shuffled.fasta as in the following code:
@@ -232,8 +272,9 @@ The length of the reads will be evaluated from ERR2704808_shuffled.fasta as in t
 
 ```python
 if 'len_reads' not in dico_afr[item]:
-    nb = len(''.join(open(p_shuffled).read(10000).split('>')[1].split('\n')[1:]))
-    dico_afr[item]['len_reads'] = nb
+    nb_len = len(''.join(open(p_shuffled).read(10000).split('>')[1].split(
+                 '\n')[1:]))
+    dico_afr[item]['len_reads'] = nb_len
 ```
 
 which eventually will be displayed by:
@@ -260,16 +301,20 @@ Ignore the message and let the program run. It might take a while, but you'll ev
     fasta files successfully downloaded.
     We're mixing both fasta files, which correspond to the two splits ends.
 
-The coverage will be calculated and if it is too low the procedure will be cancelled:
+The coverage will be calculated and, if it is too, low the procedure will be cancelled:
 
 
 ```python
-if 'couverture' not in dico_afr[item] or dico_afr[item].get('couverture') == '':
-    dico_afr[item]['couverture'] = round(dico_afr[item].get('nb_reads') * dico_afr[item].get('len_reads') / TAILLE_GEN, 2)
-
+if 'couverture' not in dico_afr[item] or \
+        dico_afr[item].get('couverture') == '':
+    dico_afr[item]['couverture'] = round(dico_afr[item].get('nb_reads') *
+                                         dico_afr[item].get('len_reads') /
+                                         TAILLE_GEN, 2)
+        
 if dico_afr[item].get('couverture') < 50:
     del dico_afr[item]
-    print(f"The coverage is too low. {item} is being removed from the database")
+    print(f"The coverage is too low. {item} is being removed from the "
+          "database")
 ```
 
 which will be displayed by:
@@ -282,7 +327,13 @@ Then, a database for blast will be created in **REP/sequences/ERR2704808/ERR2704
 ```python
 if item+'.nal' not in listdir(rep) and item+'.nin' not in listdir(rep):
     print("We're creating a database for Blast")
-    completed = subprocess.run(['makeblastdb', '-in', p_shuffled, '-dbtype', 'nucl', '-title', item, '-out', repitem])
+    try:
+        completed = subprocess.run(['makeblastdb', '-in', p_shuffled,
+                                    '-dbtype', 'nucl', '-title', item,
+                                    '-out', repitem], check=True)
+        completed.check_returncode()
+    except subprocess.CalledProcessError:
+        print("We can't proceed blasting file.")
 ```
 
 You will then read the following message:
@@ -300,7 +351,7 @@ Some research will eventually be made in the dataset Brynildsrud, according to t
 
 
 ```python
-brynildsrud = to_brynildsrud()
+brynildsrud = fonctions.to_brynildsrud()
 if item in brynildsrud:
     for elt in brynildsrud[item]:
         dico_afr[item][elt] = brynildsrud[item][elt]
@@ -317,32 +368,67 @@ Sequences from the fasta files will be added and the spoligotypes will be blaste
 
 
 ```python
- if 'spoligo' not in dico_afr[item] or dico_afr[item]['spoligo'] == '':
-        print(f"The spoligotypes are being blasted")
+if 'spoligo' not in dico_afr[item] or dico_afr[item]['spoligo'] == '':
+    print("The spoligotypes are being blasted")
+    dico_afr[item]['spoligo'] = ''
+    dico_afr[item]['spoligo_new'] = ''
 
-        p_spoligo_old = str(PurePath('data', 'spoligo_old.fasta'))
-        p_spoligo_new = str(PurePath('data', 'spoligo_new.fasta'))
-        p_old_blast = str(PurePath('/tmp/' + item + "_old.blast"))
-        p_new_blast = str(PurePath('/tmp/' + item + "_new.blast"))
+    p_spoligo_old = str(PurePath(crisprbuilder_tb.__path__[0], 'data',
+                                 'spoligo_old.fasta'))
+    p_spoligo_new = str(PurePath(crisprbuilder_tb.__path__[0], 'data',
+                                 'spoligo_new.fasta'))
+    p_old_blast = str(PurePath(crisprbuilder_tb.__path__[0], 'tmp', item
+                               + "_old.blast"))
+    p_new_blast = str(PurePath(crisprbuilder_tb.__path__[0], 'tmp', item
+                               + "_new.blast"))
 
-        completed = subprocess.run("blastn -num_threads 12 -query " + p_spoligo_old + " -evalue 1e-6 -task blastn -db " + repitem + " -outfmt '10 qseqid sseqid sstart send qlen length score evalue' -out " + p_old_blast, shell=True)
+    try:
+        completed = subprocess.run("blastn -num_threads 12 -query " +
+                                   p_spoligo_old + " -evalue 1e-6 -task "
+                                   "blastn -db " + repitem + " -outfmt "
+                                   "'10 qseqid sseqid sstart send qlen "
+                                   "length score evalue' -out " +
+                                   p_old_blast, shell=True, check=True)
+        completed.check_returncode()
+    except subprocess.CalledProcessError:
+        print("We can't proceed blasting file.")
 
-        completed = subprocess.run("blastn -num_threads 12 -query " + p_spoligo_new + " -evalue 1e-6 -task blastn -db " + repitem + " -outfmt '10 qseqid sseqid sstart send qlen length score evalue' -out " + p_new_blast, shell=True)
+    try:
+        completed = subprocess.run("blastn -num_threads 12 -query " +
+                                   p_spoligo_new + " -evalue 1e-6 -task "
+                                   "blastn -db " + repitem + " -outfmt "
+                                   "'10 qseqid sseqid sstart send qlen "
+                                   "length score evalue' -out " +
+                                   p_new_blast, shell=True, check=True)
+        completed.check_returncode()
+    except subprocess.CalledProcessError:
+        print("We can't proceed blasting file.")
 
-        for pos, spol in enumerate(['old', 'new']):
-            p_blast = str(PurePath('/tmp/' + item + '_' + spol + '.blast'))
-            p_fasta = str(PurePath('data', 'spoligo_' + spol + '.fasta'))
+    for pos, spol in enumerate(['old', 'new']):
+        p_blast = str(PurePath(crisprbuilder_tb.__path__[0], 'tmp', item
+                               + '_' + spol + '.blast'))
+        p_fasta = str(PurePath(crisprbuilder_tb.__path__[0], 'data',
+                               'spoligo_' + spol + '.fasta'))
 
-            with open(p_blast) as f:
-                matches = f.read()
-                nb = open(p_fasta).read().count('>')
-                for k in range(1, nb + 1):
-                    if matches.count('espaceur' + spol.capitalize() + str(k) + ',') >= 5:
-                        dico_afr[item]['spoligo' + ['', '_new'][pos]] += '\u25A0'
-                    else:
-                            dico_afr[item]['spoligo' + ['', '_new'][pos]] += '\u25A1'
+        with open(p_blast) as file:
+            matches = file.read()
+            nb_max = open(p_fasta).read().count('>')
+            for k in range(1, nb_max + 1):
+                if matches.count('espaceur' + spol.capitalize() + str(k)
+                                 + ',') >= 5:
+                    dico_afr[item]['spoligo' + ['', '_new'][pos]] \
+                                   += '\u25A0'
+                else:
+                    dico_afr[item]['spoligo' + ['', '_new'][pos]] \
+                                   += '\u25A1'
 
-            dico_afr[item]['spoligo' + ['', '_new'][pos] + '_nb'] = [matches.count('espaceur' + spol.capitalize() + str(k) + ',') for k in range(1, nb + 1)]
+        dico_afr[item]['spoligo' + ['', '_new'][pos] + '_nb'] = [
+            matches.count('espaceur' + spol.capitalize() + str(k) + ',')
+            for k in range(1, nb_max + 1)]
+        try:
+            move(p_blast, rep)
+        except FileNotFoundError:
+            print(p_blast, " is already in the SRA directory.")
 ```
 
 You will read the message:
@@ -377,10 +463,10 @@ The Spoligotype International Type and Spoligotype International Type silico wil
 
 ```python
 if 'SIT' not in dico_afr[item] or dico_afr[item]['SIT'] == '':
-    add_spoligo_dico('SIT', dico_afr, item, spol_sit)
+    fonctions.add_spoligo_dico('SIT', dico_afr, item, spol_sit)
 
 if 'SIT_silico' not in dico_afr[item]:
-    add_spoligo_dico('SIT_silico', dico_afr, item, spol_sit)
+    fonctions.add_spoligo_dico('SIT_silico', dico_afr, item, spol_sit)
 ```
 
 which will display the following message:
@@ -394,26 +480,29 @@ Finally, the lineage will be defined by comparing the blast files with the diffe
 ```python
 if 'lineage_Pali' not in dico_afr[item]:
     lignee = []
-    Lignee_SNP = to_reads('Pali', H37RV)
+    lignee_snp = fonctions.to_reads('Pali')
     print("We're adding the lineage according to the SNPs Pali")
 
-    for item2, pos0 in enumerate(Lignee_SNP):
-        seq1, seq2 = Lignee_SNP[pos0][:2]
-
-        p_blast = str(PurePath('/tmp/snp_Pali.blast'))
-        with open(P_FASTA, 'w') as f:
-            f.write('>\n' + seq2)
-        cmd = "blastn -query " + P_FASTA + " -num_threads 12 -evalue 1e-5 -task blastn -db " + repitem + " -outfmt '10 sseq' -out " + p_blast
+    for item2, pos0 in enumerate(lignee_snp):
+        seq1, seq2 = lignee_snp[pos0][:2]
+        p_blast = str(PurePath(crisprbuilder_tb.__path__[0], 'tmp',
+                               'snp_Pali.blast'))
+        with open(fonctions.P_FASTA, 'w') as f_fasta:
+            f_fasta.write('>\n' + seq2)
+        cmd = "blastn -query " + fonctions.P_FASTA + " -num_threads 12" \
+              " -evalue 1e-5 -task blastn -db " + repitem + \
+              " -outfmt '10 sseq' -out " + p_blast
         system(cmd)
-        
-        with open(p_blast) as f:
-            formatted_results = f.read().splitlines()
+        with open(p_blast) as f_blast:
+            formatted_results = f_blast.read().splitlines()
 
-        nb_seq1 = to_nb_seq(seq1, formatted_results, 16, 20, 21, 25)
-        nb_seq2 = to_nb_seq(seq2, formatted_results, 16, 20, 21, 25)
+        nb_seq1 = fonctions.to_nb_seq(seq1, formatted_results, 16, 20,
+                                      21, 25)
+        nb_seq2 = fonctions.to_nb_seq(seq2, formatted_results, 16, 20,
+                                      21, 25)
 
         if nb_seq2 > nb_seq1:
-            lignee.append(Lignee_SNP[pos0][2])
+            lignee.append(lignee_snp[pos0][2])
 
     lignee = [u for u in sorted(set(lignee))]
 
@@ -448,13 +537,14 @@ Some general information will be retrieved from the dataset Origines or directly
 
 ```python
 if 'Source' not in dico_afr[item]:
-    for u in Origines:
-        if item in u['run accessions']:
-            for elt in ['Source', 'Author', 'study accession number', 'location']:
-                dico_afr[item][elt] = u.get(elt)
+    for ref in bdd.Origines:
+        if item in ref['run accessions']:
+            for elt in ['Source', 'Author', 'study accession number',
+                        'location']:
+                dico_afr[item][elt] = ref.get(elt)
 
 if 'taxid' not in dico_afr[item]:
-    dicobis = get_info(item)
+    dicobis = fonctions.get_info(item)
     for elt in dicobis:
         dico_afr[item][elt] = dicobis[elt]
 ```
@@ -515,8 +605,3 @@ Microbiol. 1997;35(4):907-14. PubMed PMID: 9157152.
 Schouls LM. Genetic variation and evolutionary origin of the Direct
 repeat locus of Mycobacterium tuberculosis complex bacteria. J
 Bacteriol. 2000;182:2393-401.
-
-
-```python
-
-```
