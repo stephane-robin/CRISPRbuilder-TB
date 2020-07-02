@@ -81,11 +81,13 @@ def collect_sra(item):
     if len([u for u in listdir(rep) if 'fasta' in u]) == 0:
         print("We're downloading the files in fasta format")
 
-        completed = subprocess.run(['parallel-fastq-dump', '-t', '8',
-                                    '--split-files', '--fasta', '-O', P_REP,
-                                    '-s', item])
-        # if the download worked
-        if completed.returncode == 0:
+        try:
+            completed = subprocess.run(['parallel-fastq-dump', '-t', '8',
+                                        '--split-files', '--fasta', '-O', P_REP,
+                                        '-s', item], check=True)
+            completed.check_returncode()
+            # if the download worked
+            # if completed.returncode == 0:
             print("fasta files successfully downloaded.")
             for k in listdir(P_REP):
                 if k.endswith('.fasta'):
@@ -97,8 +99,9 @@ def collect_sra(item):
                     except FileNotFoundError:
                         print("We can't transfer the fasta files in the proper "
                               "repository.")
-        # if the download didn't work, we delete the SRA from dico_afr
-        else:
+        except subprocess.CalledProcessError:
+            # if the download didn't work, we delete the SRA from dico_afr
+            #else:
             del dico_afr[item]
             print("Failed to download fasta files.")
 
@@ -189,10 +192,14 @@ def collect_sra(item):
         # REP/sequences/{item} a database for Blast called {item}
         if item+'.nal' not in listdir(rep) and item+'.nin' not in listdir(rep):
             print("We're creating a database for Blast")
-            completed = subprocess.run(['makeblastdb', '-in', p_shuffled,
-                                        '-dbtype', 'nucl', '-title', item,
-                                        '-out', repitem])
-            assert completed.returncode == 0
+            try:
+                completed = subprocess.run(['makeblastdb', '-in', p_shuffled,
+                                            '-dbtype', 'nucl', '-title', item,
+                                            '-out', repitem], check=True)
+                completed.check_returncode()
+                # assert completed.returncode == 0
+            except subprocess.CalledProcessError:
+                print("We can't proceed blasting file.")
 
         # === UPDATING SOURCE, AUTHOR, ACCESSION NBER, LOCATION IN DICO_AFR ===
 
@@ -246,21 +253,29 @@ def collect_sra(item):
             p_new_blast = str(PurePath(crisprbuilder_tb.__path__[0], 'tmp', item +
                                        "_new.blast"))
 
-            completed = subprocess.run("blastn -num_threads 12 -query " +
-                                       p_spoligo_old + " -evalue 1e-6 -task "
-                                       "blastn -db " + repitem + " -outfmt '10 "
-                                       "qseqid sseqid sstart send qlen length "
-                                       "score evalue' -out " + p_old_blast,
-                                       shell=True)
-            assert completed.returncode == 0
+            try:
+                completed = subprocess.run("blastn -num_threads 12 -query " +
+                                           p_spoligo_old + " -evalue 1e-6 -task "
+                                           "blastn -db " + repitem + " -outfmt "
+                                           "'10 qseqid sseqid sstart send qlen "
+                                           "length score evalue' -out " +
+                                           p_old_blast, shell=True, check=True)
+                completed.check_returncode()
+                # assert completed.returncode == 0
+            except subprocess.CalledProcessError:
+                print("We can't proceed blasting file.")
 
-            completed = subprocess.run("blastn -num_threads 12 -query " +
-                                       p_spoligo_new + " -evalue 1e-6 -task "
-                                       "blastn -db " + repitem + " -outfmt '10 "
-                                       "qseqid sseqid sstart send qlen length "
-                                       "score evalue' -out " + p_new_blast,
-                                       shell=True)
-            assert completed.returncode == 0
+            try:
+                completed = subprocess.run("blastn -num_threads 12 -query " +
+                                           p_spoligo_new + " -evalue 1e-6 -task "
+                                           "blastn -db " + repitem + " -outfmt "
+                                           "'10 qseqid sseqid sstart send qlen "
+                                           "length score evalue' -out " +
+                                           p_new_blast, shell=True, check=True)
+                completed.check_returncode()
+                # assert completed.returncode == 0
+            except subprocess.CalledProcessError:
+                print("We can't proceed blasting file.")
 
             for pos, spol in enumerate(['old', 'new']):
                 p_blast = str(PurePath(crisprbuilder_tb.__path__[0], 'tmp', item + '_' +
@@ -309,30 +324,40 @@ def collect_sra(item):
             p_vitro_new_blast = str(PurePath(crisprbuilder_tb.__path__[0], 'tmp', item +
                                              '_vitro_new.blast'))
 
-            completed = subprocess.run("blastn -num_threads 8 -query " +
-                                       p_spoligo_vitro + " -evalue 1e-6 -task "
-                                       "blastn -db " + repitem + " -outfmt '10 "
-                                       "qseqid sseqid sstart send qlen length "
-                                       "score evalue' -out " + p_vitro_blast,
-                                       shell=True)
-            assert completed.returncode == 0
+            try:
+                completed = subprocess.run("blastn -num_threads 8 -query " +
+                                           p_spoligo_vitro + " -evalue 1e-6 "
+                                           "-task blastn -db " + repitem +
+                                           " -outfmt '10 qseqid sseqid sstart "
+                                           "send qlen length score evalue' "
+                                           "-out " + p_vitro_blast, shell=True,
+                                           check=True)
+                completed.check_returncode()
+                # assert completed.returncode == 0
+            except subprocess.CalledProcessError:
+                print("We can't proceed blasting file.")
 
-            completed = subprocess.run("blastn -num_threads 8 -query " +
-                                       p_spoligo_vitro_new + " -evalue 1e-6 "
-                                       "-task blastn -db " + repitem + " -outfmt"
-                                       " '10 qseqid sseqid sstart send qlen "
-                                       "length score evalue' -out " +
-                                       p_vitro_new_blast, shell=True)
-            assert completed.returncode == 0
+            try:
+                completed = subprocess.run("blastn -num_threads 8 -query " +
+                                           p_spoligo_vitro_new + " -evalue 1e-6 "
+                                           "-task blastn -db " + repitem + " "
+                                           "-outfmt '10 qseqid sseqid sstart "
+                                           "send qlen length score evalue' "
+                                           "-out " + p_vitro_new_blast,
+                                           shell=True, check=True)
+                completed.check_returncode()
+                # assert completed.returncode == 0
+            except subprocess.CalledProcessError:
+                print("We can't proceed blasting file.")
 
             with open(p_vitro_blast) as f_vitro_blast:
                 matches = f_vitro_blast.read()
                 nb_max_svitro = int(open(p_spoligo_vitro).read().count('>') / 2)
 
                 fonctions.condition_spol_vitro('espaceur_vitroOld',
-                                             'espaceur_vitroBOld',
-                                             'spoligo_vitro', nb_max_svitro,
-                                             matches, item, dico_afr)
+                                               'espaceur_vitroBOld',
+                                               'spoligo_vitro', nb_max_svitro,
+                                               matches, item, dico_afr)
 
             dico_afr[item]['spoligo_vitro_nb'] = [(matches.count(
                 'espaceur_vitroOld' + str(k) + ','), matches.count(
@@ -345,9 +370,10 @@ def collect_sra(item):
                     '>') / 2)
 
                 fonctions.condition_spol_vitro('espaceur_vitro_new',
-                                             'espaceur_vitro_newB',
-                                             'spoligo_vitro_new', nb_max_nsvitro,
-                                             matches, item, dico_afr)
+                                               'espaceur_vitro_newB',
+                                               'spoligo_vitro_new',
+                                               nb_max_nsvitro, matches,
+                                               item, dico_afr)
 
             dico_afr[item]['spoligo_vitro_new_nb'] = [(matches.count(
                 'espaceur_vitro_new' + str(k) + ','), matches.count(
@@ -392,7 +418,7 @@ def collect_sra(item):
             seq1 = 'ACGTCGATGGTCGCGACCTCCGCGGCATAGTCGAA'
             seq2 = "ACGTCGATGGTCGCGACTTCCGCGGCATAGTCGAA"
             formatted_results = fonctions.to_formatted_results(seq2, repitem,
-                                                              "12")
+                                                               "12")
             nb_seq1 = fonctions.to_nb_seq(seq1, formatted_results, 13, 17, 18,
                                           22)
             nb_seq2 = fonctions.to_nb_seq(seq2, formatted_results, 13, 17, 18,
@@ -408,54 +434,47 @@ def collect_sra(item):
         # ==== TESTING PGG LINEAGE ======================================
 
         # If dico_afr has no information about 'lineage_PGG' regarding {item},
-        # we select a read around position 2154724 using DEMI-LONGUEUR, we change
-        # some elements of the read and blast it. We select another read around
-        # position 7585-1 using DEMI-LONGUEUR, we change some elements of the
-        # read and blast it. Then the lineage is updated into dico_afr[{item}].
-        """
-        Note:
-        - we select a read 'seq1' around a specific position 'pos' and define
-          its length by twice 'DEMI_LONGUEUR',
-        - from the read 'seq1', we define a read 'seq2' which is 'seq1' with
-          a nitrogenous base replaced by 'A' at the 'debut_suffixe-1' position,
-        - we serialize the read 'seq2' into 'snp.fasta' and blast the file
-          obtained,
-        - the formatted result is analysed to update the lineage.
-
-        Examples:
-        In this example, we decide to change in position 323 the nitrogenous
-        base into A. We thus assign 324 to 'pos' and 20 to 'DEMI_LONGUEUR'.
-        h represents H37RV. The 2 different reads are composed of the
-        following strings
-
-        seq1 = h[304] ... h[344]
-        seq2 = h[304] ... h[322] A  h[324] ... h[344]
-
-        Both if conditions revolve around A or h[323].
-
-        nb_seq1 represents the 2 following strings which should be in the
-        formatted results
-                                    h[323] ... h[327]
-                         h[319] ... h[323]
-
-        nb_seq2 represents the 2 following strings which should be in the
-        formatted results
-                                       A ... h[327]
-                            h[319] ... A
-
-        which is formally interpreted by
-                                       A  debut_suffixe ... fin_suffixe
-        debut_prefixe ... fin_suffixe  A
-        """
+        # we select a read 'seq1' around position 2154724 and define its
+        # length by twice 'DEMI-LONGUEUR'. From the read 'seq1', we define a
+        # read 'seq2' which is 'seq1' with a nitrogenous base replaced by 'A' at
+        # the 'debut_suffixe-1' position, we serialize the read 'seq2' into
+        # 'snp.fasta' and blast the obtained file.
+        # We repeat this process with another read 'seq1' around position
+        # 7585-1. Thenthe lineage is updated into dico_afr[{item}].
+        #
+        # Examples:
+        # In this example, we decide to change in position 323 the nitrogenous
+        # base into A. We thus assign 324 to 'pos' and 20 to 'DEMI_LONGUEUR'.
+        # h represents H37RV. The 2 different reads are composed of the
+        # following strings
+        #
+        # seq1 = h[304] ... h[344]
+        # seq2 = h[304] ... h[322] A  h[324] ... h[344]
+        #
+        # Both if conditions revolve around A or h[323].
+        #
+        # nb_seq1 represents the 2 following strings which should be in the
+        # formatted results
+        #                            h[323] ... h[327]
+        #                 h[319] ... h[323]
+        #
+        # nb_seq2 represents the 2 following strings which should be in the
+        # formatted results
+        #                               A ... h[327]
+        #                    h[319] ... A
+        #
+        # which is formally interpreted by
+        #                                A  debut_suffixe ... fin_suffixe
+        # debut_prefixe ... fin_suffixe  A
         if 'lineage_PGG' not in dico_afr[item]:
             lignee = []
             print("We're adding the lineage according to the SNPs PGG")
             pos = 2154724
             seq1 = fonctions.H37RV[pos - fonctions.DEMI_LONGUEUR:pos +
-                                 fonctions.DEMI_LONGUEUR + 1]
+                                   fonctions.DEMI_LONGUEUR + 1]
             seq2 = seq1[:19] + 'A' + seq1[20:]
             formatted_results = fonctions.to_formatted_results(seq2, repitem,
-                                                              "12")
+                                                               "12")
             nb_seq1 = fonctions.to_nb_seq(seq1, formatted_results, 15, 19, 20,
                                           24)
             nb_seq2 = fonctions.to_nb_seq(seq2, formatted_results, 15, 19, 20,
@@ -470,10 +489,10 @@ def collect_sra(item):
 
             pos = 7585-1
             seq1 = fonctions.H37RV[pos - fonctions.DEMI_LONGUEUR:pos +
-                                 fonctions.DEMI_LONGUEUR + 1]
+                                   fonctions.DEMI_LONGUEUR + 1]
             seq2 = seq1[:20] + 'A' + seq1[21:]
             formatted_results = fonctions.to_formatted_results(seq2, repitem,
-                                                              "12")
+                                                               "12")
             nb_seq1 = fonctions.to_nb_seq(seq1, formatted_results, 16, 20, 21,
                                           25)
             nb_seq2 = fonctions.to_nb_seq(seq2, formatted_results, 16, 20, 21,
@@ -514,8 +533,8 @@ def collect_sra(item):
                             assert fonctions.H37RV[pos] == row[3].strip().split(
                                 '/')[0]
                             seq1 = fonctions.H37RV[pos -
-                                                 fonctions.DEMI_LONGUEUR:pos +
-                                                 fonctions.DEMI_LONGUEUR + 1]
+                                                   fonctions.DEMI_LONGUEUR:pos +
+                                                   fonctions.DEMI_LONGUEUR + 1]
 
                             if '*' not in row[0].strip():
                                 seq2 = seq1[:20] + row[3].strip().split('/')[
@@ -531,10 +550,10 @@ def collect_sra(item):
 
                             nb_seq1 = fonctions.to_nb_seq(seq1,
                                                           formatted_results,
-                                                        16, 20, 21, 25)
+                                                          16, 20, 21, 25)
                             nb_seq2 = fonctions.to_nb_seq(seq2,
                                                           formatted_results,
-                                                        16, 20, 21, 25)
+                                                          16, 20, 21, 25)
 
                             if nb_seq2 > nb_seq1:
                                 lignee.append(row[0].strip().replace(
@@ -544,25 +563,20 @@ def collect_sra(item):
 
         # ==== TESTING PALI LINEAGE =============================
 
-        """
-        - we browse the dictionary of a lineage Pali, Shitikov or Stucki,
-          and pick 2 reads (seq1 and seq2) per value of the dictionary,
-        - we open the 'snp.fasta' file and write on it the 2nd read from before,
-        - we blast the SRA from 'snp.fasta' in relation to the 'item',
-        - we keep only the results that contain selected parts of the reads
-          seq1 and seq2, and put them in sequences,
-        - we assign the length of those sequences to nb_seq1 and nb_seq2,
-        - we create an empty list called 'lignee'
-        - if nb_seq2 is greater than nb_seq1, then we add the 3rd read from
-          the initial dictionary to 'lignee',
-        - we sort the elements of 'lignee' and add them to dico_afr[item][
-          'lineage...']
-        """
         # If dico_afr has no information about 'lineage_Pali' regarding {item}
         # we extract data from Palittapon_SNPs.xlsx into the dictionary
         # Lignee_Pali containing positions, reads and lineage numbers, we
         # select several reads seq1 and several reads seq2 in a specific
-        # position before blasting them and updating the lineage in dico_afr[SRA]
+        # position.
+        # We open the 'snp.fasta' file and write on it the 2nd read from before,
+        # we blast the SRA from 'snp.fasta' in relation to the 'item', we keep
+        # only the results that contain selected parts of the reads 'seq1' and
+        # 'seq2', and put them in sequences, we assign the length of those
+        # sequences to 'nb_seq1' and 'nb_seq2'.
+        # We create an empty list called 'lignee'. If 'nb_seq2' is greater than
+        # 'nb_seq1', then we add the 3rd read from the initial dictionary to
+        # 'lignee', we sort the elements of 'lignee' and add them to
+        # dico_afr[item]['lineage...'].
         if 'lineage_Pali' not in dico_afr[item]:
             lignee = []
             lignee_snp = fonctions.to_reads('Pali')
@@ -582,11 +596,9 @@ def collect_sra(item):
                     formatted_results = f_blast.read().splitlines()
 
                 nb_seq1 = fonctions.to_nb_seq(seq1, formatted_results, 16, 20,
-                                              21,
-                                            25)
+                                              21, 25)
                 nb_seq2 = fonctions.to_nb_seq(seq2, formatted_results, 16, 20,
-                                              21,
-                                            25)
+                                              21, 25)
 
                 if nb_seq2 > nb_seq1:
                     lignee.append(lignee_snp[pos0][2])
@@ -621,11 +633,9 @@ def collect_sra(item):
                     formatted_results = f_blast.read().splitlines()
 
                 nb_seq1 = fonctions.to_nb_seq(seq1, formatted_results, 16, 20,
-                                              21,
-                                            25)
+                                              21, 25)
                 nb_seq2 = fonctions.to_nb_seq(seq2, formatted_results, 16, 20,
-                                              21,
-                                            25)
+                                              21, 25)
 
                 if nb_seq2 > nb_seq1:
                     lignee.append(lignee_snp[pos0][2])
@@ -659,11 +669,9 @@ def collect_sra(item):
                     formatted_results = f_blast.read().splitlines()
 
                 nb_seq1 = fonctions.to_nb_seq(seq1, formatted_results, 16, 20,
-                                              21,
-                                            25)
+                                              21, 25)
                 nb_seq2 = fonctions.to_nb_seq(seq2, formatted_results, 16, 20,
-                                              21,
-                                            25)
+                                              21, 25)
 
                 if nb_seq2 > nb_seq1:
                     lignee.append(lignee_snp[pos0][2])
