@@ -1,3 +1,4 @@
 biopython==1.76
+parallel-fastq-dump<0.7.0,>=0.6.5
 xlrd==1.2.0
 xmltodict==0.12.0

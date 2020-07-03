@@ -300,7 +300,8 @@ def collect_sra(item):
                     matches.count('espaceur' + spol.capitalize() + str(k) + ',')
                     for k in range(1, nb_max + 1)]
                 try:
-                    move(p_blast, rep)
+                    if item + '_' + spol + '.blast' not in listdir(rep):
+                        move(p_blast, rep)
                 except FileNotFoundError:
                     print(p_blast, " is already in the SRA directory.")
 
@@ -389,7 +390,8 @@ def collect_sra(item):
             p_any_blast = str(PurePath(crisprbuilder_tb.__path__[0], 'tmp', item
                                        + '_*.blast'))
             try:
-                move(p_any_blast, rep)
+                if item + '_*.blast' not in listdir(rep):
+                    move(p_any_blast, rep)
             except FileNotFoundError:
                 print(p_any_blast, " is already in the SRA directory.")
             # system('mv /tmp/' + item + '_*.blast ' + rep)
