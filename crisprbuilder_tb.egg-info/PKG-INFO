@@ -1,6 +1,6 @@
-Metadata-Version: 1.0
+Metadata-Version: 1.2
 Name: crisprbuilder-tb
-Version: 0.1.28
+Version: 0.1.30
 Summary: Collect and annotate Mycobacterium tuberculosis WGS data for CRISPR investigations.
 Home-page: https://github.com/stephane-robin/crisprbuilder_tb.git
 Author: stephane-robin
@@ -51,3 +51,4 @@ Description: # CRISPRbuilder_TB
         First version of this package, which is 1.0.0 was published on July 2020.
         
 Platform: UNKNOWN
+Requires-Python: >=3.8,<4.0
