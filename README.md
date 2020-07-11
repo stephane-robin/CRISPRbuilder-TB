@@ -15,10 +15,10 @@
 
 >CRISPRbuilder_TB needs the following dependencies to work:
 
-* python >= "3.4"
+* python >= "3.6"
 * xlrd >= "1.2.0"
 * xmltodict >= "0.12.0"
-* biopython >= "1.76"
+* biopython >= "1.77"
 
 >These different versions are automatically downloaded when installing the CRISPRbuilder_TB package.    
 

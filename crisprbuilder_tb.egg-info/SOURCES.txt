@@ -4,6 +4,7 @@ crisprbuilder_tb/__init__.py
 crisprbuilder_tb/__main__.py
 crisprbuilder_tb/bdd.py
 crisprbuilder_tb/fonctions.py
+crisprbuilder_tb/testpath.py
 crisprbuilder_tb.egg-info/PKG-INFO
 crisprbuilder_tb.egg-info/SOURCES.txt
 crisprbuilder_tb.egg-info/dependency_links.txt
