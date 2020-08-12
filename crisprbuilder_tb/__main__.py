@@ -177,7 +177,7 @@ def collect_sra(item):
                 cpt = 0
                 for elt in lignes:
                     cpt += elt.count('>')
-                    f_out.write(str(cpt))
+                f_out.write(str(cpt))
             nb_reads = eval(open(P_TXT_WIN).read().split('\n')[0])
 
         dico_afr[item]['nb_reads'] = nb_reads
