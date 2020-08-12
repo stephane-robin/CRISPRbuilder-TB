@@ -126,7 +126,7 @@ H37RV = to_h37rv()
 def to_reads(db_origine):
     """
     This function creates a dictionary called lignee_renvoyee containing 2
-    reads per lineage and their specific position, extracted from xlsx_lignee.
+    reads per lineage and their specific position, extracted from lineage.csv.
 
     Args:
         db_origine(str): name of the dataset origin representing a specific
@@ -143,7 +143,7 @@ def to_reads(db_origine):
         }
 
     Note:
-        - we read the 1st sheet of xlsx_lignee.
+        - we read the 1st sheet of lineage.csv.
         - we browse the sheet from the 1st row containing data except for
           headers. For each row, if the 'position' cell is not empty :
           > from the 'lineage' column we keep only the lineage number without
